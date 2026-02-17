@@ -37,7 +37,51 @@ Perfect for families who want to:
 - 100MB disk space
 - Port 3020 available
 
-### Installation (3 steps)
+### Installation
+
+**Choose your deployment method:**
+
+#### Option A: Docker Hub Image (Recommended)
+
+Fastest way to get started using pre-built multi-platform image:
+
+1. **Create project directory**
+   ```bash
+   mkdir tidyquest && cd tidyquest
+   ```
+
+2. **Create docker-compose.yml**
+   ```yaml
+   services:
+     tidyquest:
+       image: mellowfox/tidyquest:latest
+       container_name: tidyquest
+       ports:
+         - "3020:3000"
+       environment:
+         - NODE_ENV=production
+         - JWT_SECRET=CHANGE_THIS_TO_SECURE_RANDOM_STRING_MIN_32_CHARS
+       volumes:
+         - ./data:/app/data
+       restart: unless-stopped
+   ```
+
+3. **Generate secure JWT_SECRET**
+   ```bash
+   openssl rand -base64 32
+   # Copy output and replace JWT_SECRET in docker-compose.yml
+   ```
+
+4. **Launch**
+   ```bash
+   docker compose up -d
+   ```
+
+   Access at **http://localhost:3020**
+
+#### Option B: Build from Source
+
+For development or customization:
 
 1. **Clone the repository**
    ```bash
@@ -52,7 +96,7 @@ Perfect for families who want to:
    # Generate one: openssl rand -base64 32
    ```
 
-3. **Launch with Docker**
+3. **Build and launch**
    ```bash
    docker compose up -d --build
    ```
@@ -198,6 +242,13 @@ Admin can enable in **Settings** to pause all health decay. Useful for family tr
 
 ## 🔄 Updating
 
+### Using Docker Hub Image
+```bash
+docker compose pull
+docker compose up -d
+```
+
+### Using Source Build
 ```bash
 cd TidyQuest
 git pull
