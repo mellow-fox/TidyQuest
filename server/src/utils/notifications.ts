@@ -91,6 +91,14 @@ export async function sendTelegramMessageDetailed(message: string, options: Send
   if (!chatId) return { ok: false, error: 'Telegram chat ID is missing.' };
   if (!cfg.enabled && !options.ignoreEnabled) return { ok: false, error: 'Notifications are disabled.' };
 
+  // Security: Validate Telegram bot token format to prevent SSRF
+  // Telegram tokens have format: 123456789:ABCdef-GHIjkl_MNOpqr
+  // Must contain only digits, letters, hyphens, underscores, and exactly one colon
+  const telegramTokenPattern = /^\d+:[A-Za-z0-9_-]+$/;
+  if (!telegramTokenPattern.test(botToken)) {
+    return { ok: false, error: 'Invalid Telegram bot token format.' };
+  }
+
   try {
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
