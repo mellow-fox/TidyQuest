@@ -260,6 +260,7 @@ html[data-theme='night'] option {
   .tq-card {
     border-radius: 14px;
     border-width: 1px;
+    padding: 16px !important;
   }
 
   .tq-btn {
@@ -273,6 +274,86 @@ html[data-theme='night'] option {
   /* Make buttons full-width on mobile when in containers */
   .tq-btn-block {
     width: 100%;
+  }
+
+  /* Force all input fields, textareas, and selects to be properly sized */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    padding: 12px !important;
+    min-height: 44px !important;
+  }
+
+  /* Fix grid layouts - force single column on mobile */
+  .page-enter > div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Settings page specific fixes */
+  div[style*="gridTemplateColumns: '1fr 1fr'"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  div[style*="gridTemplateColumns"][style*="120px"],
+  div[style*="gridTemplateColumns"][style*="130px"],
+  div[style*="gridTemplateColumns"][style*="100px"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* Activity/History table - make it scroll horizontally on mobile */
+  .page-enter > .tq-card {
+    overflow-x: auto;
+  }
+
+  /* Ensure table grids maintain minimum width for horizontal scroll */
+  div[style*="gridTemplateColumns: '44px 1fr"] {
+    min-width: 600px;
+  }
+
+  /* Form labels and inputs should stack vertically */
+  label {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Card padding adjustments */
+  .tq-card > div[style*="padding"] {
+    padding: 12px !important;
+  }
+
+  /* Force flex containers with multiple items to stack on mobile */
+  div[style*="display: flex"][style*="gap: 20"],
+  div[style*="display: flex"][style*="gap: 12"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* Override specific inline widths on mobile */
+  div[style*="width: 220"],
+  div[style*="width: 180"],
+  div[style*="width: 150"],
+  div[style*="minWidth: 58"] {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  /* Make range inputs full width */
+  input[type="range"] {
+    width: 100% !important;
   }
 
   /* Mobile sidebar - hidden by default, slides in when open */
