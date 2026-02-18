@@ -270,7 +270,7 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                       }}
                     />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                  <div className="task-edit-form" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-light)' }}>{t('roomDetail.every')}</label>
                       <FrequencyPicker value={editForm.freqValue} unit={editForm.freqUnit}

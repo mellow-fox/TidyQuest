@@ -295,64 +295,37 @@ html[data-theme='night'] option {
     min-height: 44px !important;
   }
 
-  /* Fix grid layouts - force single column on mobile */
-  .page-enter > div[style*="gridTemplateColumns"] {
+  /* Only make 2-column layouts single column on mobile */
+  .settings-grid {
     grid-template-columns: 1fr !important;
-  }
-
-  /* Settings page specific fixes */
-  div[style*="gridTemplateColumns: '1fr 1fr'"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  div[style*="gridTemplateColumns"][style*="120px"],
-  div[style*="gridTemplateColumns"][style*="130px"],
-  div[style*="gridTemplateColumns"][style*="100px"] {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
   }
 
   /* Activity/History table - make it scroll horizontally on mobile */
-  .page-enter > .tq-card {
+  .history-table {
     overflow-x: auto;
   }
 
-  /* Ensure table grids maintain minimum width for horizontal scroll */
-  div[style*="gridTemplateColumns: '44px 1fr"] {
+  .history-table > div {
     min-width: 600px;
-  }
-
-  /* Form labels and inputs should stack vertically */
-  label {
-    display: block !important;
-    width: 100% !important;
-    margin-bottom: 6px !important;
-  }
-
-  /* Card padding adjustments */
-  .tq-card > div[style*="padding"] {
-    padding: 12px !important;
-  }
-
-  /* Force flex containers with multiple items to stack on mobile */
-  div[style*="display: flex"][style*="gap: 20"],
-  div[style*="display: flex"][style*="gap: 12"] {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-
-  /* Override specific inline widths on mobile */
-  div[style*="width: 220"],
-  div[style*="width: 180"],
-  div[style*="width: 150"],
-  div[style*="minWidth: 58"] {
-    width: 100% !important;
-    min-width: unset !important;
   }
 
   /* Make range inputs full width */
   input[type="range"] {
+    width: 100% !important;
+  }
+
+  /* Page-enter containers should have max-width 100% */
+  .page-enter {
+    max-width: 100% !important;
+  }
+
+  /* Specific fixes for edit task form */
+  .task-edit-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .task-edit-form > div {
     width: 100% !important;
   }
 

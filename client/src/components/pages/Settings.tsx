@@ -350,7 +350,7 @@ export function Settings({
   };
 
   return (
-    <div className="page-enter" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 980 }}>
+    <div className="page-enter settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 980 }}>
       <div className="tq-card" style={{ padding: 24 }}>
         <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 18px' }}>{t('settings.general')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: isAdmin ? 'none' : '1px solid var(--warm-border)' }}>

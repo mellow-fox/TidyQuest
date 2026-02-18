@@ -20,7 +20,7 @@ export function History({ language }: { language?: string }) {
 
   return (
     <div className="page-enter" style={{ maxWidth: 750 }}>
-      <div className="tq-card" style={{ padding: 22 }}>
+      <div className="tq-card history-table" style={{ padding: 22 }}>
         <div style={{
           display: 'grid', gridTemplateColumns: '44px 1fr 120px 100px 80px',
           gap: 12, padding: '0 8px 14px', borderBottom: '1.5px solid #F0E6D9',
