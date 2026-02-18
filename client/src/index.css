@@ -260,7 +260,6 @@ html[data-theme='night'] option {
   .tq-card {
     border-radius: 14px;
     border-width: 1px;
-    padding: 16px !important;
   }
 
   .tq-btn {
@@ -313,13 +312,32 @@ html[data-theme='night'] option {
     display: none !important;
   }
 
-  /* Activity/History table - make it scroll horizontally on mobile */
-  .history-table {
+  /* Dashboard: 3 columns -> 1 column */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Activity: scrollable table inside card */
+  .history-table-scroll {
     overflow-x: auto;
   }
 
-  .history-table > div {
-    min-width: 600px;
+  .history-table-scroll > div {
+    min-width: 560px;
+  }
+
+  /* Rooms task table: scrollable */
+  .room-table-scroll {
+    overflow-x: auto;
+  }
+
+  .room-table-scroll > div {
+    min-width: 580px;
+  }
+
+  /* Settings admin cards: scrollable inner content */
+  .settings-admin-card {
+    overflow-x: auto;
   }
 
   /* Make range inputs full width */

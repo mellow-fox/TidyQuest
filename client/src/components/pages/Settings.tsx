@@ -475,7 +475,7 @@ export function Settings({
       </div>
 
       {isAdmin && (
-        <div className="tq-card" style={{ padding: 24 }}>
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.coinsPerEffort')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.coinsPerEffortDesc')}</div>
           <div style={{ display: 'grid', gap: 8, marginBottom: 10 }}>
@@ -505,7 +505,7 @@ export function Settings({
       )}
 
       {isAdmin && (
-        <div className="tq-card" style={{ padding: 24 }}>
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.goalsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.goalsSectionDesc')}</div>
           <div style={{ display: 'grid', gap: 10 }}>
@@ -561,7 +561,7 @@ export function Settings({
       )}
 
       {isAdmin && (
-        <div className="tq-card" style={{ padding: 24 }}>
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.rewardsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.rewardsSectionDesc')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 100px auto auto', gap: 8, marginBottom: 10 }}>
@@ -623,7 +623,7 @@ export function Settings({
         ))}
       </div>
 
-      <div className="tq-card" style={{ padding: 24, gridColumn: '1 / -1' }}>
+      <div className="tq-card settings-admin-card" style={{ padding: 24, gridColumn: '1 / -1' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: 0 }}>{t('settings.familyMembers')}</h3>
           <button className="tq-btn tq-btn-primary" onClick={() => isAdmin && setShowAddMember(true)} disabled={!isAdmin} style={{ padding: '7px 18px', fontSize: 12, opacity: isAdmin ? 1 : 0.5 }}>

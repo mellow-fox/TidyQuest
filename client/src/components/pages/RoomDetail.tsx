@@ -225,6 +225,7 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
 
       {/* Task Table */}
       <div className="tq-card" style={{ padding: 22 }}>
+        <div className="room-table-scroll">
         {/* Column Headers (sortable) */}
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 150px 100px 90px 160px',
@@ -394,6 +395,7 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
             )}
           </div>
         ))}
+        </div>{/* end room-table-scroll */}
 
         {/* Add Task */}
         {isAdmin && showAddTask ? (

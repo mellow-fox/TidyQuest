@@ -129,6 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div
+      className="dashboard-grid"
       style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr 310px',
