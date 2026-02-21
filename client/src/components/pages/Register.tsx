@@ -10,9 +10,9 @@ interface RegisterProps {
 export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
   const initialLang = (() => {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('tidyquest_auth_lang') : null;
-    if (saved && ['en', 'fr', 'de', 'es'].includes(saved)) return saved;
+    if (saved && ['en', 'fr', 'de', 'es', 'it'].includes(saved)) return saved;
     const browser = typeof navigator !== 'undefined' ? navigator.language.slice(0, 2) : 'en';
-    return ['en', 'fr', 'de', 'es'].includes(browser) ? browser : 'en';
+    return ['en', 'fr', 'de', 'es', 'it'].includes(browser) ? browser : 'en';
   })();
   const [authLanguage, setAuthLanguage] = useState(initialLang);
   const { t } = useTranslation(authLanguage);
@@ -51,7 +51,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       backgroundColor: '#FFF9F2',
     }}>
-      <div className="tq-card" style={{ padding: 40, width: 400 }}>
+      <div className="tq-card auth-card" style={{ padding: 40, width: 400, maxWidth: 'calc(100vw - 24px)' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
             width: 56, height: 56, borderRadius: 18, margin: '0 auto 14px',
@@ -79,6 +79,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
             <option value="fr">Français</option>
             <option value="de">Deutsch</option>
             <option value="es">Español</option>
+            <option value="it">Italiano</option>
           </select>
         </div>
 

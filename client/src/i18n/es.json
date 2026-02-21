@@ -152,6 +152,8 @@
       "themeNight": "Noche",
       "vacationMode": "Modo vacaciones",
       "vacationDesc": "Pausar todos los recordatorios de tareas mientras estás fuera",
+      "registrationEnabled": "Permitir nuevos registros",
+      "registrationEnabledDesc": "Si está desactivado, no se pueden crear nuevas cuentas desde la página de registro.",
       "adminRequired": "Se requiere un padre administrador para cambiar ajustes.",
       "data": "Datos",
       "dataPrivacy": "Datos y privacidad",
@@ -298,14 +300,38 @@
       "statusCancelled": "Cancelada"
     },
     "rewardsPreset": {
-      "movie_night": { "title": "Elegir película", "desc": "Escoger la película familiar de esta noche." },
-      "ice_cream": { "title": "Premio helado", "desc": "Tomar un helado o postre especial." },
-      "late_bedtime": { "title": "Dormir +30 min", "desc": "Acostarse 30 minutos más tarde." },
-      "game_bonus": { "title": "Bonus de juego", "desc": "30 minutos extra de tiempo de juego." },
-      "choose_dinner": { "title": "Elegir cena", "desc": "Decidir qué se cena hoy." },
-      "park_adventure": { "title": "Aventura en parque", "desc": "Salida especial al parque en familia." },
-      "chore_pass": { "title": "Pase sin tarea", "desc": "Saltar una tarea esta semana." },
-      "board_game": { "title": "Juego de mesa familiar", "desc": "Elegir el juego de mesa de la noche." }
+      "movie_night": {
+        "title": "Elegir película",
+        "desc": "Escoger la película familiar de esta noche."
+      },
+      "ice_cream": {
+        "title": "Premio helado",
+        "desc": "Tomar un helado o postre especial."
+      },
+      "late_bedtime": {
+        "title": "Dormir +30 min",
+        "desc": "Acostarse 30 minutos más tarde."
+      },
+      "game_bonus": {
+        "title": "Bonus de juego",
+        "desc": "30 minutos extra de tiempo de juego."
+      },
+      "choose_dinner": {
+        "title": "Elegir cena",
+        "desc": "Decidir qué se cena hoy."
+      },
+      "park_adventure": {
+        "title": "Aventura en parque",
+        "desc": "Salida especial al parque en familia."
+      },
+      "chore_pass": {
+        "title": "Pase sin tarea",
+        "desc": "Saltar una tarea esta semana."
+      },
+      "board_game": {
+        "title": "Juego de mesa familiar",
+        "desc": "Elegir el juego de mesa de la noche."
+      }
     },
     "history": {
       "task": "Tarea",
@@ -330,7 +356,8 @@
       "done": "Hecho",
       "seasonal": "Estacional",
       "taskName": "Nombre de la tarea...",
-      "addTask": "Añadir tarea"
+      "addTask": "Añadir tarea",
+      "icon": "Icono"
     },
     "avatars": {
       "cat": "Gato",
@@ -398,7 +425,8 @@
       "createRoom": "Crear habitación",
       "roomNotFound": "Habitación no encontrada.",
       "backToRooms": "Volver a habitaciones",
-      "tasksTracked": "tareas seguidas"
+      "tasksTracked": "tareas seguidas",
+      "icon": "Icono"
     },
     "common": {
       "save": "Guardar",
@@ -507,6 +535,65 @@
       "perfectMonthDesc": "Consigue 4 semanas perfectas",
       "nightOwl": "Planificador Nocturno",
       "nightOwlDesc": "Alcanza una racha de 60 días"
+    },
+    "taskIcons": {
+      "sparkle": "Brillo",
+      "dishes": "Vajilla",
+      "sink": "Fregadero",
+      "stove": "Cocina",
+      "counter": "Encimera",
+      "fridge": "Nevera",
+      "oven": "Horno",
+      "microwave": "Microondas",
+      "kettle": "Hervidor",
+      "rangehood": "Campana",
+      "pantry": "Despensa",
+      "cabinet": "Armario",
+      "bed": "Cama",
+      "pillow": "Almohada",
+      "sheets": "Sábanas",
+      "mattress": "Colchón",
+      "nightstand": "Mesita",
+      "toilet": "Inodoro",
+      "shower": "Ducha",
+      "mirror": "Espejo",
+      "towel": "Toalla",
+      "drain": "Desagüe",
+      "bathmat": "Alfombrilla de baño",
+      "showerhead": "Alcachofa",
+      "toothbrush": "Cepillo de dientes",
+      "grout": "Juntas",
+      "vacuum": "Aspiradora",
+      "mop": "Fregona",
+      "dust": "Polvo",
+      "sweep": "Escoba",
+      "window": "Ventana",
+      "curtain": "Cortina",
+      "lightswitch": "Interruptor",
+      "sofa": "Sofá",
+      "tv": "TV",
+      "lamp": "Lámpara",
+      "furniture": "Mueble",
+      "rug": "Alfombra",
+      "desk": "Escritorio",
+      "keyboard": "Teclado",
+      "monitor": "Monitor",
+      "cable": "Cable",
+      "chair": "Silla",
+      "trash": "Basura",
+      "broom": "Escoba",
+      "washer": "Lavadora",
+      "dryer": "Secadora",
+      "detergent": "Detergente",
+      "iron": "Plancha",
+      "clothes": "Ropa",
+      "tools": "Herramientas",
+      "cobweb": "Telaraña",
+      "chemicals": "Químicos",
+      "garagedoor": "Puerta de garaje",
+      "shelf": "Estante",
+      "drawer": "Cajón",
+      "closet": "Armario"
     }
   }
 }

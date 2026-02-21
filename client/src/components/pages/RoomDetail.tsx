@@ -206,7 +206,7 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
   return (
     <div className="page-enter">
       {/* Header */}
-      <div className="tq-card" style={{
+      <div className="tq-card room-detail-hero" style={{
         padding: 28, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 28,
         background: `linear-gradient(135deg, ${room.color}88, ${room.color}33)`,
         borderColor: `${room.accentColor}44`,
@@ -225,8 +225,9 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
 
       {/* Task Table */}
       <div className="tq-card" style={{ padding: 22 }}>
+        <div className="room-table-scroll room-detail-scroll">
         {/* Column Headers (sortable) */}
-        <div style={{
+        <div className="room-table-header" style={{
           display: 'grid', gridTemplateColumns: '1fr 150px 100px 90px 160px',
           gap: 12, padding: '0 8px 14px', borderBottom: '1.5px solid var(--warm-border)',
           fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1,
@@ -270,7 +271,7 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                       }}
                     />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                  <div className="task-edit-form" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-light)' }}>{t('roomDetail.every')}</label>
                       <FrequencyPicker value={editForm.freqValue} unit={editForm.freqUnit}
@@ -305,14 +306,14 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--warm-text-light)', minWidth: 58 }}>Icon</label>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--warm-text-light)', minWidth: 58 }}>{t('roomDetail.icon')}</label>
                     <select
                       value={editForm.iconKey}
                       onChange={(e) => setEditForm((f) => ({ ...f, iconKey: e.target.value }))}
                       style={{ padding: '5px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', fontSize: 11 }}
                     >
                       {TASK_ICON_OPTIONS.map((opt) => (
-                        <option key={opt.key} value={opt.key}>{opt.label}</option>
+                        <option key={opt.key} value={opt.key}>{t(`taskIcons.${opt.key}`)}</option>
                       ))}
                     </select>
                   </div>
@@ -333,14 +334,14 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                 </div>
               </div>
             ) : (
-              <div style={{
+              <div className="room-task-row" style={{
                 display: 'grid', gridTemplateColumns: '1fr 150px 100px 90px 160px',
                 gap: 12, padding: '16px 8px', alignItems: 'center',
                 borderBottom: '1px solid var(--warm-border-subtle)',
                 backgroundColor: animatedTask === task.id ? 'var(--health-green-bg)' : 'transparent',
                 transition: 'all 0.3s ease', borderRadius: 12,
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="room-task-main" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{
                     width: 34, height: 34, borderRadius: 11,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -365,10 +366,10 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                     </div>
                   </div>
                 </div>
-                <HealthBar value={animatedTask === task.id ? 100 : task.health} height={8} animate={animatedTask === task.id} />
-                <div style={{ fontSize: 13, color: 'var(--warm-text-secondary)', fontWeight: 600 }}>{t('roomDetail.every')} {formatFreq(task.frequencyDays, t)}</div>
-                <EffortDots effort={task.effort} />
-                <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                <div className="room-task-health"><HealthBar value={animatedTask === task.id ? 100 : task.health} height={8} animate={animatedTask === task.id} /></div>
+                <div className="room-task-frequency" style={{ fontSize: 13, color: 'var(--warm-text-secondary)', fontWeight: 600 }}>{t('roomDetail.every')} {formatFreq(task.frequencyDays, t)}</div>
+                <div className="room-task-effort"><EffortDots effort={task.effort} /></div>
+                <div className="room-task-actions" style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
                   {isAdmin && (
                     <>
                       <button onClick={() => startEdit(task)}
@@ -394,6 +395,7 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
             )}
           </div>
         ))}
+        </div>{/* end room-table-scroll */}
 
         {/* Add Task */}
         {isAdmin && showAddTask ? (
@@ -426,7 +428,7 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                     outline: 'none', backgroundColor: 'var(--warm-bg-input)', resize: 'vertical',
                   }} />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              <div className="task-add-form" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-light)' }}>{t('roomDetail.every')}</label>
                   <FrequencyPicker value={newFreqValue} unit={newFreqUnit}
@@ -461,14 +463,14 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--warm-text-light)', minWidth: 58 }}>Icon</label>
+                <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--warm-text-light)', minWidth: 58 }}>{t('roomDetail.icon')}</label>
                 <select
                   value={newTaskIconKey}
                   onChange={(e) => setNewTaskIconKey(e.target.value)}
                   style={{ padding: '5px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', fontSize: 11 }}
                 >
                   {TASK_ICON_OPTIONS.map((opt) => (
-                    <option key={opt.key} value={opt.key}>{opt.label}</option>
+                    <option key={opt.key} value={opt.key}>{t(`taskIcons.${opt.key}`)}</option>
                   ))}
                 </select>
               </div>

@@ -152,6 +152,8 @@
       "themeNight": "Night",
       "vacationMode": "Vacation Mode",
       "vacationDesc": "Pause all task reminders while you're away",
+      "registrationEnabled": "Allow New Registrations",
+      "registrationEnabledDesc": "When disabled, no new accounts can be created from the registration page.",
       "adminRequired": "Parent admin required to change settings.",
       "data": "Data",
       "dataPrivacy": "Data & Privacy",
@@ -298,14 +300,38 @@
       "statusCancelled": "Cancelled"
     },
     "rewardsPreset": {
-      "movie_night": { "title": "Movie Night Pick", "desc": "Choose tonight's family movie." },
-      "ice_cream": { "title": "Ice Cream Treat", "desc": "Get an ice cream or special dessert." },
-      "late_bedtime": { "title": "Stay Up 30 Min", "desc": "Go to bed 30 minutes later." },
-      "game_bonus": { "title": "Game Time Bonus", "desc": "Get 30 extra minutes of game time." },
-      "choose_dinner": { "title": "Choose Dinner", "desc": "Pick what the family eats tonight." },
-      "park_adventure": { "title": "Park Adventure", "desc": "Special family park outing." },
-      "chore_pass": { "title": "No-Chore Pass", "desc": "Skip one chore this week." },
-      "board_game": { "title": "Family Board Game", "desc": "Pick the board game for family night." }
+      "movie_night": {
+        "title": "Movie Night Pick",
+        "desc": "Choose tonight's family movie."
+      },
+      "ice_cream": {
+        "title": "Ice Cream Treat",
+        "desc": "Get an ice cream or special dessert."
+      },
+      "late_bedtime": {
+        "title": "Stay Up 30 Min",
+        "desc": "Go to bed 30 minutes later."
+      },
+      "game_bonus": {
+        "title": "Game Time Bonus",
+        "desc": "Get 30 extra minutes of game time."
+      },
+      "choose_dinner": {
+        "title": "Choose Dinner",
+        "desc": "Pick what the family eats tonight."
+      },
+      "park_adventure": {
+        "title": "Park Adventure",
+        "desc": "Special family park outing."
+      },
+      "chore_pass": {
+        "title": "No-Chore Pass",
+        "desc": "Skip one chore this week."
+      },
+      "board_game": {
+        "title": "Family Board Game",
+        "desc": "Pick the board game for family night."
+      }
     },
     "history": {
       "task": "Task",
@@ -330,7 +356,8 @@
       "done": "Done",
       "seasonal": "Seasonal",
       "taskName": "Task name...",
-      "addTask": "Add Task"
+      "addTask": "Add Task",
+      "icon": "Icon"
     },
     "avatars": {
       "cat": "Cat",
@@ -398,7 +425,8 @@
       "createRoom": "Create Room",
       "roomNotFound": "Room not found.",
       "backToRooms": "Back to Rooms",
-      "tasksTracked": "tasks tracked"
+      "tasksTracked": "tasks tracked",
+      "icon": "Icon"
     },
     "common": {
       "save": "Save",
@@ -507,6 +535,65 @@
       "perfectMonthDesc": "Have 4 perfect weeks",
       "nightOwl": "Night Owl Planner",
       "nightOwlDesc": "Reach a 60-day streak"
+    },
+    "taskIcons": {
+      "sparkle": "Sparkle",
+      "dishes": "Dishes",
+      "sink": "Sink",
+      "stove": "Stove",
+      "counter": "Counter",
+      "fridge": "Fridge",
+      "oven": "Oven",
+      "microwave": "Microwave",
+      "kettle": "Kettle",
+      "rangehood": "Range Hood",
+      "pantry": "Pantry",
+      "cabinet": "Cabinet",
+      "bed": "Bed",
+      "pillow": "Pillow",
+      "sheets": "Sheets",
+      "mattress": "Mattress",
+      "nightstand": "Nightstand",
+      "toilet": "Toilet",
+      "shower": "Shower",
+      "mirror": "Mirror",
+      "towel": "Towel",
+      "drain": "Drain",
+      "bathmat": "Bath Mat",
+      "showerhead": "Showerhead",
+      "toothbrush": "Toothbrush",
+      "grout": "Grout",
+      "vacuum": "Vacuum",
+      "mop": "Mop",
+      "dust": "Dust",
+      "sweep": "Sweep",
+      "window": "Window",
+      "curtain": "Curtain",
+      "lightswitch": "Switch",
+      "sofa": "Sofa",
+      "tv": "TV",
+      "lamp": "Lamp",
+      "furniture": "Furniture",
+      "rug": "Rug",
+      "desk": "Desk",
+      "keyboard": "Keyboard",
+      "monitor": "Monitor",
+      "cable": "Cable",
+      "chair": "Chair",
+      "trash": "Trash",
+      "broom": "Broom",
+      "washer": "Washer",
+      "dryer": "Dryer",
+      "detergent": "Detergent",
+      "iron": "Iron",
+      "clothes": "Clothes",
+      "tools": "Tools",
+      "cobweb": "Cobweb",
+      "chemicals": "Chemicals",
+      "garagedoor": "Garage",
+      "shelf": "Shelf",
+      "drawer": "Drawer",
+      "closet": "Closet"
     }
   }
 }

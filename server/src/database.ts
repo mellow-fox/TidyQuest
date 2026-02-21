@@ -124,6 +124,16 @@ export function initDatabase() {
 
   `);
 
+  // Indexes for frequently queried columns
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_tasks_roomId ON tasks(roomId);
+    CREATE INDEX IF NOT EXISTS idx_task_completions_userId ON task_completions(userId);
+    CREATE INDEX IF NOT EXISTS idx_task_completions_taskId ON task_completions(taskId);
+    CREATE INDEX IF NOT EXISTS idx_task_completions_completedAt ON task_completions(completedAt);
+    CREATE INDEX IF NOT EXISTS idx_reward_redemptions_userId ON reward_redemptions(userId);
+    CREATE INDEX IF NOT EXISTS idx_reward_redemptions_status ON reward_redemptions(status);
+  `);
+
   // Migrations: add new columns idempotently
   const migrations = [
     `ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'child'`,
@@ -269,23 +279,26 @@ export function initDatabase() {
   });
   fillIcons();
 
-  // Reclassify all task icons using the updated suggestTaskIcon mapping.
-  // Old icon keys (kitchen, box, office, bath, laundry) have been replaced with specific icons.
-  const OLD_ICON_KEYS = new Set(['sparkle', 'broom', 'box', 'tools', 'kitchen', 'bath', 'office', 'laundry', 'cobweb', 'sofa', 'rug', 'bed', 'window', 'trash']);
-  const maybeReclassify = db.prepare('SELECT id, name, translationKey, iconKey FROM tasks').all() as Array<{
-    id: number; name: string; translationKey?: string | null; iconKey?: string | null;
-  }>;
-  const refreshIcons = db.transaction(() => {
-    const setById = db.prepare('UPDATE tasks SET iconKey = ? WHERE id = ?');
-    for (const t of maybeReclassify) {
-      const suggested = suggestTaskIcon(t.name, t.translationKey || null);
-      const current = (t.iconKey || '').toLowerCase();
-      if (!current || OLD_ICON_KEYS.has(current)) {
-        if (suggested !== (t.iconKey || '')) setById.run(suggested, t.id);
+  // Reclassify task icons once (guard via app_settings flag to avoid running on every startup)
+  const iconsMigrated = (db.prepare("SELECT value FROM app_settings WHERE key = 'iconsMigrated_v2'").get() as { value: string } | undefined)?.value;
+  if (iconsMigrated !== '1') {
+    const OLD_ICON_KEYS = new Set(['sparkle', 'broom', 'box', 'tools', 'kitchen', 'bath', 'office', 'laundry', 'cobweb', 'sofa', 'rug', 'bed', 'window', 'trash']);
+    const maybeReclassify = db.prepare('SELECT id, name, translationKey, iconKey FROM tasks').all() as Array<{
+      id: number; name: string; translationKey?: string | null; iconKey?: string | null;
+    }>;
+    const refreshIcons = db.transaction(() => {
+      const setById = db.prepare('UPDATE tasks SET iconKey = ? WHERE id = ?');
+      for (const t of maybeReclassify) {
+        const suggested = suggestTaskIcon(t.name, t.translationKey || null);
+        const current = (t.iconKey || '').toLowerCase();
+        if (!current || OLD_ICON_KEYS.has(current)) {
+          if (suggested !== (t.iconKey || '')) setById.run(suggested, t.id);
+        }
       }
-    }
-  });
-  refreshIcons();
+    });
+    refreshIcons();
+    db.prepare("INSERT OR REPLACE INTO app_settings (key, value) VALUES ('iconsMigrated_v2', '1')").run();
+  }
 
   // Default configurable coins mapping by effort
   db.prepare(
@@ -306,6 +319,9 @@ export function initDatabase() {
   db.prepare(
     "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('telegramNotificationTypes', ?)"
   ).run(JSON.stringify({ taskDue: true, rewardRequest: true, achievementUnlocked: true }));
+  db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('registrationEnabled', '1')"
+  ).run();
 
   const rewardCount = (db.prepare('SELECT COUNT(*) as count FROM rewards').get() as { count: number }).count;
   if (rewardCount === 0) {

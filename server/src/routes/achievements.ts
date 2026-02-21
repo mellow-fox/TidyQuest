@@ -13,11 +13,17 @@ function getUserStats(userId: number) {
 
   const completionsRow = db.prepare('SELECT COUNT(*) as count FROM task_completions WHERE userId = ?').get(userId) as { count: number };
 
-  // Rooms with health >= 70 (considered "clean")
+  // Rooms with health >= 70 (considered "clean") — fetch all tasks in one query
   const rooms = db.prepare('SELECT * FROM rooms').all() as any[];
+  const allRoomTasks = db.prepare('SELECT * FROM tasks').all() as any[];
+  const tasksByRoom = new Map<number, any[]>();
+  for (const t of allRoomTasks) {
+    if (!tasksByRoom.has(t.roomId)) tasksByRoom.set(t.roomId, []);
+    tasksByRoom.get(t.roomId)!.push(t);
+  }
   let roomsClean = 0;
   for (const room of rooms) {
-    const tasks = db.prepare('SELECT * FROM tasks WHERE roomId = ?').all(room.id) as any[];
+    const tasks = tasksByRoom.get(room.id) || [];
     if (tasks.length === 0) continue;
     const nonSeasonal = tasks.filter((t: any) => !t.isSeasonal);
     const forAvg = nonSeasonal.length > 0 ? nonSeasonal : tasks;

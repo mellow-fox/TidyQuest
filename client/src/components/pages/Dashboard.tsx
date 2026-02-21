@@ -108,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const { taskName, roomDisplayName, timeAgo, t } = useTranslation(language);
   const { houseHealth, rooms, todaysQuests, nextTasks, myGoal, childrenGoals = [], pendingRewardRequests = [], currentUser, recentActivity } = data;
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES' };
+  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
   const locale = localeMap[language || 'en'] || 'en-US';
 
   const sortedRooms = [...rooms].sort((a, b) => a.health - b.health);
@@ -129,6 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div
+      className="dashboard-grid"
       style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr 310px',

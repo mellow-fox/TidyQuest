@@ -14,9 +14,17 @@ router.get('/', (req: AuthRequest, res: Response) => {
   const rooms = db.prepare('SELECT * FROM rooms ORDER BY sortOrder, id').all() as any[];
   const allTasks: any[] = [];
 
+  // Fetch all tasks in one query and group by roomId to avoid N+1
+  const dbTasks = db.prepare('SELECT * FROM tasks').all() as any[];
+  const tasksByRoom = new Map<number, any[]>();
+  for (const t of dbTasks) {
+    if (!tasksByRoom.has(t.roomId)) tasksByRoom.set(t.roomId, []);
+    tasksByRoom.get(t.roomId)!.push(t);
+  }
+
   const nowTs = Date.now();
   const roomsWithHealth = rooms.map((room) => {
-    const tasks = db.prepare('SELECT * FROM tasks WHERE roomId = ?').all(room.id) as any[];
+    const tasks = tasksByRoom.get(room.id) || [];
     const tasksWithHealth = tasks.map((t) => {
       const health = calculateHealth(t.lastCompletedAt, t.frequencyDays, !!user.isVacationMode, user.vacationStartDate);
       const safeFreq = Math.max(1 / 24, Number(t.frequencyDays) || 7);

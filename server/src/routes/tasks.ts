@@ -1,28 +1,13 @@
 import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
-import { calculateHealth, getCoinsForEffort, DEFAULT_COINS_BY_EFFORT, normalizeCoinsByEffortConfig } from '../utils/health';
+import { calculateHealth, getCoinsForEffort } from '../utils/health';
 import { suggestTaskIcon } from '../utils/taskIcons';
 import { notifyAchievementUnlocksForUser } from '../utils/achievementNotifications';
+import { ensureAdmin, getCoinsByEffortConfig } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
-
-function ensureAdmin(userId: number | undefined): boolean {
-  if (!userId) return false;
-  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(userId) as { role: string } | undefined;
-  return user?.role === 'admin';
-}
-
-function getCoinsByEffortConfig(): Record<number, number> {
-  const row = db.prepare("SELECT value FROM app_settings WHERE key = 'coinsByEffort'").get() as { value?: string } | undefined;
-  if (!row?.value) return DEFAULT_COINS_BY_EFFORT;
-  try {
-    return normalizeCoinsByEffortConfig(JSON.parse(row.value));
-  } catch {
-    return DEFAULT_COINS_BY_EFFORT;
-  }
-}
 
 function hadDueTaskOnDate(dateIsoDay: string, user: any): boolean {
   const endOfDay = new Date(`${dateIsoDay}T23:59:59.999Z`).getTime();
@@ -138,11 +123,11 @@ router.delete('/tasks/:id', (req: AuthRequest, res: Response) => {
 
 // Complete task
 router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
-  const { completedAt } = req.body;
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id) as any;
   if (!task) return res.status(404).json({ error: 'Task not found' });
 
-  const now = completedAt || new Date().toISOString();
+  // Always use server timestamp — never trust client-supplied completedAt
+  const now = new Date().toISOString();
   const coins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
 
   // Update task lastCompletedAt

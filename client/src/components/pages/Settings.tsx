@@ -84,6 +84,7 @@ export function Settings({
   }>>({});
   const [memberProfileMsg, setMemberProfileMsg] = useState<Record<number, string>>({});
   const [memberGoalMsg, setMemberGoalMsg] = useState<Record<number, string>>({});
+  const [registrationEnabled, setRegistrationEnabled] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifChatId, setNotifChatId] = useState('');
   const [notifToken, setNotifToken] = useState('');
@@ -92,7 +93,7 @@ export function Settings({
   const [notifHasToken, setNotifHasToken] = useState(false);
   const [notifMsg, setNotifMsg] = useState('');
 
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES' };
+  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
   const locale = localeMap[user.language || 'en'] || 'en-US';
 
   const formatDate = (isoDate?: string | null): string => {
@@ -136,6 +137,13 @@ export function Settings({
   useEffect(() => {
     setCoinsDraft(coinsByEffort);
   }, [coinsByEffort]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    api.getRegistrationConfig()
+      .then((cfg) => setRegistrationEnabled(cfg.registrationEnabled))
+      .catch(() => {});
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -350,7 +358,7 @@ export function Settings({
   };
 
   return (
-    <div className="page-enter" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 980 }}>
+    <div className="page-enter settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 980 }}>
       <div className="tq-card" style={{ padding: 24 }}>
         <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 18px' }}>{t('settings.general')}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: isAdmin ? 'none' : '1px solid var(--warm-border)' }}>
@@ -467,6 +475,26 @@ export function Settings({
           </div>
           <Toggle checked={!!user.isVacationMode} onChange={isAdmin ? onToggleVacation : () => {}} />
         </div>
+        {isAdmin && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4zm0 1.5A2.5 2.5 0 0 0 7.5 6v1h5V6A2.5 2.5 0 0 0 10 3.5z" fill="#B0A090" />
+            </svg>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.registrationEnabled')}</div>
+              <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.registrationEnabledDesc')}</div>
+            </div>
+            <Toggle
+              checked={registrationEnabled}
+              onChange={async (val) => {
+                setRegistrationEnabled(val);
+                await api.updateRegistrationConfig({ registrationEnabled: val }).catch(() => {
+                  setRegistrationEnabled(!val);
+                });
+              }}
+            />
+          </div>
+        )}
         {!isAdmin && (
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>
             {t('settings.adminRequired')}
@@ -475,18 +503,18 @@ export function Settings({
       </div>
 
       {isAdmin && (
-        <div className="tq-card" style={{ padding: 24 }}>
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.coinsPerEffort')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.coinsPerEffortDesc')}</div>
           <div style={{ display: 'grid', gap: 8, marginBottom: 10 }}>
             {[1, 2, 3, 4, 5].map((e) => (
-              <div key={e} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 130px', alignItems: 'center', gap: 10, backgroundColor: 'var(--warm-bg-subtle)', border: '1.5px solid var(--warm-border)', borderRadius: 12, padding: '8px 10px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>{t('roomDetail.effort')} {e}</div>
-                <EffortDots effort={e} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <CoinIcon />
-                  <input
-                    type="number"
+                <div key={e} className="coins-effort-row" style={{ display: 'grid', gridTemplateColumns: '120px 1fr 130px', alignItems: 'center', gap: 10, backgroundColor: 'var(--warm-bg-subtle)', border: '1.5px solid var(--warm-border)', borderRadius: 12, padding: '8px 10px' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>{t('roomDetail.effort')} {e}</div>
+                  <div className="coins-effort-dots"><EffortDots effort={e} /></div>
+                  <div className="coins-effort-value" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <CoinIcon />
+                    <input
+                      type="number"
                     min={0}
                     value={coinsDraft[e] ?? coinsByEffort[e] ?? e * 5}
                     onChange={(ev) => setCoinsDraft((prev) => ({ ...prev, [e]: Math.max(0, parseInt(ev.target.value || '0', 10)) }))}
@@ -505,7 +533,7 @@ export function Settings({
       )}
 
       {isAdmin && (
-        <div className="tq-card" style={{ padding: 24 }}>
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.goalsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.goalsSectionDesc')}</div>
           <div style={{ display: 'grid', gap: 10 }}>
@@ -516,7 +544,7 @@ export function Settings({
                   <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text)', marginBottom: 8 }}>{u.displayName}</div>
                   <div style={{ display: 'grid', gap: 6, marginBottom: 8 }}>
                     {(memberGoals[u.id] || []).map((g) => (
-                      <div key={g.id} style={{ display: 'grid', gridTemplateColumns: '1.4fr 120px 120px auto', gap: 8, alignItems: 'center', padding: '6px 8px', borderRadius: 10, backgroundColor: 'var(--warm-bg-warm)', border: '1px solid var(--warm-border)' }}>
+                      <div key={g.id} className="goal-member-row" style={{ display: 'grid', gridTemplateColumns: '1.4fr 120px 120px auto', gap: 8, alignItems: 'center', padding: '6px 8px', borderRadius: 10, backgroundColor: 'var(--warm-bg-warm)', border: '1px solid var(--warm-border)' }}>
                         <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--warm-text)' }}>{g.title}</div>
                         <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--warm-accent)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}><CoinIcon /> {g.goalCoins}</div>
                         <div style={{ fontSize: 10, color: 'var(--warm-text-light)', fontWeight: 700 }}>{formatDate(g.endAt)}</div>
@@ -529,7 +557,7 @@ export function Settings({
                   {memberGoalMsg[u.id] && (
                     <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberGoalMsg[u.id]}</div>
                   )}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 100px 130px auto', gap: 8 }}>
+                  <div className="goal-member-form" style={{ display: 'grid', gridTemplateColumns: '1.4fr 100px 130px auto', gap: 8 }}>
                     <input
                       value={goalDraft[u.id]?.title || ''}
                       onChange={(e) => setGoalDraft((prev) => ({ ...prev, [u.id]: { ...(prev[u.id] || { title: '', goalCoins: '', endAt: '' }), title: e.target.value } }))}
@@ -546,11 +574,12 @@ export function Settings({
                     />
                     <input
                       type="date"
+                      className="goal-member-end-date"
                       value={goalDraft[u.id]?.endAt || ''}
                       onChange={(e) => setGoalDraft((prev) => ({ ...prev, [u.id]: { ...(prev[u.id] || { title: '', goalCoins: '', endAt: '' }), endAt: e.target.value } }))}
                       title={t('settings.goalEnd')}
                       lang={locale}
-                      style={{ minWidth: 130, padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
+                      style={{ minWidth: 0, padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
                     />
                     <button className="tq-btn tq-btn-secondary" onClick={() => handleAddGoal(u)} style={{ padding: '6px 10px', fontSize: 11 }}>{t('settings.addGoal')}</button>
                   </div>
@@ -561,10 +590,10 @@ export function Settings({
       )}
 
       {isAdmin && (
-        <div className="tq-card" style={{ padding: 24 }}>
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.rewardsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.rewardsSectionDesc')}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 100px auto auto', gap: 8, marginBottom: 10 }}>
+          <div className="rewards-add-form" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 100px auto auto', gap: 8, marginBottom: 10 }}>
             <input value={rewardDraft.title} onChange={(e) => setRewardDraft((p) => ({ ...p, title: e.target.value }))} placeholder={t('settings.rewardTitle')} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
             <input value={rewardDraft.description} onChange={(e) => setRewardDraft((p) => ({ ...p, description: e.target.value }))} placeholder={t('settings.rewardDesc')} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
             <input type="number" min={1} value={rewardDraft.costCoins} onChange={(e) => setRewardDraft((p) => ({ ...p, costCoins: e.target.value }))} placeholder={t('settings.rewardCost')} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
@@ -573,7 +602,7 @@ export function Settings({
           </div>
           <div style={{ display: 'grid', gap: 6 }}>
             {rewardsAdmin.map((r) => (
-              <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 80px auto', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: r.isActive ? 'var(--warm-bg-subtle)' : 'var(--warm-bg-warm)' }}>
+              <div key={r.id} className="rewards-list-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 80px auto', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: r.isActive ? 'var(--warm-bg-subtle)' : 'var(--warm-bg-warm)' }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text)' }}>{rewardTitle(r)}</div>
                 <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{rewardDesc(r)}</div>
                 <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-accent)', display: 'flex', alignItems: 'center', gap: 4 }}><CoinIcon /> {r.costCoins}</div>
@@ -585,7 +614,7 @@ export function Settings({
             <h4 style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 800, color: 'var(--warm-text)' }}>{t('settings.rewardRequests')}</h4>
             <div style={{ display: 'grid', gap: 6 }}>
               {rewardRequests.map((rr) => (
-                <div key={rr.id} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 90px 110px 130px', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: 'var(--warm-bg-subtle)' }}>
+                <div key={rr.id} className="rewards-requests-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 90px 110px 130px', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: 'var(--warm-bg-subtle)' }}>
                   <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text)' }}>{rr.displayName}</div>
                   <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{rewardTitle(rr)}</div>
                   <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--warm-accent)', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}><CoinIcon /> {rr.costCoins}</div>
@@ -623,8 +652,8 @@ export function Settings({
         ))}
       </div>
 
-      <div className="tq-card" style={{ padding: 24, gridColumn: '1 / -1' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+      <div className="tq-card settings-admin-card family-members-card" style={{ padding: 24, gridColumn: '1 / -1' }}>
+        <div className="family-members-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: 0 }}>{t('settings.familyMembers')}</h3>
           <button className="tq-btn tq-btn-primary" onClick={() => isAdmin && setShowAddMember(true)} disabled={!isAdmin} style={{ padding: '7px 18px', fontSize: 12, opacity: isAdmin ? 1 : 0.5 }}>
             + {t('settings.addMember')}
@@ -632,7 +661,7 @@ export function Settings({
         </div>
         {showAddMember && (
           <div style={{ marginBottom: 14, padding: 12, borderRadius: 12, backgroundColor: 'var(--warm-bg-warm)', border: '1.5px solid var(--warm-border)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto auto', gap: 8 }}>
+            <div className="family-members-add-form" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto auto', gap: 8 }}>
               <input value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} placeholder={t('settings.memberDisplayName')} style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
               <input value={newMemberUsername} onChange={(e) => setNewMemberUsername(e.target.value)} placeholder={t('settings.memberUsername')} style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
               <input value={newMemberPassword} onChange={(e) => setNewMemberPassword(e.target.value)} type="password" placeholder={t('settings.memberPassword')} style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
@@ -641,13 +670,13 @@ export function Settings({
             </div>
           </div>
         )}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+        <div className="family-members-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
           {family.map((u) => (
-            <div key={u.id} style={{ backgroundColor: 'var(--warm-bg-warm)', borderRadius: 16, border: '1.5px solid var(--warm-border)', padding: '14px 16px' }}>
+            <div key={u.id} className="family-member-card" style={{ backgroundColor: 'var(--warm-bg-warm)', borderRadius: 16, border: '1.5px solid var(--warm-border)', padding: '14px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <UserAvatar name={u.displayName} color={u.avatarColor} size={44} avatarType={u.avatarType as any} avatarPreset={u.avatarPreset} avatarPhotoUrl={u.avatarPhotoUrl} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div className="family-member-title-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)' }}>{u.displayName}</div>
                     <span style={{
                       fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5,
@@ -659,14 +688,14 @@ export function Settings({
                       {u.role === 'admin' ? t('settings.roleAdmin') : u.role === 'member' ? t('settings.roleMember') : t('settings.roleChild')}
                   </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <div className="family-member-stats" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
                     <span style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{u.coins} {t('settings.coins')}</span>
                     <span style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{u.currentStreak}d {t('settings.streak')}</span>
                   </div>
                 </div>
               </div>
               {isAdmin && u.id !== user.id && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <div className="family-member-actions" style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                   <select
                     value={u.role || 'member'}
                     onChange={(e) => onUpdateRole(u.id, e.target.value as 'admin' | 'member' | 'child')}
@@ -708,6 +737,7 @@ export function Settings({
                     <option value="fr">Français</option>
                     <option value="de">Deutsch</option>
                     <option value="es">Español</option>
+                    <option value="it">Italiano</option>
                   </select>
                   <select value={memberProfile[u.id]?.avatarType || 'letter'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarType: e.target.value as 'letter' | 'preset' } }))} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}>
                     <option value="letter">{t('profile.letterMode')}</option>
@@ -732,7 +762,7 @@ export function Settings({
                       <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberProfileMsg[u.id]}</div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="member-edit-password-row" style={{ display: 'flex', gap: 8 }}>
                     <input type="password" value={memberPassword[u.id] || ''} onChange={(e) => setMemberPassword((prev) => ({ ...prev, [u.id]: e.target.value }))} placeholder={t('settings.newPassword')} style={{ flex: 1, padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
                     <button className="tq-btn tq-btn-secondary" onClick={() => handleSetChildPassword(u)} style={{ padding: '6px 10px', fontSize: 11 }}>{t('settings.resetPassword')}</button>
                   </div>

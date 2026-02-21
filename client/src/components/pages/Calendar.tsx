@@ -9,7 +9,7 @@ interface CalendarProps {
 
 export function Calendar({ completions, tasks, language }: CalendarProps) {
   const { taskName, t, roomDisplayName } = useTranslation(language);
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES' };
+  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
   const locale = localeMap[language || 'en'] || 'en-US';
   const today = new Date();
   const year = today.getFullYear();
@@ -57,7 +57,7 @@ export function Calendar({ completions, tasks, language }: CalendarProps) {
   for (let d = 1; d <= daysInMonth; d++) calDays.push(d);
 
   return (
-    <div className="page-enter" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20 }}>
+    <div className="page-enter calendar-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20 }}>
       {/* Calendar Grid */}
       <div className="tq-card" style={{ padding: 28 }}>
         <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--warm-text)', textAlign: 'center', marginBottom: 20 }}>{monthName}</div>
@@ -107,7 +107,7 @@ export function Calendar({ completions, tasks, language }: CalendarProps) {
       </div>
 
       {/* Upcoming Due Dates */}
-      <div className="tq-card" style={{ padding: 20 }}>
+      <div className="tq-card calendar-sidebar" style={{ padding: 20 }}>
         <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 14px' }}>{t('calendar.upcomingDueDates')}</h3>
         {upcoming.slice(0, 8).map((item, i) => {
           return (

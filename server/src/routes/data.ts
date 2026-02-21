@@ -1,15 +1,10 @@
 import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import { ensureAdmin } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
-
-function ensureAdmin(userId: number | undefined): boolean {
-  if (!userId) return false;
-  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(userId) as { role: string } | undefined;
-  return user?.role === 'admin';
-}
 
 // Export all data as JSON
 router.get('/export', (req: AuthRequest, res: Response) => {
@@ -38,8 +33,8 @@ router.post('/import', (req: AuthRequest, res: Response) => {
 
   const { users, rooms, tasks, completions, settings, goals, rewards, rewardRedemptions } = req.body;
 
-  if (!users || !rooms || !tasks || !completions) {
-    return res.status(400).json({ error: 'Invalid backup format. Expected: users, rooms, tasks, completions' });
+  if (!Array.isArray(users) || !Array.isArray(rooms) || !Array.isArray(tasks) || !Array.isArray(completions)) {
+    return res.status(400).json({ error: 'Invalid backup format. Expected arrays: users, rooms, tasks, completions' });
   }
 
   const importData = db.transaction(() => {

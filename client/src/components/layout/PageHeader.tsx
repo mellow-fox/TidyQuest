@@ -12,7 +12,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, user, rightContent, onCoinsClick, onStreakClick }: PageHeaderProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+    <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
       <div>
         <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--warm-text)', margin: 0, letterSpacing: -0.5 }}>
           {title}
@@ -21,7 +21,7 @@ export function PageHeader({ title, subtitle, user, rightContent, onCoinsClick, 
           {subtitle}
         </p>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div className="page-header-actions" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         {rightContent}
         <div
           onClick={onStreakClick}
@@ -45,6 +45,15 @@ export function PageHeader({ title, subtitle, user, rightContent, onCoinsClick, 
         </div>
         <div
           onClick={onCoinsClick}
+          role={onCoinsClick ? 'button' : undefined}
+          tabIndex={onCoinsClick ? 0 : -1}
+          onKeyDown={(e) => {
+            if (!onCoinsClick) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onCoinsClick();
+            }
+          }}
           style={{
           display: 'flex', alignItems: 'center', gap: 6,
           backgroundColor: 'var(--warm-accent-light)', borderRadius: 14, padding: '8px 16px',

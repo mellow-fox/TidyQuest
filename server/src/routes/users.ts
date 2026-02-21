@@ -7,6 +7,7 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { DEFAULT_COINS_BY_EFFORT, normalizeCoinsByEffortConfig } from '../utils/health';
 import { NotificationTypeSettings, sendTelegramMessageDetailed } from '../utils/notifications';
+import { ensureAdmin, getCoinsByEffortConfig } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -41,12 +42,6 @@ function readNotificationTypesSetting(): NotificationTypeSettings {
   }
 }
 
-function ensureAdmin(userId: number | undefined): boolean {
-  if (!userId) return false;
-  const requester = db.prepare('SELECT id, role FROM users WHERE id = ?').get(userId) as any;
-  return !!requester && requester.role === 'admin';
-}
-
 function syncPrimaryGoal(userId: number) {
   const nowIso = new Date().toISOString();
   const primary = db.prepare(
@@ -70,16 +65,6 @@ function syncPrimaryGoal(userId: number) {
 
   db.prepare('UPDATE users SET goalCoins = ?, goalStartAt = ?, goalEndAt = ? WHERE id = ?')
     .run(primary.goalCoins, primary.startAt || null, primary.endAt || null, userId);
-}
-
-function getCoinsByEffortConfig(): Record<number, number> {
-  const row = db.prepare("SELECT value FROM app_settings WHERE key = 'coinsByEffort'").get() as { value?: string } | undefined;
-  if (!row?.value) return DEFAULT_COINS_BY_EFFORT;
-  try {
-    return normalizeCoinsByEffortConfig(JSON.parse(row.value));
-  } catch {
-    return DEFAULT_COINS_BY_EFFORT;
-  }
 }
 
 // Setup multer for avatar uploads
@@ -552,6 +537,29 @@ router.delete('/:id', (req: AuthRequest, res: Response) => {
 
   db.prepare('DELETE FROM users WHERE id = ?').run(targetId);
   res.json({ success: true });
+});
+
+router.get('/registration-config', authMiddleware, (req: AuthRequest, res: Response) => {
+  const row = db.prepare("SELECT value FROM app_settings WHERE key = 'registrationEnabled'").get() as { value: string } | undefined;
+  const registrationEnabled = row ? row.value !== '0' : true;
+  res.json({ registrationEnabled });
+});
+
+router.put('/registration-config', authMiddleware, (req: AuthRequest, res: Response) => {
+  const requestingUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId) as { role: string } | undefined;
+  if (!requestingUser || requestingUser.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const { registrationEnabled } = req.body;
+  if (typeof registrationEnabled !== 'boolean') {
+    return res.status(400).json({ error: 'registrationEnabled must be a boolean' });
+  }
+
+  db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'registrationEnabled'")
+    .run(registrationEnabled ? '1' : '0');
+
+  res.json({ registrationEnabled });
 });
 
 export default router;

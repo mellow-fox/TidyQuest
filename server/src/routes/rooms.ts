@@ -3,6 +3,7 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth } from '../utils/health';
 import { suggestTaskIcon } from '../utils/taskIcons';
+import { ensureAdmin } from '../utils/adminHelpers';
 
 const router = Router();
 
@@ -124,19 +125,21 @@ const DEFAULT_TASKS: Record<string, Array<{ name: string; frequencyDays: number;
 
 router.use(authMiddleware);
 
-function ensureAdmin(userId: number | undefined): boolean {
-  if (!userId) return false;
-  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(userId) as { role: string } | undefined;
-  return user?.role === 'admin';
-}
-
-// List all rooms with computed health
+// List all rooms with computed health (single JOIN query — no N+1)
 router.get('/', (req: AuthRequest, res: Response) => {
   const rooms = db.prepare('SELECT * FROM rooms ORDER BY sortOrder, id').all() as any[];
   const user = db.prepare('SELECT isVacationMode, vacationStartDate FROM users WHERE id = ?').get(req.userId) as any;
 
+  // Fetch all tasks in one query, then group by roomId
+  const allTasks = db.prepare('SELECT * FROM tasks').all() as any[];
+  const tasksByRoom = new Map<number, any[]>();
+  for (const t of allTasks) {
+    if (!tasksByRoom.has(t.roomId)) tasksByRoom.set(t.roomId, []);
+    tasksByRoom.get(t.roomId)!.push(t);
+  }
+
   const roomsWithHealth = rooms.map((room) => {
-    const tasks = db.prepare('SELECT * FROM tasks WHERE roomId = ?').all(room.id) as any[];
+    const tasks = tasksByRoom.get(room.id) || [];
     const tasksWithHealth = tasks.map((t) => ({
       ...t,
       isSeasonal: !!t.isSeasonal,

@@ -122,6 +122,12 @@ export const api = {
   importData: (data: any) =>
     apiFetch<any>('/import', { method: 'POST', body: JSON.stringify(data) }),
   achievements: () => apiFetch<any>('/achievements'),
+  getRegistrationStatus: () =>
+    fetch('/api/auth/registration-status').then((r) => r.json()) as Promise<{ registrationEnabled: boolean }>,
+  getRegistrationConfig: () =>
+    apiFetch<{ registrationEnabled: boolean }>('/users/registration-config'),
+  updateRegistrationConfig: (data: { registrationEnabled: boolean }) =>
+    apiFetch<{ registrationEnabled: boolean }>('/users/registration-config', { method: 'PUT', body: JSON.stringify(data) }),
   getNotificationsConfig: () =>
     apiFetch<{
       enabled: boolean;

@@ -152,6 +152,8 @@
       "themeNight": "Nacht",
       "vacationMode": "Urlaubsmodus",
       "vacationDesc": "Alle Aufgabenerinnerungen während Ihrer Abwesenheit pausieren",
+      "registrationEnabled": "Neue Registrierungen erlauben",
+      "registrationEnabledDesc": "Wenn deaktiviert, können keine neuen Konten über die Registrierungsseite erstellt werden.",
       "adminRequired": "Ein Admin-Elternteil ist erforderlich, um Einstellungen zu ändern.",
       "data": "Daten",
       "dataPrivacy": "Daten & Datenschutz",
@@ -298,14 +300,38 @@
       "statusCancelled": "Storniert"
     },
     "rewardsPreset": {
-      "movie_night": { "title": "Filmabend wählen", "desc": "Den Familienfilm für heute Abend auswählen." },
-      "ice_cream": { "title": "Eis-Extra", "desc": "Ein Eis oder besonderes Dessert bekommen." },
-      "late_bedtime": { "title": "30 Min länger auf", "desc": "30 Minuten später ins Bett gehen." },
-      "game_bonus": { "title": "Spielzeit-Bonus", "desc": "30 Minuten zusätzliche Spielzeit." },
-      "choose_dinner": { "title": "Abendessen wählen", "desc": "Bestimmen, was es heute Abend gibt." },
-      "park_adventure": { "title": "Park-Abenteuer", "desc": "Besonderer Familienausflug in den Park." },
-      "chore_pass": { "title": "Aufgaben-Pass", "desc": "Diese Woche eine Aufgabe aussetzen." },
-      "board_game": { "title": "Familien-Brettspiel", "desc": "Das Brettspiel für den Familienabend wählen." }
+      "movie_night": {
+        "title": "Filmabend wählen",
+        "desc": "Den Familienfilm für heute Abend auswählen."
+      },
+      "ice_cream": {
+        "title": "Eis-Extra",
+        "desc": "Ein Eis oder besonderes Dessert bekommen."
+      },
+      "late_bedtime": {
+        "title": "30 Min länger auf",
+        "desc": "30 Minuten später ins Bett gehen."
+      },
+      "game_bonus": {
+        "title": "Spielzeit-Bonus",
+        "desc": "30 Minuten zusätzliche Spielzeit."
+      },
+      "choose_dinner": {
+        "title": "Abendessen wählen",
+        "desc": "Bestimmen, was es heute Abend gibt."
+      },
+      "park_adventure": {
+        "title": "Park-Abenteuer",
+        "desc": "Besonderer Familienausflug in den Park."
+      },
+      "chore_pass": {
+        "title": "Aufgaben-Pass",
+        "desc": "Diese Woche eine Aufgabe aussetzen."
+      },
+      "board_game": {
+        "title": "Familien-Brettspiel",
+        "desc": "Das Brettspiel für den Familienabend wählen."
+      }
     },
     "history": {
       "task": "Aufgabe",
@@ -330,7 +356,8 @@
       "done": "Erledigt",
       "seasonal": "Saisonal",
       "taskName": "Aufgabenname...",
-      "addTask": "Aufgabe hinzufügen"
+      "addTask": "Aufgabe hinzufügen",
+      "icon": "Symbol"
     },
     "avatars": {
       "cat": "Katze",
@@ -398,7 +425,8 @@
       "createRoom": "Raum erstellen",
       "roomNotFound": "Raum nicht gefunden.",
       "backToRooms": "Zurück zu Räumen",
-      "tasksTracked": "Aufgaben erfasst"
+      "tasksTracked": "Aufgaben erfasst",
+      "icon": "Symbol"
     },
     "common": {
       "save": "Speichern",
@@ -507,6 +535,65 @@
       "perfectMonthDesc": "Schaffe 4 perfekte Wochen",
       "nightOwl": "Nachtplaner",
       "nightOwlDesc": "Erreiche eine 60-Tage-Serie"
+    },
+    "taskIcons": {
+      "sparkle": "Funkeln",
+      "dishes": "Geschirr",
+      "sink": "Waschbecken",
+      "stove": "Herd",
+      "counter": "Arbeitsplatte",
+      "fridge": "Kühlschrank",
+      "oven": "Ofen",
+      "microwave": "Mikrowelle",
+      "kettle": "Wasserkocher",
+      "rangehood": "Dunstabzug",
+      "pantry": "Vorratskammer",
+      "cabinet": "Schrank",
+      "bed": "Bett",
+      "pillow": "Kissen",
+      "sheets": "Bettlaken",
+      "mattress": "Matratze",
+      "nightstand": "Nachttisch",
+      "toilet": "Toilette",
+      "shower": "Dusche",
+      "mirror": "Spiegel",
+      "towel": "Handtuch",
+      "drain": "Abfluss",
+      "bathmat": "Badematte",
+      "showerhead": "Duschkopf",
+      "toothbrush": "Zahnbürste",
+      "grout": "Fuge",
+      "vacuum": "Staubsauger",
+      "mop": "Wischmopp",
+      "dust": "Staub",
+      "sweep": "Besen",
+      "window": "Fenster",
+      "curtain": "Vorhang",
+      "lightswitch": "Lichtschalter",
+      "sofa": "Sofa",
+      "tv": "Fernseher",
+      "lamp": "Lampe",
+      "furniture": "Möbel",
+      "rug": "Teppich",
+      "desk": "Schreibtisch",
+      "keyboard": "Tastatur",
+      "monitor": "Monitor",
+      "cable": "Kabel",
+      "chair": "Stuhl",
+      "trash": "Mülleimer",
+      "broom": "Besen",
+      "washer": "Waschmaschine",
+      "dryer": "Trockner",
+      "detergent": "Waschmittel",
+      "iron": "Bügeleisen",
+      "clothes": "Kleidung",
+      "tools": "Werkzeuge",
+      "cobweb": "Spinnennetz",
+      "chemicals": "Chemikalien",
+      "garagedoor": "Garagentor",
+      "shelf": "Regal",
+      "drawer": "Schublade",
+      "closet": "Kleiderschrank"
     }
   }
 }

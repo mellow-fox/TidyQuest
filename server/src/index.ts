@@ -20,8 +20,10 @@ const PORT = process.env.PORT || 3000;
 // Initialize database
 initDatabase();
 
-// Middleware
-app.use(cors());
+// CORS: allow only in dev or via explicit env var (in production, frontend is served from same origin)
+const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV !== 'production' ? true : false);
+app.use(cors({ origin: corsOrigin }));
+
 app.use(express.json({ limit: '50mb' }));
 
 // Serve uploaded avatars
@@ -43,10 +45,14 @@ app.use('/api/rewards', rewardsRoutes);
 // Serve static frontend in production
 const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
 app.use(express.static(clientDist));
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(clientDist, 'index.html'));
-  }
+
+// 404 handler for unknown API routes (must be before the SPA catch-all)
+app.use('/api/*', (_req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(clientDist, 'index.html'));
 });
 
 app.listen(PORT, () => {

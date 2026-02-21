@@ -2,15 +2,10 @@ import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { isNotificationTypeEnabled, sendTelegramMessage } from '../utils/notifications';
+import { ensureAdmin } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
-
-function ensureAdmin(userId: number | undefined): boolean {
-  if (!userId) return false;
-  const requester = db.prepare('SELECT id, role FROM users WHERE id = ?').get(userId) as any;
-  return !!requester && requester.role === 'admin';
-}
 
 router.get('/', (req: AuthRequest, res: Response) => {
   const rewards = db.prepare(

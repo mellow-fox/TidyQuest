@@ -222,3 +222,435 @@ html[data-theme='night'] option {
   background-color: var(--warm-card);
   color: var(--warm-text);
 }
+
+/* ========================================
+   RESPONSIVE DESIGN - Mobile First
+   ======================================== */
+
+/* Utility classes for responsive behavior */
+.mobile-only { display: none; }
+.history-mobile-meta { display: none; }
+.desktop-only { display: block; }
+
+/* Tablet breakpoint (max-width: 1024px) */
+@media (max-width: 1024px) {
+  body {
+    font-size: 14px;
+  }
+
+  .tq-card {
+    border-radius: 16px;
+  }
+
+  .tq-btn {
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile breakpoint (max-width: 768px) */
+@media (max-width: 768px) {
+  .mobile-only { display: block; }
+  .desktop-only { display: none; }
+
+  body {
+    font-size: 14px;
+  }
+
+  .tq-card {
+    border-radius: 14px;
+    border-width: 1px;
+  }
+
+  .tq-btn {
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 15px;
+    min-height: 44px; /* Touch-friendly tap target */
+    justify-content: center;
+  }
+
+  /* Make buttons full-width on mobile when in containers */
+  .tq-btn-block {
+    width: 100%;
+  }
+
+  /* Force text inputs, textareas, and selects to be properly sized */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    box-sizing: border-box !important;
+  }
+
+  /* Only make inputs 100% if they have flex: 1 (meaning they're in a flex container) */
+  input[style*="flex: 1"],
+  textarea[style*="flex: 1"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Page-specific responsive grids */
+  .settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .room-type-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .task-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .calendar-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .calendar-sidebar {
+    display: none !important;
+  }
+
+  /* Dashboard: 3 columns -> 1 column */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap;
+  }
+
+  .page-header-actions > div {
+    padding: 7px 12px !important;
+  }
+
+  .auth-card {
+    padding: 24px !important;
+  }
+
+  /* Activity: responsive card layout on mobile */
+  .history-table-scroll {
+    overflow-x: unset;
+  }
+
+  .history-header {
+    display: none !important;
+  }
+
+  .history-row {
+    grid-template-columns: 38px 1fr 70px !important;
+    min-width: 0 !important;
+  }
+
+  .history-col-room,
+  .history-col-when {
+    display: none !important;
+  }
+
+  .history-mobile-meta {
+    display: block !important;
+  }
+
+  /* Rooms task table: scrollable */
+  .room-table-scroll {
+    overflow-x: auto;
+  }
+
+  .room-table-scroll > div {
+    min-width: 580px;
+  }
+
+  .room-detail-hero {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+    padding: 18px !important;
+  }
+
+  .room-detail-hero .tq-btn {
+    width: 100%;
+  }
+
+  .room-detail-scroll > div {
+    min-width: 0 !important;
+  }
+
+  .room-table-header {
+    display: none !important;
+  }
+
+  .room-task-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 12px 8px !important;
+  }
+
+  .room-task-main,
+  .room-task-health,
+  .room-task-frequency,
+  .room-task-effort,
+  .room-task-actions {
+    min-width: 0 !important;
+  }
+
+  .room-task-actions {
+    justify-content: stretch !important;
+    flex-wrap: wrap;
+  }
+
+  .room-task-actions > button,
+  .room-task-actions .tq-btn {
+    flex: 1 1 120px;
+  }
+
+  .task-add-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .task-add-form > div {
+    width: 100% !important;
+  }
+
+  /* Settings admin cards: keep horizontal scroll for wide tables */
+  .settings-admin-card {
+    overflow-x: auto;
+  }
+
+  /* Coins per effort: 2-column layout on mobile */
+  .coins-effort-row {
+    grid-template-columns: 1fr 90px !important;
+  }
+
+  .coins-effort-dots {
+    display: none !important;
+  }
+
+  /* Fix input overflow inside the coin flex cell */
+  .coins-effort-row > div,
+  .coins-effort-value {
+    min-width: 0 !important;
+  }
+
+  .coins-effort-row input[type="number"] {
+    width: auto !important;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Goals by member: avoid fixed columns on narrow screens */
+  .goal-member-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .goal-member-row > div,
+  .goal-member-row > button {
+    min-width: 0 !important;
+  }
+
+  .goal-member-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .goal-member-form input,
+  .goal-member-form button {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .goal-member-end-date {
+    display: none !important;
+  }
+
+  /* Rewards add form: stack to single column */
+  .rewards-add-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Rewards list row: name + cost + delete (hide description) */
+  .rewards-list-row {
+    grid-template-columns: 1fr auto auto !important;
+  }
+
+  .rewards-list-row > div:nth-child(2) {
+    display: none !important;
+  }
+
+  .rewards-list-row > div:nth-child(1) {
+    min-width: 0 !important;
+    overflow-wrap: anywhere;
+  }
+
+  /* Reward requests: name + reward title + status (hide cost and date) */
+  .rewards-requests-row {
+    grid-template-columns: 1fr 1fr auto !important;
+  }
+
+  .rewards-requests-row > div:nth-child(3),
+  .rewards-requests-row > div:nth-child(5) {
+    display: none !important;
+  }
+
+  .rewards-requests-row > div:nth-child(1),
+  .rewards-requests-row > div:nth-child(2) {
+    min-width: 0 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .rewards-catalog-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .rewards-my-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .rewards-my-row-meta {
+    justify-content: space-between !important;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .rewards-confirm-modal {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .rewards-confirm-actions {
+    flex-direction: column-reverse !important;
+  }
+
+  .rewards-confirm-actions .tq-btn {
+    width: 100%;
+  }
+
+  /* Family members: improve mobile readability and tap targets */
+  .family-members-card {
+    overflow-x: visible !important;
+  }
+
+  .family-members-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .family-members-header .tq-btn {
+    width: 100%;
+  }
+
+  .family-members-add-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .family-members-add-form .tq-btn {
+    width: 100%;
+  }
+
+  .family-members-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .family-member-card {
+    padding: 12px !important;
+  }
+
+  .family-member-title-row,
+  .family-member-stats {
+    flex-wrap: wrap;
+  }
+
+  .family-member-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .family-member-actions select,
+  .family-member-actions .tq-btn {
+    width: 100% !important;
+  }
+
+  .member-edit-password-row {
+    flex-direction: column !important;
+  }
+
+  /* Make range inputs full width */
+  input[type="range"] {
+    width: 100% !important;
+  }
+
+  /* Page-enter containers should have max-width 100% */
+  .page-enter {
+    max-width: 100% !important;
+  }
+
+  /* Specific fixes for edit task form */
+  .task-edit-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .task-edit-form > div {
+    width: 100% !important;
+  }
+
+  /* Mobile sidebar - hidden by default, slides in when open */
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Show mobile overlay when sidebar is open */
+  .mobile-overlay {
+    display: block !important;
+  }
+
+  /* Show mobile-only close button */
+  .mobile-only {
+    display: block !important;
+  }
+
+  /* Show hamburger menu on mobile */
+  .hamburger-menu {
+    display: flex !important;
+  }
+
+  /* Adjust main content for mobile - remove sidebar margin */
+  .main-content {
+    margin-left: 0 !important;
+    padding: 72px 16px 24px 16px !important;
+  }
+}
+
+/* Desktop - ensure sidebar is always visible */
+@media (min-width: 769px) {
+  .sidebar {
+    transform: translateX(0) !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
+}

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SparkleIcon } from '../icons/UIIcons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { api } from '../../hooks/useApi';
 
 interface LoginProps {
   onLogin: (username: string, password: string) => Promise<void>;
@@ -10,9 +11,9 @@ interface LoginProps {
 export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
   const initialLang = (() => {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('tidyquest_auth_lang') : null;
-    if (saved && ['en', 'fr', 'de', 'es'].includes(saved)) return saved;
+    if (saved && ['en', 'fr', 'de', 'es', 'it'].includes(saved)) return saved;
     const browser = typeof navigator !== 'undefined' ? navigator.language.slice(0, 2) : 'en';
-    return ['en', 'fr', 'de', 'es'].includes(browser) ? browser : 'en';
+    return ['en', 'fr', 'de', 'es', 'it'].includes(browser) ? browser : 'en';
   })();
   const [authLanguage, setAuthLanguage] = useState(initialLang);
   const { t } = useTranslation(authLanguage);
@@ -20,6 +21,13 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registrationEnabled, setRegistrationEnabled] = useState(true);
+
+  useEffect(() => {
+    api.getRegistrationStatus()
+      .then((s) => setRegistrationEnabled(s.registrationEnabled))
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +48,7 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       backgroundColor: '#FFF9F2',
     }}>
-      <div className="tq-card" style={{ padding: 40, width: 380 }}>
+      <div className="tq-card auth-card" style={{ padding: 40, width: 380, maxWidth: 'calc(100vw - 24px)' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
             width: 56, height: 56, borderRadius: 18, margin: '0 auto 14px',
@@ -68,6 +76,7 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
             <option value="fr">Français</option>
             <option value="de">Deutsch</option>
             <option value="es">Español</option>
+            <option value="it">Italiano</option>
           </select>
         </div>
 
@@ -104,15 +113,17 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <button onClick={onSwitchToRegister}
-            style={{
-              background: 'none', border: 'none', color: '#F97316', fontSize: 13,
-              fontWeight: 700, cursor: 'pointer', fontFamily: 'Nunito',
-            }}>
-            {t('auth.createAccount')}
-          </button>
-        </div>
+        {registrationEnabled && (
+          <div style={{ textAlign: 'center', marginTop: 18 }}>
+            <button onClick={onSwitchToRegister}
+              style={{
+                background: 'none', border: 'none', color: '#F97316', fontSize: 13,
+                fontWeight: 700, cursor: 'pointer', fontFamily: 'Nunito',
+              }}>
+              {t('auth.createAccount')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

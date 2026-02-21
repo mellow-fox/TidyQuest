@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { api } from './hooks/useApi';
 import { Sidebar } from './components/layout/Sidebar';
@@ -22,7 +22,8 @@ import { useTranslation } from './hooks/useTranslation';
 function AppContent() {
   const { user, loading, login, register, logout, refreshUser } = useAuth();
   const browserLang = typeof navigator !== 'undefined' ? navigator.language.slice(0, 2) : 'en';
-  const { t: tBrowser } = useTranslation(browserLang);
+  // Always call useTranslation unconditionally (React hooks rule) — use user's language if known, else browser lang
+  const { t } = useTranslation(user?.language ?? browserLang);
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [rooms, setRooms] = useState<any[]>([]);
@@ -39,6 +40,7 @@ function AppContent() {
     return (saved === 'blue' || saved === 'rose' || saved === 'night') ? saved : 'orange';
   });
   const [confetti, setConfetti] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -67,10 +69,14 @@ function AppContent() {
     if (user) loadDashboard();
   }, [user, loadDashboard]);
 
-  // Refresh data when navigating between pages
+  // Selectively refresh data when navigating to pages that need fresh data
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+    const path = location.pathname;
+    if (path === '/' || path === '/rooms' || path.startsWith('/rooms/')) {
       loadDashboard();
+    }
+    if (path === '/rewards') {
       loadRewards();
     }
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -145,10 +151,18 @@ function AppContent() {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      const text = await file.text();
-      const data = JSON.parse(text);
-      await api.importData(data);
-      await loadDashboard();
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!data || typeof data !== 'object' || !Array.isArray(data.users) || !Array.isArray(data.rooms)) {
+          alert('Invalid backup file: missing users or rooms data.');
+          return;
+        }
+        await api.importData(data);
+        await loadDashboard();
+      } catch (err) {
+        alert(`Import failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
     };
     input.click();
   };
@@ -156,7 +170,7 @@ function AppContent() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--warm-bg)' }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--warm-text-light)' }}>{tBrowser('common.loading')}...</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--warm-text-light)' }}>{t('common.loading')}...</div>
       </div>
     );
   }
@@ -168,8 +182,7 @@ function AppContent() {
     return <Login onLogin={login} onSwitchToRegister={() => setAuthView('register')} />;
   }
 
-  const { t } = useTranslation(user.language);
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES' };
+  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
   const today = new Date().toLocaleDateString(localeMap[user.language] || 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   // Build flat tasks list for calendar
@@ -180,8 +193,41 @@ function AppContent() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--warm-bg)' }}>
       <ConfettiEffect show={confetti} />
-      <Sidebar user={user} />
-      <main style={{ marginLeft: 240, flex: 1, padding: '28px 36px', maxWidth: 1320, backgroundColor: 'var(--warm-bg)' }}>
+
+      {/* Mobile hamburger menu */}
+      <button
+        onClick={() => setIsMobileSidebarOpen(true)}
+        className="mobile-only hamburger-menu"
+        style={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 40,
+          background: 'var(--warm-card)',
+          border: '1.5px solid var(--warm-border)',
+          borderRadius: 12,
+          width: 44,
+          height: 44,
+          display: 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px var(--warm-shadow)',
+        }}
+        aria-label="Open menu"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <path d="M3 12h18M3 6h18M3 18h18" />
+        </svg>
+      </button>
+
+      <Sidebar
+        user={user}
+        isMobileOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
+      />
+
+      <main style={{ marginLeft: 240, flex: 1, padding: '28px 36px', maxWidth: 1320, backgroundColor: 'var(--warm-bg)' }} className="main-content">
         <Routes>
           <Route path="/" element={
             <>
@@ -348,7 +394,8 @@ function AppContent() {
 function RoomDetailWrapper({ rooms, user, onCompleteTask, onRefresh }: { rooms: any[]; user: any; onCompleteTask: (id: number) => void; onRefresh: () => void }) {
   const navigate = useNavigate();
   const { t, roomDisplayName } = useTranslation(user?.language || 'en');
-  const id = parseInt(window.location.pathname.split('/').pop() || '0');
+  const { id: idParam } = useParams<{ id: string }>();
+  const id = parseInt(idParam || '0');
   const room = rooms.find((r) => r.id === id);
 
   if (!room) {

@@ -134,9 +134,9 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
         <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginTop: 4 }}>{t('rewards.balanceHint')}</div>
       </div>
 
-      <div className="tq-card" style={{ padding: 20 }}>
+      <div className="tq-card rewards-catalog-card" style={{ padding: 20 }}>
         <h3 style={{ margin: '0 0 10px', fontSize: 16, fontWeight: 900, color: 'var(--warm-text)' }}>{t('rewards.catalog')}</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
+        <div className="rewards-catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
           {rewards.map((r) => {
             const canBuy = userCoins >= r.costCoins;
             return (
@@ -169,12 +169,12 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
         ) : (
           <div style={{ display: 'grid', gap: 8 }}>
             {mine.map((m) => (
-              <div key={m.id} style={{ border: '1.5px solid var(--warm-border)', borderRadius: 12, padding: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                <div>
+              <div key={m.id} className="rewards-my-row" style={{ border: '1.5px solid var(--warm-border)', borderRadius: 12, padding: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--warm-text)' }}>{rewardTitleByName(m.title)}</div>
                   <div style={{ fontSize: 10, color: 'var(--warm-text-light)', fontWeight: 700 }}>{new Date(m.redeemedAt).toLocaleString()}</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div className="rewards-my-row-meta" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--warm-accent)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>- {m.costCoins} <CoinIcon /></div>
                   <span style={{ ...statusStyle(m.status), fontSize: 10, fontWeight: 800, borderRadius: 999, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: 0.4 }}>
                     {statusLabel(m.status)}
@@ -192,12 +192,12 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
       </div>
       {pendingReward && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 120, backgroundColor: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="tq-card" style={{ width: 380, padding: 20 }}>
+          <div className="tq-card rewards-confirm-modal" style={{ width: 380, maxWidth: 'calc(100vw - 24px)', padding: 20 }}>
             <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--warm-text)', marginBottom: 6 }}>{t('rewards.confirmTitle')}</div>
             <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 14 }}>
               {t('rewards.confirmText').replace('{reward}', rewardTitle(pendingReward)).replace('{coins}', String(pendingReward.costCoins))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <div className="rewards-confirm-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button className="tq-btn tq-btn-secondary" onClick={() => setPendingRewardId(null)} style={{ padding: '6px 12px', fontSize: 12 }}>{t('common.cancel')}</button>
               <button className="tq-btn tq-btn-primary" onClick={confirmRedeem} style={{ padding: '6px 12px', fontSize: 12 }}>{t('rewards.confirmBuy')}</button>
             </div>

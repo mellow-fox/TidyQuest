@@ -238,6 +238,7 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
               <option value="fr">Fran{'\u00E7'}ais</option>
               <option value="de">Deutsch</option>
               <option value="es">Espa{'\u00F1'}ol</option>
+              <option value="it">Italiano</option>
             </select>
           </div>
         </div>
