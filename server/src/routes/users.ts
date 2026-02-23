@@ -562,4 +562,35 @@ router.put('/registration-config', authMiddleware, (req: AuthRequest, res: Respo
   res.json({ registrationEnabled });
 });
 
+router.get('/feature-settings', authMiddleware, (req: AuthRequest, res: Response) => {
+  const sharedTaskRow = db.prepare("SELECT value FROM app_settings WHERE key = 'sharedTaskEnabled'").get() as { value: string } | undefined;
+  const customPercentRow = db.prepare("SELECT value FROM app_settings WHERE key = 'sharedTaskAllowCustomPercentage'").get() as { value: string } | undefined;
+  
+  res.json({ 
+    sharedTaskEnabled: sharedTaskRow ? sharedTaskRow.value !== '0' : false,
+    sharedTaskAllowCustomPercentage: customPercentRow ? customPercentRow.value !== '0' : false
+  });
+});
+
+router.put('/feature-settings', authMiddleware, (req: AuthRequest, res: Response) => {
+  const requestingUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId) as { role: string } | undefined;
+  if (!requestingUser || requestingUser.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const { sharedTaskEnabled, sharedTaskAllowCustomPercentage } = req.body;
+  
+  if (typeof sharedTaskEnabled === 'boolean') {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'sharedTaskEnabled'")
+      .run(sharedTaskEnabled ? '1' : '0');
+  }
+  
+  if (typeof sharedTaskAllowCustomPercentage === 'boolean') {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'sharedTaskAllowCustomPercentage'")
+      .run(sharedTaskAllowCustomPercentage ? '1' : '0');
+  }
+
+  res.json({ success: true });
+});
+
 export default router;

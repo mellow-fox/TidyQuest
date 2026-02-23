@@ -63,9 +63,9 @@ export const api = {
     apiFetch<any>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteTask: (id: number) =>
     apiFetch<any>(`/tasks/${id}`, { method: 'DELETE' }),
-  completeTask: (id: number, completedAt?: string) =>
-    apiFetch<{ coinsEarned: number; health: number }>(`/tasks/${id}/complete`, {
-      method: 'POST', body: JSON.stringify({ completedAt }),
+  completeTask: (id: number, completedAt?: string, participants?: Array<{ userId: number; percentage: number }>) =>
+    apiFetch<{ coinsEarned?: number; health: number; shared?: boolean; participants?: Array<{ userId: number; coinsEarned: number }>; totalCoinsEarned?: number }>(`/tasks/${id}/complete`, {
+      method: 'POST', body: JSON.stringify({ completedAt, participants }),
     }),
 
   // Leaderboard
@@ -128,6 +128,10 @@ export const api = {
     apiFetch<{ registrationEnabled: boolean }>('/users/registration-config'),
   updateRegistrationConfig: (data: { registrationEnabled: boolean }) =>
     apiFetch<{ registrationEnabled: boolean }>('/users/registration-config', { method: 'PUT', body: JSON.stringify(data) }),
+  getFeatureSettings: () =>
+    apiFetch<{ sharedTaskEnabled: boolean; sharedTaskAllowCustomPercentage: boolean }>('/users/feature-settings'),
+  updateFeatureSettings: (settings: { sharedTaskEnabled?: boolean; sharedTaskAllowCustomPercentage?: boolean }) =>
+    apiFetch<{ success: boolean }>('/users/feature-settings', { method: 'PUT', body: JSON.stringify(settings) }),
   getNotificationsConfig: () =>
     apiFetch<{
       enabled: boolean;

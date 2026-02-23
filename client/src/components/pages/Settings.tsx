@@ -85,6 +85,8 @@ export function Settings({
   const [memberProfileMsg, setMemberProfileMsg] = useState<Record<number, string>>({});
   const [memberGoalMsg, setMemberGoalMsg] = useState<Record<number, string>>({});
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
+  const [sharedTaskEnabled, setSharedTaskEnabled] = useState(false);
+  const [sharedTaskAllowCustomPercentage, setSharedTaskAllowCustomPercentage] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifChatId, setNotifChatId] = useState('');
   const [notifToken, setNotifToken] = useState('');
@@ -142,6 +144,16 @@ export function Settings({
     if (!isAdmin) return;
     api.getRegistrationConfig()
       .then((cfg) => setRegistrationEnabled(cfg.registrationEnabled))
+      .catch(() => {});
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    api.getFeatureSettings()
+      .then((cfg) => {
+        setSharedTaskEnabled(cfg.sharedTaskEnabled);
+        setSharedTaskAllowCustomPercentage(cfg.sharedTaskAllowCustomPercentage);
+      })
       .catch(() => {});
   }, [isAdmin]);
 
@@ -501,6 +513,52 @@ export function Settings({
           </div>
         )}
       </div>
+
+      {isAdmin && (
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.sharedTasks')}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M7 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-4a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="#B0A090" />
+            </svg>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.sharedTaskEnabled')}</div>
+              <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.sharedTaskEnabledDesc')}</div>
+            </div>
+            <Toggle
+              checked={sharedTaskEnabled}
+              onChange={async (val) => {
+                setSharedTaskEnabled(val);
+                if (!val) setSharedTaskAllowCustomPercentage(false);
+                await api.updateFeatureSettings({ sharedTaskEnabled: val, sharedTaskAllowCustomPercentage: val ? sharedTaskAllowCustomPercentage : false }).catch(() => {
+                  setSharedTaskEnabled(!val);
+                  setSharedTaskAllowCustomPercentage(val ? sharedTaskAllowCustomPercentage : false);
+                });
+              }}
+            />
+          </div>
+          {sharedTaskEnabled && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 4h14v2H3V4zm0 4h14v2H3V8zm0 4h14v2H3v-2z" fill="#B0A090" />
+              </svg>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.sharedTaskAllowCustomPercentage')}</div>
+                <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.sharedTaskAllowCustomPercentageDesc')}</div>
+              </div>
+              <Toggle
+                checked={sharedTaskAllowCustomPercentage}
+                onChange={async (val) => {
+                  setSharedTaskAllowCustomPercentage(val);
+                  await api.updateFeatureSettings({ sharedTaskAllowCustomPercentage: val }).catch(() => {
+                    setSharedTaskAllowCustomPercentage(!val);
+                  });
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {isAdmin && (
         <div className="tq-card settings-admin-card" style={{ padding: 24 }}>

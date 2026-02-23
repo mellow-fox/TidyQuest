@@ -154,6 +154,11 @@
       "vacationDesc": "Pausar todos los recordatorios de tareas mientras estás fuera",
       "registrationEnabled": "Permitir nuevos registros",
       "registrationEnabledDesc": "Si está desactivado, no se pueden crear nuevas cuentas desde la página de registro.",
+      "sharedTasks": "Tareas compartidas",
+      "sharedTaskEnabled": "Activar función de tarea compartida",
+      "sharedTaskEnabledDesc": "Permite completar tareas con múltiples participantes y compartir recompensas.",
+      "sharedTaskAllowCustomPercentage": "Permitir porcentaje personalizado",
+      "sharedTaskAllowCustomPercentageDesc": "Permite a los usuarios personalizar cómo se reparten las recompensas entre los participantes.",
       "adminRequired": "Se requiere un padre administrador para cambiar ajustes.",
       "data": "Datos",
       "dataPrivacy": "Datos y privacidad",
@@ -360,6 +365,13 @@
       "taskName": "Nombre de la tarea...",
       "addTask": "Añadir tarea",
       "icon": "Icono"
+    },
+    "task": {
+      "sharedDone": "Hecho entre todos",
+      "selectParticipants": "Seleccionar participantes",
+      "totalPercentage": "Total",
+      "equalSplit": "Repartir igual",
+      "complete": "Completar"
     },
     "avatars": {
       "cat": "Gato",

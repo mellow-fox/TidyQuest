@@ -5,6 +5,7 @@ import { api } from './hooks/useApi';
 import { Sidebar } from './components/layout/Sidebar';
 import { PageHeader } from './components/layout/PageHeader';
 import { ConfettiEffect } from './components/shared/ConfettiEffect';
+import { SharedDoneModal } from './components/shared/SharedDoneModal';
 import Dashboard from './components/pages/Dashboard';
 import { RoomsList } from './components/pages/RoomsList';
 import { RoomDetail } from './components/pages/RoomDetail';
@@ -42,18 +43,28 @@ function AppContent() {
   const [confetti, setConfetti] = useState(false);
   const [taskErrorMsg, setTaskErrorMsg] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [featureSettings, setFeatureSettings] = useState({
+    sharedTaskEnabled: false,
+    sharedTaskAllowCustomPercentage: false,
+  });
+  const [sharedDoneModal, setSharedDoneModal] = useState<{ isOpen: boolean; taskId: number | null; taskName: string }>({
+    isOpen: false,
+    taskId: null,
+    taskName: '',
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
   const loadDashboard = useCallback(async () => {
     try {
-      const [dash, lb, hist, users, coinCfg, ach] = await Promise.all([
+      const [dash, lb, hist, users, coinCfg, ach, featCfg] = await Promise.all([
         api.dashboard(),
         api.leaderboard(leaderboardPeriod),
         api.history(50, 0),
         api.getUsers(),
         api.getCoinsConfig(),
         api.achievements(),
+        api.getFeatureSettings(),
       ]);
       setDashboardData(dash);
       setRooms(await api.getRooms());
@@ -63,6 +74,7 @@ function AppContent() {
       setCompletions(hist.history || []);
       setCoinsByEffort(coinCfg.coinsByEffort || { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
       setAchievementsData(ach);
+      setFeatureSettings(featCfg);
     } catch { /* not logged in */ }
   }, [leaderboardPeriod]);
 
@@ -119,6 +131,33 @@ function AppContent() {
     try {
       setConfetti(true);
       await api.completeTask(taskId);
+      await refreshUser();
+      await loadDashboard();
+      setTimeout(() => setConfetti(false), 2200);
+    } catch (err) {
+      setConfetti(false);
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'already_done_today') {
+        setTaskErrorMsg(t('app.alreadyDoneToday'));
+      } else if (msg === 'already_done_by_other') {
+        setTaskErrorMsg(t('app.alreadyDoneByOther'));
+      } else {
+        setTaskErrorMsg(msg || t('common.error'));
+      }
+      setTimeout(() => setTaskErrorMsg(null), 3500);
+    }
+  };
+
+  const handleOpenSharedDoneModal = (taskId: number, taskName: string) => {
+    setSharedDoneModal({ isOpen: true, taskId, taskName });
+  };
+
+  const handleSharedCompleteTask = async (participants: Array<{ userId: number; percentage: number }>) => {
+    if (!sharedDoneModal.taskId) return;
+    try {
+      setConfetti(true);
+      await api.completeTask(sharedDoneModal.taskId, undefined, participants);
+      setSharedDoneModal({ isOpen: false, taskId: null, taskName: '' });
       await refreshUser();
       await loadDashboard();
       setTimeout(() => setConfetti(false), 2200);
@@ -203,6 +242,16 @@ function AppContent() {
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--warm-bg)' }}>
       <ConfettiEffect show={confetti} />
 
+      {/* Shared Done Modal */}
+      <SharedDoneModal
+        isOpen={sharedDoneModal.isOpen}
+        onClose={() => setSharedDoneModal({ isOpen: false, taskId: null, taskName: '' })}
+        onComplete={handleSharedCompleteTask}
+        taskName={sharedDoneModal.taskName}
+        language={user.language}
+        allowCustomPercentage={featureSettings.sharedTaskAllowCustomPercentage}
+      />
+
       {/* Task error toast */}
       {taskErrorMsg && (
         <div style={{
@@ -259,7 +308,9 @@ function AppContent() {
                   data={dashboardData}
                   family={family}
                   language={user.language}
+                  featureSettings={featureSettings}
                   onCompleteTask={handleCompleteTask}
+                  onSharedCompleteTask={handleOpenSharedDoneModal}
                   onNavigateToRoom={(id) => navigate(`/rooms/${id}`)}
                   onNavigateToActivity={() => navigate('/activity')}
                   onRewardRequestAction={async (id, status) => {
@@ -289,7 +340,7 @@ function AppContent() {
           } />
 
           <Route path="/rooms/:id" element={
-            <RoomDetailWrapper rooms={rooms} user={user} onCompleteTask={handleCompleteTask} onRefresh={loadDashboard} />
+            <RoomDetailWrapper rooms={rooms} user={user} featureSettings={featureSettings} onCompleteTask={handleCompleteTask} onSharedCompleteTask={handleOpenSharedDoneModal} onRefresh={loadDashboard} />
           } />
 
           <Route path="/calendar" element={
@@ -413,7 +464,7 @@ function AppContent() {
   );
 }
 
-function RoomDetailWrapper({ rooms, user, onCompleteTask, onRefresh }: { rooms: any[]; user: any; onCompleteTask: (id: number) => void; onRefresh: () => void }) {
+function RoomDetailWrapper({ rooms, user, featureSettings, onCompleteTask, onSharedCompleteTask, onRefresh }: { rooms: any[]; user: any; featureSettings: { sharedTaskEnabled: boolean; sharedTaskAllowCustomPercentage: boolean }; onCompleteTask: (id: number) => void; onSharedCompleteTask: (id: number, name: string) => void; onRefresh: () => void }) {
   const navigate = useNavigate();
   const { t, roomDisplayName } = useTranslation(user?.language || 'en');
   const { id: idParam } = useParams<{ id: string }>();
@@ -435,7 +486,7 @@ function RoomDetailWrapper({ rooms, user, onCompleteTask, onRefresh }: { rooms: 
   return (
     <>
       <PageHeader title={roomDisplayName(room.name, room.roomType)} subtitle={`${room.tasks?.length || 0} ${t('rooms.tasksTracked')}`} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
-      <RoomDetail room={room} language={user?.language} isAdmin={user?.role === 'admin'} onCompleteTask={onCompleteTask} onBack={() => navigate('/rooms')} onRefresh={onRefresh} />
+      <RoomDetail room={room} language={user?.language} isAdmin={user?.role === 'admin'} featureSettings={featureSettings} onCompleteTask={onCompleteTask} onSharedCompleteTask={onSharedCompleteTask} onBack={() => navigate('/rooms')} onRefresh={onRefresh} />
     </>
   );
 }

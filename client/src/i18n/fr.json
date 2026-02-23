@@ -154,6 +154,11 @@
       "vacationDesc": "Suspendre tous les rappels de tâches pendant votre absence",
       "registrationEnabled": "Autoriser les nouvelles inscriptions",
       "registrationEnabledDesc": "Si désactivé, aucun nouveau compte ne peut être créé depuis la page d'inscription.",
+      "sharedTasks": "Tâches partagées",
+      "sharedTaskEnabled": "Activer la fonctionnalité de tâche partagée",
+      "sharedTaskEnabledDesc": "Permettre de valider des tâches avec plusieurs participants et partager les récompenses.",
+      "sharedTaskAllowCustomPercentage": "Autoriser le partage personnalisé",
+      "sharedTaskAllowCustomPercentageDesc": "Permettre aux utilisateurs de personnaliser la répartition des récompenses entre les participants.",
       "adminRequired": "Un parent admin est requis pour modifier les paramètres.",
       "data": "Données",
       "dataPrivacy": "Données et confidentialité",
@@ -360,6 +365,13 @@
       "taskName": "Nom de la tâche...",
       "addTask": "Ajouter une tâche",
       "icon": "Icône"
+    },
+    "task": {
+      "sharedDone": "Fait ensemble",
+      "selectParticipants": "Sélectionner les participants",
+      "totalPercentage": "Total",
+      "equalSplit": "Répartir également",
+      "complete": "Valider"
     },
     "avatars": {
       "cat": "Chat",

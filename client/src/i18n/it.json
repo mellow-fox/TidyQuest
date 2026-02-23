@@ -154,6 +154,11 @@
       "vacationDesc": "Metti in pausa i promemoria mentre sei via",
       "registrationEnabled": "Consenti nuove registrazioni",
       "registrationEnabledDesc": "Quando disattivato, non si possono creare nuovi account dalla pagina di registrazione.",
+      "sharedTasks": "Attività condivise",
+      "sharedTaskEnabled": "Attiva funzione attività condivisa",
+      "sharedTaskEnabledDesc": "Permette di completare attività con più partecipanti e dividere i reward.",
+      "sharedTaskAllowCustomPercentage": "Consenti percentuale personalizzata",
+      "sharedTaskAllowCustomPercentageDesc": "Permette agli utenti di personalizzare come i reward vengono divisi tra i partecipanti.",
       "adminRequired": "Serve un admin genitore per modificare le impostazioni.",
       "data": "Dati",
       "dataPrivacy": "Dati e privacy",
@@ -360,6 +365,13 @@
       "taskName": "Nome attività...",
       "addTask": "Aggiungi attività",
       "icon": "Icona"
+    },
+    "task": {
+      "sharedDone": "Fatto insieme",
+      "selectParticipants": "Seleziona partecipanti",
+      "totalPercentage": "Totale",
+      "equalSplit": "Dividi ugualmente",
+      "complete": "Completa"
     },
     "avatars": {
       "cat": "Gatto",

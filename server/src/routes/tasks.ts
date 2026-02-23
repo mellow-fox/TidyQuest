@@ -128,7 +128,92 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
 
   // Always use server timestamp — never trust client-supplied completedAt
   const now = new Date().toISOString();
+  const { participants } = req.body as { participants?: Array<{ userId: number; percentage: number }> };
 
+  // If participants provided, validate and process shared completion
+  if (participants && Array.isArray(participants) && participants.length > 0) {
+    // Validate participants
+    if (participants.length > 10) {
+      return res.status(400).json({ error: 'Too many participants (max 10)' });
+    }
+
+    const totalPercentage = participants.reduce((sum, p) => sum + (p.percentage || 0), 0);
+    if (totalPercentage !== 100) {
+      return res.status(400).json({ error: 'Percentages must sum to 100' });
+    }
+
+    // Validate all userIds exist
+    const userIds = participants.map(p => p.userId);
+    const existingUsers = db.prepare(`SELECT id FROM users WHERE id IN (${userIds.join(',')})`).all() as Array<{ id: number }>;
+    if (existingUsers.length !== userIds.length) {
+      return res.status(400).json({ error: 'One or more users not found' });
+    }
+
+    // Block if any participant already completed this task today
+    for (const p of participants) {
+      const alreadyDone = db.prepare(
+        "SELECT id FROM task_completions WHERE taskId = ? AND userId = ? AND date(completedAt) = date(?)"
+      ).get(task.id, p.userId, now);
+      if (alreadyDone) {
+        return res.status(409).json({ error: 'already_done_today' });
+      }
+    }
+
+    // Block if someone else already completed this task today (not in participants list)
+    const placeholders = userIds.map(() => '?').join(',');
+    const alreadyDoneByOther = db.prepare(
+      `SELECT id FROM task_completions WHERE taskId = ? AND date(completedAt) = date(?) AND userId NOT IN (${placeholders})`
+    ).get(task.id, now, ...userIds);
+    if (alreadyDoneByOther) {
+      return res.status(409).json({ error: 'already_done_by_other' });
+    }
+
+    const totalCoins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
+
+    // Update task lastCompletedAt
+    db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, req.params.id);
+
+    // Process each participant
+    const results: Array<{ userId: number; coinsEarned: number }> = [];
+    let remainder = totalCoins;
+
+    for (let i = 0; i < participants.length; i++) {
+      const p = participants[i];
+      const percentage = p.percentage || 0;
+      
+      // Distribute coins: give remainder to last participant to avoid losing coins
+      const coinsEarned = i === participants.length - 1 
+        ? remainder 
+        : Math.round(totalCoins * percentage / 100);
+      
+      remainder -= coinsEarned;
+
+      // Record completion
+      db.prepare(
+        'INSERT INTO task_completions (taskId, userId, completedAt, coinsEarned) VALUES (?, ?, ?, ?)'
+      ).run(task.id, p.userId, now, coinsEarned);
+
+      // Update user coins
+      db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coinsEarned, p.userId);
+
+      // Update streak for each participant
+      updateStreakForUser(p.userId, now);
+
+      // Fire-and-forget achievement unlock notifications
+      void notifyAchievementUnlocksForUser(p.userId);
+
+      results.push({ userId: p.userId, coinsEarned });
+    }
+
+    return res.json({ 
+      shared: true, 
+      participants: results, 
+      totalCoinsEarned: totalCoins,
+      health: 100 
+    });
+  }
+
+  // Original single-user completion logic
   // Block if current user already completed this task today
   const alreadyDoneBySelf = db.prepare(
     "SELECT id FROM task_completions WHERE taskId = ? AND userId = ? AND date(completedAt) = date(?)"
@@ -158,8 +243,19 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
   db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coins, req.userId);
 
   // Update streak
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.userId) as any;
-  const today = new Date().toISOString().slice(0, 10);
+  updateStreakForUser(req.userId!, now);
+
+  // Fire-and-forget achievement unlock notifications.
+  void notifyAchievementUnlocksForUser(req.userId!);
+
+  res.json({ coinsEarned: coins, health: 100 });
+});
+
+function updateStreakForUser(userId: number, now: string) {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as any;
+  if (!user) return;
+  
+  const today = now.slice(0, 10);
 
   if (user.lastActiveDate !== today) {
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -182,13 +278,8 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
         ? user.currentStreak + 1
         : 1;
     db.prepare('UPDATE users SET currentStreak = ?, lastActiveDate = ? WHERE id = ?')
-      .run(newStreak, today, req.userId);
+      .run(newStreak, today, userId);
   }
-
-  // Fire-and-forget achievement unlock notifications.
-  void notifyAchievementUnlocksForUser(req.userId!);
-
-  res.json({ coinsEarned: coins, health: 100 });
-});
+}
 
 export default router;

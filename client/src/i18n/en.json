@@ -154,6 +154,11 @@
       "vacationDesc": "Pause all task reminders while you're away",
       "registrationEnabled": "Allow New Registrations",
       "registrationEnabledDesc": "When disabled, no new accounts can be created from the registration page.",
+      "sharedTasks": "Shared Tasks",
+      "sharedTaskEnabled": "Enable Shared Task Feature",
+      "sharedTaskEnabledDesc": "Allow completing tasks with multiple participants and split rewards.",
+      "sharedTaskAllowCustomPercentage": "Allow Custom Percentage Split",
+      "sharedTaskAllowCustomPercentageDesc": "Allow users to customize how rewards are split between participants.",
       "adminRequired": "Parent admin required to change settings.",
       "data": "Data",
       "dataPrivacy": "Data & Privacy",
@@ -360,6 +365,13 @@
       "taskName": "Task name...",
       "addTask": "Add Task",
       "icon": "Icon"
+    },
+    "task": {
+      "sharedDone": "Shared Done",
+      "selectParticipants": "Select participants",
+      "totalPercentage": "Total",
+      "equalSplit": "Equal split",
+      "complete": "Complete"
     },
     "avatars": {
       "cat": "Cat",

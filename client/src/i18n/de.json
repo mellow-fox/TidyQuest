@@ -154,6 +154,11 @@
       "vacationDesc": "Alle Aufgabenerinnerungen während Ihrer Abwesenheit pausieren",
       "registrationEnabled": "Neue Registrierungen erlauben",
       "registrationEnabledDesc": "Wenn deaktiviert, können keine neuen Konten über die Registrierungsseite erstellt werden.",
+      "sharedTasks": "Gemeinsame Aufgaben",
+      "sharedTaskEnabled": "Gemeinsame Aufgaben aktivieren",
+      "sharedTaskEnabledDesc": "Erlaubt das Abschließen von Aufgaben mit mehreren Teilnehmern und das Teilen von Belohnungen.",
+      "sharedTaskAllowCustomPercentage": "Benutzerdefinierte Prozentaufteilung erlauben",
+      "sharedTaskAllowCustomPercentageDesc": "Erlaubt Benutzern anzupassen, wie Belohnungen zwischen Teilnehmern aufgeteilt werden.",
       "adminRequired": "Ein Admin-Elternteil ist erforderlich, um Einstellungen zu ändern.",
       "data": "Daten",
       "dataPrivacy": "Daten & Datenschutz",
@@ -360,6 +365,13 @@
       "taskName": "Aufgabenname...",
       "addTask": "Aufgabe hinzufügen",
       "icon": "Symbol"
+    },
+    "task": {
+      "sharedDone": "Gemeinsam erledigt",
+      "selectParticipants": "Teilnehmer auswählen",
+      "totalPercentage": "Gesamt",
+      "equalSplit": "Gleichmäßig aufteilen",
+      "complete": "Abschließen"
     },
     "avatars": {
       "cat": "Katze",

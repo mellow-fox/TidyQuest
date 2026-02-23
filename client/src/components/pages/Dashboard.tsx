@@ -89,7 +89,9 @@ interface DashboardProps {
   };
   family: FamilyMember[];
   language?: string;
+  featureSettings?: { sharedTaskEnabled: boolean; sharedTaskAllowCustomPercentage: boolean };
   onCompleteTask: (taskId: number) => void;
+  onSharedCompleteTask: (taskId: number, taskName: string) => void;
   onNavigateToRoom: (roomId: number) => void;
   onNavigateToActivity: () => void;
   onRewardRequestAction: (id: number, status: 'approved' | 'rejected') => void | Promise<void>;
@@ -101,7 +103,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   data,
   family,
   language,
+  featureSettings,
   onCompleteTask,
+  onSharedCompleteTask,
   onNavigateToRoom,
   onNavigateToActivity,
   onRewardRequestAction,
@@ -286,6 +290,19 @@ const Dashboard: React.FC<DashboardProps> = ({
                   >
                     <CheckIcon /> {t('roomDetail.done')}
                   </button>
+                  {featureSettings?.sharedTaskEnabled && (
+                    <button
+                      onClick={() => onSharedCompleteTask(q.id, q.name)}
+                      className="tq-btn tq-btn-secondary"
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: 11,
+                      }}
+                      title={t('task.sharedDone')}
+                    >
+                      {t('task.sharedDone')}
+                    </button>
+                  )}
                 </div>
               );
             })}

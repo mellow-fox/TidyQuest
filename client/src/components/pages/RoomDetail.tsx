@@ -56,7 +56,9 @@ interface RoomDetailProps {
   };
   language?: string;
   isAdmin: boolean;
+  featureSettings?: { sharedTaskEnabled: boolean; sharedTaskAllowCustomPercentage: boolean };
   onCompleteTask: (taskId: number) => void;
+  onSharedCompleteTask: (taskId: number, taskName: string) => void;
   onBack: () => void;
   onRefresh?: () => void;
 }
@@ -110,7 +112,7 @@ function EffortPicker({ effort, onChange }: { effort: number; onChange: (e: numb
   );
 }
 
-export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, onRefresh }: RoomDetailProps) {
+export function RoomDetail({ room, language, isAdmin, featureSettings, onCompleteTask, onSharedCompleteTask, onBack, onRefresh }: RoomDetailProps) {
   const { taskName: translateTask, roomDisplayName, timeAgo, t } = useTranslation(language);
   const [animatedTask, setAnimatedTask] = useState<number | null>(null);
   const [editingTask, setEditingTask] = useState<number | null>(null);
@@ -390,6 +392,12 @@ export function RoomDetail({ room, language, isAdmin, onCompleteTask, onBack, on
                     style={{ padding: '6px 14px', fontSize: 12 }}>
                     <CheckIcon /> {t('roomDetail.done')}
                   </button>
+                  {featureSettings?.sharedTaskEnabled && (
+                    <button onClick={() => onSharedCompleteTask(task.id, task.name)} className="tq-btn tq-btn-secondary"
+                      style={{ padding: '6px 10px', fontSize: 11 }}>
+                      {t('task.sharedDone')}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
