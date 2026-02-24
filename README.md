@@ -4,7 +4,7 @@
 
 **TidyQuest** is a self-hosted web application that gamifies housework using RPG mechanics. Complete tasks, earn coins, unlock achievements, and compete with your family on the leaderboard.
 
-![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)
+![Version](https://img.shields.io/badge/version-0.3.0-orange.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 
