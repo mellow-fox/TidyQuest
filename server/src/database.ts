@@ -142,7 +142,6 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_task_completions_userId ON task_completions(userId);
     CREATE INDEX IF NOT EXISTS idx_task_completions_taskId ON task_completions(taskId);
     CREATE INDEX IF NOT EXISTS idx_task_completions_completedAt ON task_completions(completedAt);
-    CREATE INDEX IF NOT EXISTS idx_task_completions_status ON task_completions(status);
     CREATE INDEX IF NOT EXISTS idx_reward_redemptions_userId ON reward_redemptions(userId);
     CREATE INDEX IF NOT EXISTS idx_reward_redemptions_status ON reward_redemptions(status);
   `);
@@ -179,6 +178,8 @@ export function initDatabase() {
       }
     }
   }
+
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_task_completions_status ON task_completions(status);`);
 
   // One-time migration: populate task_assignees from legacy tasks.assignedUserId
   const migratedAssignees = db.prepare("SELECT value FROM app_settings WHERE key = 'taskAssigneesMigrated_v1'").get() as any;
