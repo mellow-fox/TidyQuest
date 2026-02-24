@@ -58,7 +58,10 @@ export function useAuth() {
   const refreshUser = async () => {
     try {
       const userData = await api.me();
-      setUser(userData);
+      // Guard: don't restore session if user logged out during the in-flight request
+      if (localStorage.getItem('tidyquest_token')) {
+        setUser(userData);
+      }
     } catch { /* ignore */ }
   };
 

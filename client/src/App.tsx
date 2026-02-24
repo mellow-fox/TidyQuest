@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { api } from './hooks/useApi';
@@ -40,6 +40,7 @@ function AppContent() {
     return (saved === 'blue' || saved === 'rose' || saved === 'night') ? saved : 'orange';
   });
   const [vacationConfig, setVacationConfig] = useState<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null } | null>(null);
+  const vacationUpdatePending = useRef(false);
   const [confetti, setConfetti] = useState(false);
   const [taskErrorMsg, setTaskErrorMsg] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -65,7 +66,7 @@ function AppContent() {
         api.getRooms(),
       ]);
       setDashboardData(dash);
-      if (dash.vacation) setVacationConfig(dash.vacation);
+      if (dash.vacation && !vacationUpdatePending.current) setVacationConfig(dash.vacation);
       setRooms(roomsData);
       setLeaderboard(lb);
       setFamily(lb);
@@ -370,8 +371,13 @@ function AppContent() {
                 family={familySettings}
                 vacationConfig={vacationConfig ?? undefined}
                 onUpdateVacation={async (data) => {
-                  const updated = await api.updateVacationConfig(data);
-                  setVacationConfig(updated);
+                  vacationUpdatePending.current = true;
+                  try {
+                    const updated = await api.updateVacationConfig(data);
+                    setVacationConfig(updated);
+                  } finally {
+                    vacationUpdatePending.current = false;
+                  }
                 }}
                 onUpdateRole={async (targetUserId, role) => {
                   await api.updateUserRole(targetUserId, role);
