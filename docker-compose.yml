@@ -1,6 +1,7 @@
 services:
   tidyquest:
     build: .
+    user: "1000:1000"
     ports:
       - "3020:3000"
     volumes:
