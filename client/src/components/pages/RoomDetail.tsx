@@ -475,7 +475,7 @@ export function RoomDetail({ room, language, isAdmin, currentUserId, currentUser
                       {editForm.assignmentType === 'users' && (
                         <>
                           <div style={{ marginLeft: 70, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                            {(users || []).filter(u => u.role !== 'admin').map(u => {
+                            {(users || []).map(u => {
                               const checked = editForm.assignmentUserIds.includes(u.id);
                               return (
                                 <label key={u.id} style={{
@@ -811,7 +811,7 @@ export function RoomDetail({ room, language, isAdmin, currentUserId, currentUser
                   {newAssignmentType === 'users' && (
                     <>
                       <div style={{ marginLeft: 70, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {(users || []).filter(u => u.role !== 'admin').map(u => {
+                        {(users || []).map(u => {
                           const checked = newAssignmentUserIds.includes(u.id);
                           return (
                             <label key={u.id} style={{

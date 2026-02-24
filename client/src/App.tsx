@@ -48,24 +48,25 @@ function AppContent() {
 
   const loadDashboard = useCallback(async () => {
     try {
-      const [dash, lb, hist, users, coinCfg, ach] = await Promise.all([
+      const [dash, lb, hist, users, coinCfg, ach, roomsData] = await Promise.all([
         api.dashboard(),
         api.leaderboard(leaderboardPeriod),
         api.history(50, 0),
         api.getUsers(),
         api.getCoinsConfig(),
         api.achievements(),
+        api.getRooms(),
       ]);
       setDashboardData(dash);
       if (dash.vacation) setVacationConfig(dash.vacation);
-      setRooms(await api.getRooms());
+      setRooms(roomsData);
       setLeaderboard(lb);
       setFamily(lb);
       setFamilySettings(users);
       setCompletions(hist.history || []);
       setCoinsByEffort(coinCfg.coinsByEffort || { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
       setAchievementsData(ach);
-      await refreshUser();
+      refreshUser();
     } catch { /* not logged in */ }
   }, [leaderboardPeriod, refreshUser]);
 

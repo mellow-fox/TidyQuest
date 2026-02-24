@@ -96,6 +96,8 @@ export function Settings({
   const [memberGoalMsg, setMemberGoalMsg] = useState<Record<number, string>>({});
   const [coinAdjust, setCoinAdjust] = useState<Record<number, string>>({});
   const [coinAdjustMsg, setCoinAdjustMsg] = useState<Record<number, string>>({});
+  const [vacationEnabled, setVacationEnabled] = useState(!!vacationConfig?.vacationMode);
+  const [vacationEndDate, setVacationEndDate] = useState(vacationConfig?.vacationEndDate ?? null);
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifChatId, setNotifChatId] = useState('');
@@ -149,6 +151,11 @@ export function Settings({
   useEffect(() => {
     setCoinsDraft(coinsByEffort);
   }, [coinsByEffort]);
+
+  useEffect(() => {
+    setVacationEnabled(!!vacationConfig?.vacationMode);
+    setVacationEndDate(vacationConfig?.vacationEndDate ?? null);
+  }, [vacationConfig?.vacationMode, vacationConfig?.vacationEndDate]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -488,28 +495,34 @@ export function Settings({
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.vacationMode')}</div>
               <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.vacationDesc')}</div>
-              {vacationConfig?.vacationMode && vacationConfig.vacationStartDate && (
+              {vacationEnabled && vacationConfig?.vacationStartDate && (
                 <div style={{ fontSize: 11, color: 'var(--warm-accent)', marginTop: 2 }}>
                   {t('settings.vacationSince')} {new Date(vacationConfig.vacationStartDate).toLocaleDateString(locale)}
                 </div>
               )}
             </div>
             <Toggle
-              checked={!!vacationConfig?.vacationMode}
-              onChange={async (val) => { await onUpdateVacation?.({ vacationMode: val }); }}
+              checked={vacationEnabled}
+              onChange={async (val) => {
+                setVacationEnabled(val);
+                if (!val) setVacationEndDate(null);
+                await onUpdateVacation?.({ vacationMode: val });
+              }}
             />
           </div>
-          {vacationConfig?.vacationMode && (
+          {vacationEnabled && (
             <div style={{ marginTop: 10, paddingLeft: 34, display: 'flex', alignItems: 'center', gap: 10 }}>
               <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--warm-text-light)' }}>
                 {t('settings.vacationReturnDate')}
               </label>
               <input
                 type="date"
-                value={vacationConfig.vacationEndDate ? vacationConfig.vacationEndDate.slice(0, 10) : ''}
+                value={vacationEndDate ? vacationEndDate.slice(0, 10) : ''}
                 min={new Date().toISOString().slice(0, 10)}
                 onChange={async (e) => {
-                  await onUpdateVacation?.({ vacationEndDate: e.target.value || null });
+                  const val = e.target.value || null;
+                  setVacationEndDate(val);
+                  await onUpdateVacation?.({ vacationEndDate: val });
                 }}
                 style={{ fontSize: 13, padding: '4px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', background: 'var(--warm-bg)', color: 'var(--warm-text)' }}
               />
