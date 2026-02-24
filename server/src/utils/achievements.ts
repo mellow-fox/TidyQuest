@@ -4,7 +4,7 @@ export interface AchievementDef {
   descKey: string;
   icon: 'spark' | 'fire' | 'coin' | 'star' | 'crown' | 'broom' | 'heart' | 'shield' | 'rocket' | 'diamond';
   threshold: number;
-  metric: 'completions' | 'streak' | 'coins' | 'rooms_clean' | 'weekly_tasks' | 'perfect_weeks';
+  metric: 'completions' | 'streak' | 'coins' | 'rooms_clean' | 'weekly_tasks' | 'weekend_tasks' | 'perfect_weeks';
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
@@ -37,7 +37,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'room_master_5', titleKey: 'achievements.housePride', descKey: 'achievements.housePrideDesc', icon: 'shield', threshold: 5, metric: 'rooms_clean' },
 
   // Weekly productivity
-  { id: 'weekly_5', titleKey: 'achievements.weekendWarrior', descKey: 'achievements.weekendWarriorDesc', icon: 'star', threshold: 5, metric: 'weekly_tasks' },
+  { id: 'weekly_5', titleKey: 'achievements.weekendWarrior', descKey: 'achievements.weekendWarriorDesc', icon: 'star', threshold: 5, metric: 'weekend_tasks' },
   { id: 'weekly_15', titleKey: 'achievements.superWeek', descKey: 'achievements.superWeekDesc', icon: 'rocket', threshold: 15, metric: 'weekly_tasks' },
 
   // Perfect weeks (all due tasks done)
@@ -51,6 +51,7 @@ export interface AchievementStats {
   coins: number;
   rooms_clean: number;
   weekly_tasks: number;
+  weekend_tasks: number;
   perfect_weeks: number;
 }
 

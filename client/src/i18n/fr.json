@@ -152,6 +152,8 @@
       "themeNight": "Nuit",
       "vacationMode": "Mode vacances",
       "vacationDesc": "Suspendre tous les rappels de tâches pendant votre absence",
+      "vacationSince": "En vacances depuis le",
+      "vacationReturnDate": "Date de retour",
       "registrationEnabled": "Autoriser les nouvelles inscriptions",
       "registrationEnabledDesc": "Si désactivé, aucun nouveau compte ne peut être créé depuis la page d'inscription.",
       "adminRequired": "Un parent admin est requis pour modifier les paramètres.",
@@ -197,6 +199,8 @@
       "streak": "série",
       "roleMember": "Membre",
       "deleteUser": "Supprimer l'utilisateur",
+      "adjustCoins": "Ajuster",
+      "coinsBalance": "Solde",
       "deleteUserConfirm": "Supprimer \"{user}\" ? Cette action est irréversible.",
       "goalCoins": "Objectif pièces",
       "goalTitle": "Titre de l'objectif",
@@ -258,7 +262,17 @@
       "settingsSubtitle": "Configurez votre expérience",
       "achievementsSubtitle": "Transforme les tâches en jeu avec des badges et objectifs",
       "alreadyDoneToday": "Tu as déjà fait cette tâche aujourd'hui !",
-      "alreadyDoneByOther": "Cette tâche a déjà été faite par quelqu'un d'autre aujourd'hui !"
+      "alreadyDoneByOther": "Cette tâche a déjà été faite par quelqu'un d'autre aujourd'hui !",
+      "notAssigned": "Cette tâche ne t'est pas attribuée",
+      "doneBy": "Fait par {name}",
+      "childrenGroup": "Enfants"
+    },
+    "admin": {
+      "whoDidThisTask": "Qui a fait cette tâche ?",
+      "confirmCompletion": "Confirmer",
+      "alreadyCompletedBy": "Déjà fait par {name}",
+      "completeForSelf": "Terminer pour moi",
+      "noOneSelected": "Sélectionne au moins une personne"
     },
     "calendar": {
       "mon": "Lun",
@@ -344,7 +358,8 @@
       "noActivity": "Aucune activité pour le moment. Complétez une tâche pour commencer !",
       "previous": "Précédent",
       "next": "Suivant",
-      "of": "sur"
+      "of": "sur",
+      "cancel": "Annuler la complétion"
     },
     "roomDetail": {
       "name": "Nom",
@@ -354,12 +369,20 @@
       "effort": "Effort",
       "frequency": "Fréquence",
       "actions": "Actions",
+      "assigned": "Assigné",
+      "coins": "Pièces",
+      "reset": "Annuler la complétion",
       "deleteTask": "Supprimer la tâche",
       "done": "Fait",
+      "assignToChildren": "Attribuer au groupe enfants",
       "seasonal": "Saisonnier",
       "taskName": "Nom de la tâche...",
       "addTask": "Ajouter une tâche",
-      "icon": "Icône"
+      "icon": "Icône",
+      "nextDue": "Prochaine échéance",
+      "overdue": "En retard",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain"
     },
     "avatars": {
       "cat": "Chat",
@@ -411,6 +434,10 @@
       "healthNeedsAttention": "À surveiller",
       "healthCritical": "Critique",
       "deleteRoomConfirm": "Supprimer \"{room}\" et toutes ses tâches ? Cette action est définitive.",
+      "assignedTo": "Attribuée à {name}",
+      "assignRoom": "Attribuer la pièce",
+      "noAssignment": "Pas d'attribution (tout le monde)",
+      "specificUsers": "Utilisateurs spécifiques",
       "noRoomsYet": "Aucune pièce pour le moment",
       "clickAddRoom": "Cliquez sur \"Ajouter une pièce\" pour commencer !",
       "addRoomTitle": "Ajouter une pièce",
@@ -428,7 +455,14 @@
       "roomNotFound": "Pièce introuvable.",
       "backToRooms": "Retour aux pièces",
       "tasksTracked": "tâches suivies",
-      "icon": "Icône"
+      "icon": "Icône",
+      "assignConflictError": "Les tâches suivantes sont déjà assignées à un autre utilisateur : {tasks}. Assigner cette personne réassignera toutes les tâches de cette room. Veux-tu continuer ?",
+      "assignConflictConfirm": "Oui, réassigner",
+      "modeFirst": "Premier arrivé, premier servi",
+      "modeShared": "Partagé",
+      "modeCustom": "Personnalisé",
+      "totalPercentage": "Total : {total}%",
+      "done": "fait"
     },
     "common": {
       "save": "Enregistrer",
@@ -437,7 +471,8 @@
       "delete": "Supprimer",
       "edit": "Modifier",
       "loading": "Chargement",
-      "add": "Ajouter"
+      "add": "Ajouter",
+      "you": "vous"
     },
     "units": {
       "hours": "heures",
@@ -528,7 +563,7 @@
       "housePride": "Fierte du foyer",
       "housePrideDesc": "Garde 5 pieces en bonne sante en meme temps",
       "weekendWarrior": "Guerrier du week-end",
-      "weekendWarriorDesc": "Termine 5 tâches en une semaine",
+      "weekendWarriorDesc": "Termine 5 tâches en un week-end",
       "superWeek": "Super semaine",
       "superWeekDesc": "Termine 15 tâches en une semaine",
       "perfectWeek": "Semaine parfaite",

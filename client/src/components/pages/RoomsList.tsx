@@ -3,6 +3,7 @@ import HealthBar from '../shared/HealthBar';
 import { getRoomIcon } from '../icons/RoomIcons';
 import { TaskIcon, TASK_ICON_OPTIONS } from '../icons/TaskIcons';
 import { PlusIcon, TrashIcon } from '../icons/UIIcons';
+import UserAvatar from '../shared/UserAvatar';
 import { getHealthColor, getRoomHealth } from '../../utils/health';
 import { ROOM_COLORS } from '../../utils/colors';
 import { api } from '../../hooks/useApi';
@@ -52,6 +53,15 @@ interface TaskConfig {
   initialHealth: number;
 }
 
+interface AssignedUser {
+  id: number;
+  displayName: string;
+  avatarColor: string;
+  avatarType?: string;
+  avatarPreset?: string;
+  avatarPhotoUrl?: string;
+}
+
 interface RoomsListProps {
   rooms: Array<{
     id: number;
@@ -60,23 +70,35 @@ interface RoomsListProps {
     color: string;
     accentColor: string;
     health: number;
+    assignedUserId?: number | null;
+    assignedUser?: AssignedUser | null;
     tasks: Array<{ id: number; name: string; translationKey?: string; iconKey?: string; health: number }>;
   }>;
   language?: string;
   isAdmin: boolean;
+  users?: Array<{ id: number; displayName: string; role: string; avatarColor: string; avatarType?: string; avatarPreset?: string; avatarPhotoUrl?: string }>;
   onSelectRoom: (roomId: number) => void;
-  onCreateRoom: (data: { name: string; roomType: string; color: string; accentColor: string; tasks: any[] }) => void;
+  onCreateRoom: (data: { name: string; roomType: string; color: string; accentColor: string; tasks: any[]; assignedUserId?: number | null }) => Promise<void>;
   onDeleteRoom: (roomId: number) => Promise<void>;
+  onAssignRoom?: (roomId: number, assignedUserId: number | null, force?: boolean) => Promise<void>;
 }
 
-export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom, onDeleteRoom }: RoomsListProps) {
+export function RoomsList({ rooms, language, isAdmin, users, onSelectRoom, onCreateRoom, onDeleteRoom, onAssignRoom }: RoomsListProps) {
   const { taskName, t, roomName: translateRoomName, roomDisplayName } = useTranslation(language);
   const [showModal, setShowModal] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
+  const [createAssignedUserId, setCreateAssignedUserId] = useState<string>('none');
+  const [assigningRoomId, setAssigningRoomId] = useState<number | null>(null);
+  const [assignDropdownValue, setAssignDropdownValue] = useState<string>('none');
+  const [assignSaving, setAssignSaving] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
+  const [assignConflict, setAssignConflict] = useState<{ taskNames: string[] } | null>(null);
   const [selectedType, setSelectedType] = useState('kitchen');
   const [roomName, setRoomName] = useState('');
   const [taskConfigs, setTaskConfigs] = useState<TaskConfig[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [creatingRoom, setCreatingRoom] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [newTaskName, setNewTaskName] = useState('');
 
   const sortedRooms = [...rooms].sort(
@@ -109,7 +131,9 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
     }
   }, [step, selectedType]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    setCreateError(null);
+    setCreatingRoom(true);
     const name = roomName.trim() || translateRoomName(selectedType) || t('rooms.room');
     const colors = ROOM_COLORS[selectedType] || ROOM_COLORS.other;
     const selectedTasks = taskConfigs.filter(t => t.selected).map(t => ({
@@ -121,8 +145,16 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
       isSeasonal: t.isSeasonal,
       initialHealth: t.initialHealth,
     }));
-    onCreateRoom({ name, roomType: selectedType, color: colors.bg, accentColor: colors.accent, tasks: selectedTasks });
-    closeModal();
+    const assignedUserId = createAssignedUserId === 'none' ? null : parseInt(createAssignedUserId);
+    try {
+      await onCreateRoom({ name, roomType: selectedType, color: colors.bg, accentColor: colors.accent, tasks: selectedTasks, assignedUserId });
+      closeModal();
+    } catch (err: unknown) {
+      const msg = err instanceof Error && err.message ? err.message : t('common.error');
+      setCreateError(msg);
+    } finally {
+      setCreatingRoom(false);
+    }
   };
 
   const closeModal = () => {
@@ -132,6 +164,9 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
     setSelectedType('kitchen');
     setTaskConfigs([]);
     setNewTaskName('');
+    setCreateAssignedUserId('none');
+    setCreateError(null);
+    setCreatingRoom(false);
   };
 
   const updateTask = (idx: number, updates: Partial<TaskConfig>) => {
@@ -163,6 +198,38 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
     if (!shouldDelete) return;
     await onDeleteRoom(roomId);
   };
+
+  const assignableUsers = (users || []).filter(u => u.role !== 'admin');
+
+  const openAssignModal = (e: React.MouseEvent, room: any) => {
+    e.stopPropagation();
+    setAssigningRoomId(room.id);
+    setAssignDropdownValue(room.assignedUserId ? String(room.assignedUserId) : 'none');
+    setAssignError(null);
+    setAssignConflict(null);
+  };
+
+  const doAssign = async (force = false) => {
+    if (!assigningRoomId || !onAssignRoom) return;
+    setAssignSaving(true);
+    setAssignError(null);
+    const userId = assignDropdownValue === 'none' ? null : parseInt(assignDropdownValue);
+    try {
+      await onAssignRoom(assigningRoomId, userId, force);
+      setAssignSaving(false);
+      setAssignConflict(null);
+      setAssigningRoomId(null);
+    } catch (err: any) {
+      setAssignSaving(false);
+      if (err?.body?.error === 'tasks_have_conflicting_assignments') {
+        setAssignConflict({ taskNames: err.body.conflictingTaskNames || [] });
+      } else {
+        setAssignError(err?.message || 'Error');
+      }
+    }
+  };
+
+  const saveAssignment = () => doAssign(false);
 
   const healthLabel = (h: number): string =>
     h >= 70 ? t('rooms.healthHealthy') : h >= 40 ? t('rooms.healthNeedsAttention') : t('rooms.healthCritical');
@@ -205,48 +272,76 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
           return (
             <div key={room.id} className="tq-card tq-card-hover"
               onClick={() => onSelectRoom(room.id)}
-              style={{ padding: 24, cursor: 'pointer', position: 'relative' }}>
-              {isAdmin && (
-                <button
-                  className="tq-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteRoom(room.id, room.name);
-                  }}
-                  aria-label={`${t('common.delete')} ${roomDisplayName(room.name, room.roomType)}`}
-                  title={`${t('common.delete')} ${roomDisplayName(room.name, room.roomType)}`}
-                  style={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 16,
-                    width: 26,
-                    height: 26,
-                    borderRadius: 9,
-                    border: '1.5px solid var(--warm-danger-border)',
-                    backgroundColor: 'var(--warm-danger-bg)',
-                    color: 'var(--warm-danger)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0,
-                  }}
-                >
-                  <TrashIcon />
-                </button>
-              )}
+              style={{ padding: 24, cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
                 <div style={{
-                  width: 56, height: 56, borderRadius: 18,
+                  width: 56, height: 56, borderRadius: 18, flexShrink: 0,
                   backgroundColor: room.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: `2px solid ${room.accentColor}33`,
                 }}><RoomIcon /></div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--warm-text)' }}>{roomDisplayName(room.name, room.roomType)}</div>
                   <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 600 }}>
                     {room.tasks.length} {t('rooms.tasks')} &middot; {healthLabel(rh)}
                   </div>
+                  {room.assignedUser && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6, padding: '3px 8px 3px 4px', borderRadius: 20, backgroundColor: 'var(--warm-bg-subtle)', border: '1px solid var(--warm-border)' }}>
+                      <UserAvatar
+                        name={room.assignedUser.displayName}
+                        color={room.assignedUser.avatarColor}
+                        size={18}
+                        avatarType={room.assignedUser.avatarType as any}
+                        avatarPreset={room.assignedUser.avatarPreset}
+                        avatarPhotoUrl={room.assignedUser.avatarPhotoUrl}
+                      />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-secondary)' }}>{room.assignedUser.displayName}</span>
+                    </div>
+                  )}
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 900, color: getHealthColor(rh), marginRight: isAdmin ? 34 : 0 }}>{rh}%</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: getHealthColor(rh) }}>{rh}%</div>
+                  {isAdmin && (
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      {onAssignRoom && (
+                        <button
+                          className="tq-btn"
+                          onClick={(e) => openAssignModal(e, room)}
+                          title={t('rooms.assignRoom')}
+                          style={{
+                            width: 26, height: 26, borderRadius: 9,
+                            border: '1.5px solid var(--warm-border)',
+                            backgroundColor: 'var(--warm-bg-subtle)',
+                            color: 'var(--warm-text-muted)',
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                          }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                            <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        className="tq-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteRoom(room.id, room.name);
+                        }}
+                        aria-label={`${t('common.delete')} ${roomDisplayName(room.name, room.roomType)}`}
+                        title={`${t('common.delete')} ${roomDisplayName(room.name, room.roomType)}`}
+                        style={{
+                          width: 26, height: 26, borderRadius: 9,
+                          border: '1.5px solid var(--warm-danger-border)',
+                          backgroundColor: 'var(--warm-danger-bg)',
+                          color: 'var(--warm-danger)',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                        }}
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <HealthBar value={rh} height={10} showLabel={false} />
               <div style={{ display: 'flex', gap: 6, marginTop: 14, flexWrap: 'wrap' }}>
@@ -285,12 +380,70 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
         )}
       </div>
 
+      {/* Assign Room Modal */}
+      {assigningRoomId && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+        }} onClick={() => setAssigningRoomId(null)}>
+          <div className="tq-card" style={{ width: 360, padding: 28 }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 17, fontWeight: 900, color: 'var(--warm-text)' }}>{t('rooms.assignRoom')}</h3>
+            <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text-muted)', display: 'block', marginBottom: 6 }}>
+              {t('rooms.assignRoom')}
+            </label>
+            <select
+              value={assignDropdownValue}
+              onChange={(e) => { setAssignDropdownValue(e.target.value); setAssignError(null); }}
+              style={{
+                width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--warm-border)',
+                fontSize: 14, fontFamily: 'Nunito', fontWeight: 600, color: 'var(--warm-text)',
+                backgroundColor: 'var(--warm-bg-input)', outline: 'none', marginBottom: assignError ? 10 : 20,
+              }}
+            >
+              <option value="none">{t('rooms.noAssignment')}</option>
+              {assignableUsers.map(u => (
+                <option key={u.id} value={String(u.id)}>{u.displayName}</option>
+              ))}
+            </select>
+            {assignError && (
+              <div style={{
+                marginBottom: 16, padding: '10px 14px', borderRadius: 10,
+                backgroundColor: '#FDECEC', border: '1.5px solid #FCA5A5',
+                fontSize: 12, fontWeight: 600, color: '#991B1B', lineHeight: 1.5,
+              }}>
+                {assignError}
+              </div>
+            )}
+            {assignConflict && (
+              <div style={{
+                marginBottom: 16, padding: '12px 14px', borderRadius: 10,
+                backgroundColor: '#FFF7E6', border: '1.5px solid #FCD34D',
+                fontSize: 12, fontWeight: 600, color: '#92400E', lineHeight: 1.6,
+              }}>
+                {t('rooms.assignConflictError').replace('{tasks}', assignConflict.taskNames.join(', '))}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button className="tq-btn tq-btn-secondary" onClick={() => { setAssigningRoomId(null); setAssignError(null); setAssignConflict(null); }}
+                style={{ padding: '8px 18px', fontSize: 13 }}>{t('common.cancel')}</button>
+              {assignConflict ? (
+                <button className="tq-btn tq-btn-primary" onClick={() => doAssign(true)} disabled={assignSaving}
+                  style={{ padding: '8px 18px', fontSize: 13 }}>{t('rooms.assignConflictConfirm')}</button>
+              ) : (
+                <button className="tq-btn tq-btn-primary" onClick={saveAssignment} disabled={assignSaving}
+                  style={{ padding: '8px 18px', fontSize: 13 }}>{t('common.save')}</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create Room Modal */}
       {showModal && (
         <div style={{
           position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
-        }} onClick={closeModal}>
+        }} onClick={() => { if (!creatingRoom) closeModal(); }}>
           <div className="tq-card" style={{ width: step === 1 ? 480 : 680, maxHeight: '85vh', overflow: 'hidden', boxSizing: 'border-box' }}
             onClick={(e) => e.stopPropagation()}>
             <div style={{ padding: 32, maxHeight: '85vh', overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box' }}>
@@ -328,7 +481,7 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
                   })}
                 </div>
 
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 16 }}>
                   <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text-muted)', display: 'block', marginBottom: 6 }}>
                     {t('rooms.customNameOptional')}
                   </label>
@@ -341,10 +494,32 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
                     }} />
                 </div>
 
+                {assignableUsers.length > 0 && (
+                  <div style={{ marginBottom: 24 }}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text-muted)', display: 'block', marginBottom: 6 }}>
+                      {t('rooms.assignRoom')}
+                    </label>
+                    <select
+                      value={createAssignedUserId}
+                      onChange={(e) => setCreateAssignedUserId(e.target.value)}
+                      style={{
+                        width: '100%', padding: '10px 12px', borderRadius: 12, border: '1.5px solid var(--warm-border)',
+                        fontSize: 14, fontFamily: 'Nunito', fontWeight: 600, color: 'var(--warm-text)',
+                        backgroundColor: 'var(--warm-bg-subtle)', outline: 'none', cursor: 'pointer', boxSizing: 'border-box',
+                      }}
+                    >
+                      <option value="none">{t('rooms.noAssignment')}</option>
+                      {assignableUsers.map(u => (
+                        <option key={u.id} value={String(u.id)}>{u.displayName}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                  <button className="tq-btn tq-btn-secondary" onClick={closeModal}
+                  <button className="tq-btn tq-btn-secondary" onClick={closeModal} disabled={creatingRoom}
                     style={{ padding: '10px 22px', fontSize: 13 }}>{t('common.cancel')}</button>
-                  <button className="tq-btn tq-btn-primary" onClick={() => setStep(2)}
+                  <button className="tq-btn tq-btn-primary" onClick={() => setStep(2)} disabled={creatingRoom}
                     style={{ padding: '10px 22px', fontSize: 13 }}>{t('rooms.nextConfigure')}</button>
                 </div>
               </>
@@ -517,15 +692,20 @@ export function RoomsList({ rooms, language, isAdmin, onSelectRoom, onCreateRoom
                 )}
 
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 600 }}>
-                    {taskConfigs.filter(t => t.selected).length} {t('rooms.tasksSelected')}
+                  <div style={{ display: 'grid', gap: 4 }}>
+                    <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 600 }}>
+                      {taskConfigs.filter(t => t.selected).length} {t('rooms.tasksSelected')}
+                    </div>
+                    {createError && (
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-danger)' }}>{createError}</div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: 10 }}>
-                    <button className="tq-btn tq-btn-secondary" onClick={closeModal}
+                    <button className="tq-btn tq-btn-secondary" onClick={closeModal} disabled={creatingRoom}
                       style={{ padding: '10px 22px', fontSize: 13 }}>{t('common.cancel')}</button>
                     <button className="tq-btn tq-btn-primary" onClick={handleCreate}
-                      disabled={taskConfigs.filter(t => t.selected).length === 0}
-                      style={{ padding: '10px 22px', fontSize: 13 }}>{t('rooms.createRoom')}</button>
+                      disabled={creatingRoom || taskConfigs.filter(t => t.selected).length === 0}
+                      style={{ padding: '10px 22px', fontSize: 13 }}>{creatingRoom ? `${t('common.loading')}...` : t('rooms.createRoom')}</button>
                   </div>
                 </div>
               </>

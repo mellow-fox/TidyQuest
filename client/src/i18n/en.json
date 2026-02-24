@@ -152,6 +152,8 @@
       "themeNight": "Night",
       "vacationMode": "Vacation Mode",
       "vacationDesc": "Pause all task reminders while you're away",
+      "vacationSince": "On vacation since",
+      "vacationReturnDate": "Return date",
       "registrationEnabled": "Allow New Registrations",
       "registrationEnabledDesc": "When disabled, no new accounts can be created from the registration page.",
       "adminRequired": "Parent admin required to change settings.",
@@ -197,6 +199,8 @@
       "streak": "streak",
       "roleMember": "Member",
       "deleteUser": "Delete user",
+      "adjustCoins": "Adjust",
+      "coinsBalance": "Balance",
       "deleteUserConfirm": "Delete \"{user}\"? This cannot be undone.",
       "goalCoins": "Goal coins",
       "goalTitle": "Goal title",
@@ -258,7 +262,17 @@
       "settingsSubtitle": "Configure your experience",
       "achievementsSubtitle": "Turn chores into a game with badges and milestones",
       "alreadyDoneToday": "You already completed this task today!",
-      "alreadyDoneByOther": "Someone else already completed this task today!"
+      "alreadyDoneByOther": "Someone else already completed this task today!",
+      "notAssigned": "This task is not assigned to you",
+      "doneBy": "Done by {name}",
+      "childrenGroup": "Children"
+    },
+    "admin": {
+      "whoDidThisTask": "Who completed this task?",
+      "confirmCompletion": "Confirm",
+      "alreadyCompletedBy": "Already done by {name}",
+      "completeForSelf": "Complete for myself",
+      "noOneSelected": "Select at least one person"
     },
     "calendar": {
       "mon": "Mon",
@@ -344,7 +358,8 @@
       "noActivity": "No activity yet. Complete a task to get started!",
       "previous": "Previous",
       "next": "Next",
-      "of": "of"
+      "of": "of",
+      "cancel": "Cancel completion"
     },
     "roomDetail": {
       "name": "Name",
@@ -354,12 +369,20 @@
       "effort": "Effort",
       "frequency": "Frequency",
       "actions": "Actions",
+      "assigned": "Assigned",
+      "coins": "Coins",
+      "reset": "Undo completion",
       "deleteTask": "Delete Task",
       "done": "Done",
+      "assignToChildren": "Assign to Children group",
       "seasonal": "Seasonal",
       "taskName": "Task name...",
       "addTask": "Add Task",
-      "icon": "Icon"
+      "icon": "Icon",
+      "nextDue": "Next Due",
+      "overdue": "Overdue",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
     },
     "avatars": {
       "cat": "Cat",
@@ -411,6 +434,10 @@
       "healthNeedsAttention": "Needs attention",
       "healthCritical": "Critical",
       "deleteRoomConfirm": "Delete \"{room}\" and all its tasks? This cannot be undone.",
+      "assignedTo": "Assigned to {name}",
+      "assignRoom": "Assign room",
+      "noAssignment": "No assignment (everyone)",
+      "specificUsers": "Specific users",
       "noRoomsYet": "No rooms yet",
       "clickAddRoom": "Click \"Add Room\" to get started!",
       "addRoomTitle": "Add a Room",
@@ -428,7 +455,14 @@
       "roomNotFound": "Room not found.",
       "backToRooms": "Back to Rooms",
       "tasksTracked": "tasks tracked",
-      "icon": "Icon"
+      "icon": "Icon",
+      "assignConflictError": "The following tasks are already assigned to another user: {tasks}. Assigning this person will reassign all tasks in this room to them. Do you want to continue?",
+      "assignConflictConfirm": "Yes, reassign",
+      "modeFirst": "First come, first served",
+      "modeShared": "Shared",
+      "modeCustom": "Custom",
+      "totalPercentage": "Total: {total}%",
+      "done": "done"
     },
     "common": {
       "save": "Save",
@@ -437,7 +471,8 @@
       "delete": "Delete",
       "edit": "Edit",
       "loading": "Loading",
-      "add": "Add"
+      "add": "Add",
+      "you": "You"
     },
     "units": {
       "hours": "hours",
@@ -528,7 +563,7 @@
       "housePride": "House Pride",
       "housePrideDesc": "Keep 5 rooms healthy at the same time",
       "weekendWarrior": "Weekend Warrior",
-      "weekendWarriorDesc": "Complete 5 chores in one week",
+      "weekendWarriorDesc": "Complete 5 chores in a weekend",
       "superWeek": "Super Week",
       "superWeekDesc": "Complete 15 chores in one week",
       "perfectWeek": "Perfect Week",

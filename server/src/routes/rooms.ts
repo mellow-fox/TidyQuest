@@ -3,7 +3,7 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth } from '../utils/health';
 import { suggestTaskIcon } from '../utils/taskIcons';
-import { ensureAdmin } from '../utils/adminHelpers';
+import { ensureAdmin, getGlobalVacation } from '../utils/adminHelpers';
 
 const router = Router();
 
@@ -128,7 +128,7 @@ router.use(authMiddleware);
 // List all rooms with computed health (single JOIN query — no N+1)
 router.get('/', (req: AuthRequest, res: Response) => {
   const rooms = db.prepare('SELECT * FROM rooms ORDER BY sortOrder, id').all() as any[];
-  const user = db.prepare('SELECT isVacationMode, vacationStartDate FROM users WHERE id = ?').get(req.userId) as any;
+  const vacation = getGlobalVacation();
 
   // Fetch all tasks in one query, then group by roomId
   const allTasks = db.prepare('SELECT * FROM tasks').all() as any[];
@@ -138,13 +138,66 @@ router.get('/', (req: AuthRequest, res: Response) => {
     tasksByRoom.get(t.roomId)!.push(t);
   }
 
+  // Fetch all users for assignedUser resolution
+  const allUsers = db.prepare('SELECT id, displayName, avatarColor, avatarType, avatarPreset, avatarPhotoUrl FROM users').all() as any[];
+  const usersById = new Map(allUsers.map((u: any) => [u.id, u]));
+
+  // Batch-fetch today's completions for Done button display
+  const nowIso = new Date().toISOString();
+  const todayCompletions = db.prepare(
+    `SELECT tc.id as completionId, tc.taskId, tc.userId, u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
+     FROM task_completions tc
+     JOIN users u ON tc.userId = u.id
+     WHERE date(tc.completedAt) = date(?)`
+  ).all(nowIso) as any[];
+  const completedTodayByTask = new Map(todayCompletions.map((c: any) => [c.taskId, {
+    completionId: c.completionId, userId: c.userId, displayName: c.displayName, avatarColor: c.avatarColor,
+    avatarType: c.avatarType, avatarPreset: c.avatarPreset, avatarPhotoUrl: c.avatarPhotoUrl,
+  }]));
+
+  // Build sharedCompletions map (all completions per task, for shared/duo mode)
+  const sharedCompletionsByTask = new Map<number, Array<{ userId: number; displayName: string; completionId: number }>>();
+  for (const c of todayCompletions as any[]) {
+    if (!sharedCompletionsByTask.has(c.taskId)) sharedCompletionsByTask.set(c.taskId, []);
+    sharedCompletionsByTask.get(c.taskId)!.push({ userId: c.userId, displayName: c.displayName, completionId: c.completionId });
+  }
+
+  // Batch-fetch all task_assignees
+  const allTaskAssignees = db.prepare('SELECT taskId, userId, coinPercentage FROM task_assignees').all() as { taskId: number; userId: number; coinPercentage: number }[];
+  const assigneesByTask = new Map<number, { userId: number; coinPercentage: number }[]>();
+  for (const a of allTaskAssignees) {
+    if (!assigneesByTask.has(a.taskId)) assigneesByTask.set(a.taskId, []);
+    assigneesByTask.get(a.taskId)!.push({ userId: a.userId, coinPercentage: a.coinPercentage ?? 0 });
+  }
+
   const roomsWithHealth = rooms.map((room) => {
     const tasks = tasksByRoom.get(room.id) || [];
-    const tasksWithHealth = tasks.map((t) => ({
-      ...t,
-      isSeasonal: !!t.isSeasonal,
-      health: calculateHealth(t.lastCompletedAt, t.frequencyDays, !!user.isVacationMode, user.vacationStartDate),
-    }));
+    const roomAssignedUserId = room.assignedUserId || null;
+    const tasksWithHealth = tasks.map((t) => {
+      const taskAssigneeEntries = assigneesByTask.get(t.id) || [];
+      const taskAssignedUserIds = taskAssigneeEntries.map(a => a.userId);
+      const effectiveAssignedUserIds = roomAssignedUserId ? [roomAssignedUserId] : taskAssignedUserIds;
+      const assignedUsers = taskAssigneeEntries
+        .map(a => {
+          const u = usersById.get(a.userId);
+          if (!u) return null;
+          return { id: u.id, displayName: u.displayName, avatarColor: u.avatarColor, avatarType: u.avatarType, avatarPreset: u.avatarPreset, avatarPhotoUrl: u.avatarPhotoUrl, coinPercentage: a.coinPercentage };
+        })
+        .filter(Boolean);
+      const mode = t.assignmentMode || 'first';
+      return {
+        ...t,
+        isSeasonal: !!t.isSeasonal,
+        assignedToChildren: !!t.assignedToChildren,
+        assignedUserIds: taskAssignedUserIds,
+        assignedUsers,
+        effectiveAssignedUserIds,
+        completedTodayBy: completedTodayByTask.get(t.id) || null,
+        assignmentMode: mode,
+        sharedCompletions: (mode === 'shared' || mode === 'custom') ? (sharedCompletionsByTask.get(t.id) || []) : undefined,
+        health: calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate),
+      };
+    });
 
     const nonSeasonal = tasksWithHealth.filter((t) => !t.isSeasonal);
     const forAvg = nonSeasonal.length > 0 ? nonSeasonal : tasksWithHealth;
@@ -153,7 +206,8 @@ router.get('/', (req: AuthRequest, res: Response) => {
       ? Math.round(forAvg.reduce((s, t) => s + t.health * t.effort, 0) / totalEffort)
       : 100;
 
-    return { ...room, tasks: tasksWithHealth, health };
+    const assignedUser = room.assignedUserId ? (usersById.get(room.assignedUserId) || null) : null;
+    return { ...room, tasks: tasksWithHealth, health, assignedUser };
   });
 
   res.json(roomsWithHealth);
@@ -175,13 +229,20 @@ router.post('/', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Admin only' });
   }
 
-  const { name, roomType, color, accentColor, tasks: customTasks } = req.body;
+  const { name, roomType, color, accentColor, tasks: customTasks, assignedUserId } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
+
+  // Validate assignedUserId if provided
+  const resolvedAssignedUserId: number | null = assignedUserId != null ? Number(assignedUserId) : null;
+  if (resolvedAssignedUserId !== null) {
+    const targetUser = db.prepare('SELECT id FROM users WHERE id = ?').get(resolvedAssignedUserId);
+    if (!targetUser) return res.status(400).json({ error: 'Assigned user not found' });
+  }
 
   const type = roomType || 'other';
   const result = db.prepare(
-    'INSERT INTO rooms (name, roomType, color, accentColor) VALUES (?, ?, ?, ?)'
-  ).run(name, type, color || '#FFE4CC', accentColor || '#F97316');
+    'INSERT INTO rooms (name, roomType, color, accentColor, assignedUserId) VALUES (?, ?, ?, ?, ?)'
+  ).run(name, type, color || '#FFE4CC', accentColor || '#F97316', resolvedAssignedUserId);
 
   const roomId = result.lastInsertRowid;
 
@@ -193,6 +254,7 @@ router.post('/', (req: AuthRequest, res: Response) => {
   const insert = db.prepare(
     'INSERT INTO tasks (roomId, name, frequencyDays, effort, isSeasonal, lastCompletedAt, translationKey, iconKey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   );
+  const insertedTaskIds: number[] = [];
   for (const task of tasksToInsert) {
     // If initialHealth is provided, compute a fake lastCompletedAt to represent current state
     let lastCompletedAt: string | null = null;
@@ -204,7 +266,16 @@ router.post('/', (req: AuthRequest, res: Response) => {
       lastCompletedAt = new Date().toISOString();
     }
     const iconKey = task.iconKey || suggestTaskIcon(task.name, task.translationKey || null);
-    insert.run(roomId, task.name, task.frequencyDays || 7, task.effort || 1, task.isSeasonal ? 1 : 0, lastCompletedAt, task.translationKey || null, iconKey);
+    const taskResult = insert.run(roomId, task.name, task.frequencyDays || 7, task.effort || 1, task.isSeasonal ? 1 : 0, lastCompletedAt, task.translationKey || null, iconKey);
+    insertedTaskIds.push(taskResult.lastInsertRowid as number);
+  }
+
+  // If the room is assigned to a user, also assign all tasks to that user
+  if (resolvedAssignedUserId !== null) {
+    const insertAssignee = db.prepare('INSERT OR IGNORE INTO task_assignees (taskId, userId, coinPercentage) VALUES (?, ?, 0)');
+    for (const taskId of insertedTaskIds) {
+      insertAssignee.run(taskId, resolvedAssignedUserId);
+    }
   }
 
   const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(roomId) as any;
@@ -219,15 +290,77 @@ router.put('/:id', (req: AuthRequest, res: Response) => {
   }
 
   const { name, roomType, color, accentColor, sortOrder } = req.body;
-  const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(req.params.id);
+  const room = db.prepare('SELECT * FROM rooms WHERE id = ?').get(req.params.id) as any;
   if (!room) return res.status(404).json({ error: 'Room not found' });
 
-  db.prepare(
-    'UPDATE rooms SET name = COALESCE(?, name), roomType = COALESCE(?, roomType), color = COALESCE(?, color), accentColor = COALESCE(?, accentColor), sortOrder = COALESCE(?, sortOrder) WHERE id = ?'
-  ).run(name, roomType, color, accentColor, sortOrder, req.params.id);
+  // Build SQL dynamically to handle assignedUserId: null (explicit unset) vs undefined (not provided)
+  const params: any[] = [name, roomType, color, accentColor, sortOrder];
+  let sql = 'UPDATE rooms SET name = COALESCE(?, name), roomType = COALESCE(?, roomType), color = COALESCE(?, color), accentColor = COALESCE(?, accentColor), sortOrder = COALESCE(?, sortOrder)';
 
-  const updated = db.prepare('SELECT * FROM rooms WHERE id = ?').get(req.params.id);
-  res.json(updated);
+  if ('assignedUserId' in req.body) {
+    const assignedUserId = req.body.assignedUserId;
+    // Validate that user exists when setting (allow null to unset)
+    if (assignedUserId !== null && assignedUserId !== undefined) {
+      const targetUser = db.prepare('SELECT id, role FROM users WHERE id = ?').get(assignedUserId) as any;
+      if (!targetUser) return res.status(400).json({ error: 'User not found' });
+
+      // Check for tasks in this room already assigned to DIFFERENT users
+      const roomTasks = db.prepare('SELECT id, name FROM tasks WHERE roomId = ?').all(req.params.id) as { id: number; name: string }[];
+      if (roomTasks.length > 0) {
+        const taskIds = roomTasks.map(t => t.id);
+        const conflicting = db.prepare(
+          `SELECT DISTINCT ta.taskId FROM task_assignees ta
+           WHERE ta.taskId IN (${taskIds.map(() => '?').join(',')})
+             AND ta.userId != ?`
+        ).all(...taskIds, Number(assignedUserId)) as { taskId: number }[];
+
+        if (conflicting.length > 0) {
+          const conflictingTaskIds = new Set(conflicting.map(c => c.taskId));
+          const conflictingTaskNames = roomTasks
+            .filter(t => conflictingTaskIds.has(t.id))
+            .map(t => t.name);
+
+          // If force=true, clear conflicting assignments and proceed
+          if (req.body.force !== true) {
+            return res.status(409).json({
+              error: 'tasks_have_conflicting_assignments',
+              conflictingTaskNames,
+            });
+          }
+          // Force mode: remove all existing task-level assignments for conflicting tasks
+          const deleteAssignees = db.prepare('DELETE FROM task_assignees WHERE taskId = ?');
+          for (const taskId of conflictingTaskIds) {
+            deleteAssignees.run(taskId);
+          }
+        }
+      }
+    }
+    sql += ', assignedUserId = ?';
+    params.push(req.body.assignedUserId ?? null);
+  }
+
+  sql += ' WHERE id = ?';
+  params.push(req.params.id);
+  db.prepare(sql).run(...params);
+
+  // If a new assignedUserId was just set, assign all tasks in this room to that user
+  if ('assignedUserId' in req.body && req.body.assignedUserId != null) {
+    const newUserId = Number(req.body.assignedUserId);
+    const roomTasks = db.prepare('SELECT id FROM tasks WHERE roomId = ?').all(req.params.id) as { id: number }[];
+    const insertAssignee = db.prepare('INSERT OR IGNORE INTO task_assignees (taskId, userId, coinPercentage) VALUES (?, ?, 0)');
+    for (const t of roomTasks) {
+      insertAssignee.run(t.id, newUserId);
+    }
+  }
+
+  const updated = db.prepare('SELECT * FROM rooms WHERE id = ?').get(req.params.id) as any;
+
+  // Resolve assignedUser for the response
+  const allUsers = db.prepare('SELECT id, displayName, avatarColor, avatarType, avatarPreset, avatarPhotoUrl FROM users').all() as any[];
+  const usersById = new Map(allUsers.map((u: any) => [u.id, u]));
+  const assignedUser = updated.assignedUserId ? (usersById.get(updated.assignedUserId) || null) : null;
+
+  res.json({ ...updated, assignedUser });
 });
 
 // Delete room (cascades to tasks)

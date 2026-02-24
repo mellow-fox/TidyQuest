@@ -12,9 +12,10 @@ router.get('/export', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Admin only' });
   }
 
-  const users = db.prepare('SELECT id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, isVacationMode, language, createdAt FROM users').all();
+  const users = db.prepare('SELECT id, username, displayName, passwordHash, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, isVacationMode, language, createdAt FROM users').all();
   const rooms = db.prepare('SELECT * FROM rooms').all();
   const tasks = db.prepare('SELECT * FROM tasks').all();
+  const taskAssignees = db.prepare('SELECT * FROM task_assignees').all();
   const completions = db.prepare('SELECT * FROM task_completions').all();
   const settings = db.prepare('SELECT * FROM app_settings').all();
   const goals = db.prepare('SELECT * FROM user_goals').all();
@@ -22,7 +23,7 @@ router.get('/export', (req: AuthRequest, res: Response) => {
   const rewardRedemptions = db.prepare('SELECT * FROM reward_redemptions').all();
 
   res.setHeader('Content-Disposition', 'attachment; filename=tidyquest-backup.json');
-  res.json({ version: 4, exportedAt: new Date().toISOString(), users, rooms, tasks, completions, settings, goals, rewards, rewardRedemptions });
+  res.json({ version: 5, exportedAt: new Date().toISOString(), users, rooms, tasks, taskAssignees, completions, settings, goals, rewards, rewardRedemptions });
 });
 
 // Import data from JSON
@@ -31,7 +32,7 @@ router.post('/import', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Admin only' });
   }
 
-  const { users, rooms, tasks, completions, settings, goals, rewards, rewardRedemptions } = req.body;
+  const { users, rooms, tasks, taskAssignees, completions, settings, goals, rewards, rewardRedemptions } = req.body;
 
   if (!Array.isArray(users) || !Array.isArray(rooms) || !Array.isArray(tasks) || !Array.isArray(completions)) {
     return res.status(400).json({ error: 'Invalid backup format. Expected arrays: users, rooms, tasks, completions' });
@@ -40,6 +41,7 @@ router.post('/import', (req: AuthRequest, res: Response) => {
   const importData = db.transaction(() => {
     // Clear existing data
     db.prepare('DELETE FROM task_completions').run();
+    db.prepare('DELETE FROM task_assignees').run();
     db.prepare('DELETE FROM reward_redemptions').run();
     db.prepare('DELETE FROM user_goals').run();
     db.prepare('DELETE FROM rewards').run();
@@ -75,14 +77,45 @@ router.post('/import', (req: AuthRequest, res: Response) => {
 
     for (const r of rooms) {
       db.prepare(
-        'INSERT INTO rooms (id, name, roomType, color, accentColor, photoUrl, sortOrder, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(r.id, r.name, r.roomType, r.color, r.accentColor, r.photoUrl, r.sortOrder, r.createdAt);
+        'INSERT INTO rooms (id, name, roomType, color, accentColor, photoUrl, sortOrder, assignedUserId, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(r.id, r.name, r.roomType, r.color, r.accentColor, r.photoUrl, r.sortOrder, r.assignedUserId ?? null, r.createdAt);
     }
 
     for (const t of tasks) {
       db.prepare(
-        'INSERT INTO tasks (id, roomId, name, notes, frequencyDays, effort, isSeasonal, lastCompletedAt, translationKey, iconKey, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(t.id, t.roomId, t.name, t.notes || null, t.frequencyDays, t.effort, t.isSeasonal ? 1 : 0, t.lastCompletedAt, t.translationKey || null, t.iconKey || null, t.createdAt);
+        'INSERT INTO tasks (id, roomId, name, notes, frequencyDays, effort, isSeasonal, lastCompletedAt, translationKey, iconKey, assignedToChildren, assignedUserId, assignmentMode, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(
+        t.id,
+        t.roomId,
+        t.name,
+        t.notes || null,
+        t.frequencyDays,
+        t.effort,
+        t.isSeasonal ? 1 : 0,
+        t.lastCompletedAt,
+        t.translationKey || null,
+        t.iconKey || null,
+        t.assignedToChildren ? 1 : 0,
+        t.assignedUserId ?? null,
+        t.assignmentMode || 'first',
+        t.createdAt
+      );
+    }
+
+    if (Array.isArray(taskAssignees)) {
+      for (const ta of taskAssignees) {
+        db.prepare(
+          'INSERT INTO task_assignees (taskId, userId, coinPercentage) VALUES (?, ?, ?)'
+        ).run(ta.taskId, ta.userId, ta.coinPercentage ?? 0);
+      }
+    } else {
+      // Backward compatibility for older backups without task_assignees array
+      for (const t of tasks) {
+        if (t.assignedUserId != null) {
+          db.prepare('INSERT OR IGNORE INTO task_assignees (taskId, userId, coinPercentage) VALUES (?, ?, 0)')
+            .run(t.id, t.assignedUserId);
+        }
+      }
     }
 
     for (const c of completions) {

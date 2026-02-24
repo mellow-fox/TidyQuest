@@ -26,8 +26,10 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   }
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(error.error || 'Request failed');
+    const errorBody = await res.json().catch(() => ({ error: 'Request failed' }));
+    const err = new Error(errorBody.error || 'Request failed') as any;
+    err.body = errorBody;
+    throw err;
   }
 
   return res.json();
@@ -48,7 +50,7 @@ export const api = {
   getRooms: () => apiFetch<any[]>('/rooms'),
   getDefaultTasks: (roomType: string) =>
     apiFetch<Array<{ name: string; frequencyDays: number; effort: number; isSeasonal?: boolean }>>(`/rooms/defaults/${roomType}`),
-  createRoom: (data: { name: string; roomType: string; color?: string; accentColor?: string; tasks?: any[] }) =>
+  createRoom: (data: { name: string; roomType: string; color?: string; accentColor?: string; tasks?: any[]; assignedUserId?: number | null }) =>
     apiFetch<any>('/rooms', { method: 'POST', body: JSON.stringify(data) }),
   updateRoom: (id: number, data: any) =>
     apiFetch<any>(`/rooms/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -57,15 +59,15 @@ export const api = {
 
   // Tasks
   getTasks: (roomId: number) => apiFetch<any[]>(`/rooms/${roomId}/tasks`),
-  createTask: (roomId: number, data: { name: string; notes?: string; frequencyDays?: number; effort?: number; isSeasonal?: boolean; health?: number; iconKey?: string }) =>
+  createTask: (roomId: number, data: { name: string; notes?: string; frequencyDays?: number; effort?: number; isSeasonal?: boolean; health?: number; iconKey?: string; assignedToChildren?: boolean; assignedUserIds?: number[]; assignmentMode?: 'first' | 'shared' | 'custom'; assignedUserPercentages?: Record<number, number> }) =>
     apiFetch<any>(`/rooms/${roomId}/tasks`, { method: 'POST', body: JSON.stringify(data) }),
   updateTask: (id: number, data: any) =>
     apiFetch<any>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteTask: (id: number) =>
     apiFetch<any>(`/tasks/${id}`, { method: 'DELETE' }),
-  completeTask: (id: number, completedAt?: string) =>
+  completeTask: (id: number, onBehalfOfUserId?: number) =>
     apiFetch<{ coinsEarned: number; health: number }>(`/tasks/${id}/complete`, {
-      method: 'POST', body: JSON.stringify({ completedAt }),
+      method: 'POST', body: JSON.stringify(onBehalfOfUserId ? { onBehalfOfUserId } : {}),
     }),
 
   // Leaderboard
@@ -168,4 +170,15 @@ export const api = {
     apiFetch<{ success: boolean }>(`/rewards/${id}`, { method: 'DELETE' }),
   redeemReward: (id: number) =>
     apiFetch<{ redemption: any; coins: number }>(`/rewards/${id}/redeem`, { method: 'POST' }),
+
+  cancelCompletion: (completionId: number) =>
+    apiFetch<{ success: boolean; coinsDeducted: number }>(`/completions/${completionId}`, { method: 'DELETE' }),
+
+  adjustCoins: (userId: number, amount: number) =>
+    apiFetch<any>(`/users/${userId}/adjust-coins`, { method: 'POST', body: JSON.stringify({ amount }) }),
+
+  getVacationConfig: () =>
+    apiFetch<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null }>('/users/vacation-config'),
+  updateVacationConfig: (data: { vacationMode?: boolean; vacationEndDate?: string | null }) =>
+    apiFetch<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null }>('/users/vacation-config', { method: 'PUT', body: JSON.stringify(data) }),
 };

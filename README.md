@@ -4,9 +4,12 @@
 
 **TidyQuest** is a self-hosted web application that gamifies housework using RPG mechanics. Complete tasks, earn coins, unlock achievements, and compete with your family on the leaderboard.
 
-![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)
+![Version](https://img.shields.io/badge/version-0.3.0-orange.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
+
+> [!WARNING]
+> **Early-stage project** — TidyQuest is under active development. You may encounter bugs, incomplete features, or breaking changes between versions. Back up your data regularly and feel free to [open an issue](https://github.com/mellow-fox/TidyQuest/issues) if something breaks.
 
 ---
 
@@ -19,7 +22,7 @@ TidyQuest turns boring chores into quests:
 - **🏆 Leaderboard**: Compete with family members for top position
 - **🎖️ Achievements**: Unlock badges for milestones (100 tasks, 30-day streak, etc.)
 - **📅 Calendar View**: See upcoming due dates at a glance
-- **🌍 Multilingual**: English, French, German, Spanish
+- **🌍 Multilingual**: English, French, German, Spanish, Italian
 - **📱 Telegram Notifications**: Optional reminders for due tasks and rewards
 
 Perfect for families who want to:
@@ -152,12 +155,17 @@ On first launch, the database is empty. Create an admin account via the **Regist
 - ⚙️ **Global Settings**: Configure coins-per-effort, Telegram notifications
 - 🏖️ **Vacation Mode**: Pause task health decay during family vacations
 - 📤 **Backup/Restore**: Export full database as JSON
+- 👤 **Task Assignment**: Assign tasks to specific users with three modes:
+  - **First** — first person to complete earns all coins
+  - **Shared** — each assignee completes once; coins split equally
+  - **Custom** — define a custom coin percentage per assignee (e.g. 70% / 30%)
 
 ### Built-in Defaults
 - **8 Room Types**: Kitchen, Bedroom, Bathroom, Living Room, Office, Garage, Laundry, Garden
 - **60+ Predefined Tasks**: Common household chores with realistic frequencies
 - **10 Preset Rewards**: Movie night, ice cream, stay up late, game time, etc.
 - **12 Achievements**: Unlocked automatically based on activity
+- **5 Languages**: English, French, German, Spanish, Italian
 
 ---
 

@@ -405,6 +405,9 @@ html[data-theme='night'] option {
   .room-task-health,
   .room-task-frequency,
   .room-task-effort,
+  .room-task-coins,
+  .room-task-due,
+  .room-task-assigned,
   .room-task-actions {
     min-width: 0 !important;
   }

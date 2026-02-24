@@ -2,14 +2,16 @@ import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth } from '../utils/health';
+import { getGlobalVacation } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
 
 router.get('/', (req: AuthRequest, res: Response) => {
   const user = db.prepare(
-    'SELECT id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, isVacationMode, vacationStartDate, language FROM users WHERE id = ?'
+    'SELECT id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, language FROM users WHERE id = ?'
   ).get(req.userId) as any;
+  const vacation = getGlobalVacation();
 
   const rooms = db.prepare('SELECT * FROM rooms ORDER BY sortOrder, id').all() as any[];
   const allTasks: any[] = [];
@@ -22,19 +24,63 @@ router.get('/', (req: AuthRequest, res: Response) => {
     tasksByRoom.get(t.roomId)!.push(t);
   }
 
+  // Batch-fetch today's completions for assignment display
+  const nowIso = new Date().toISOString();
+  const todayCompletions = db.prepare(
+    `SELECT tc.taskId, tc.userId, u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
+     FROM task_completions tc
+     JOIN users u ON tc.userId = u.id
+     WHERE date(tc.completedAt) = date(?)`
+  ).all(nowIso) as any[];
+  const completedTodayByTask = new Map(todayCompletions.map((c: any) => [c.taskId, {
+    userId: c.userId, displayName: c.displayName, avatarColor: c.avatarColor,
+    avatarType: c.avatarType, avatarPreset: c.avatarPreset, avatarPhotoUrl: c.avatarPhotoUrl,
+  }]));
+  // Group all today's completions by taskId (for shared mode)
+  const sharedCompletionsByTask = new Map<number, Array<{ userId: number; displayName: string }>>();
+  for (const c of todayCompletions) {
+    if (!sharedCompletionsByTask.has(c.taskId)) sharedCompletionsByTask.set(c.taskId, []);
+    sharedCompletionsByTask.get(c.taskId)!.push({ userId: c.userId, displayName: c.displayName });
+  }
+
+  // Batch-fetch all task assignees
+  const allTaskAssignees = db.prepare(
+    `SELECT ta.taskId, ta.userId, ta.coinPercentage, u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
+     FROM task_assignees ta
+     JOIN users u ON ta.userId = u.id`
+  ).all() as any[];
+  const assigneesByTask = new Map<number, any[]>();
+  for (const a of allTaskAssignees) {
+    if (!assigneesByTask.has(a.taskId)) assigneesByTask.set(a.taskId, []);
+    assigneesByTask.get(a.taskId)!.push(a);
+  }
+
   const nowTs = Date.now();
   const roomsWithHealth = rooms.map((room) => {
     const tasks = tasksByRoom.get(room.id) || [];
     const tasksWithHealth = tasks.map((t) => {
-      const health = calculateHealth(t.lastCompletedAt, t.frequencyDays, !!user.isVacationMode, user.vacationStartDate);
+      const health = calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate);
       const safeFreq = Math.max(1 / 24, Number(t.frequencyDays) || 7);
       const dueDateTs = t.lastCompletedAt
         ? new Date(t.lastCompletedAt).getTime() + safeFreq * 86400000
         : nowTs;
       const dueInDays = Math.ceil((dueDateTs - nowTs) / 86400000);
+      const taskAssigneesForTask = assigneesByTask.get(t.id) || [];
       const taskWithHealth = {
         ...t,
         isSeasonal: !!t.isSeasonal,
+        assignedToChildren: !!t.assignedToChildren,
+        effectiveAssignedUserId: room.assignedUserId ?? t.assignedUserId ?? null,
+        assignedUserIds: taskAssigneesForTask.map((a: any) => a.userId),
+        assignedUsers: taskAssigneesForTask.map((a: any) => ({
+          id: a.userId, displayName: a.displayName, avatarColor: a.avatarColor,
+          avatarType: a.avatarType, avatarPreset: a.avatarPreset, avatarPhotoUrl: a.avatarPhotoUrl,
+          coinPercentage: a.coinPercentage ?? 0,
+        })),
+        assignmentMode: t.assignmentMode || 'first',
+        effectiveAssignedUserIds: taskAssigneesForTask.map((a: any) => a.userId),
+        sharedCompletions: sharedCompletionsByTask.get(t.id) || [],
+        completedTodayBy: completedTodayByTask.get(t.id) || null,
         health,
         dueDate: new Date(dueDateTs).toISOString(),
         dueInDays,
@@ -141,6 +187,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     pendingRewardRequests,
     currentUser: user,
     recentActivity,
+    vacation: { vacationMode: vacation.isVacation, vacationStartDate: vacation.startDate, vacationEndDate: vacation.endDate },
   });
 });
 

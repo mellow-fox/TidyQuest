@@ -24,10 +24,17 @@ interface FamilyUser {
   goalEndAt?: string | null;
 }
 
+interface VacationConfig {
+  vacationMode: boolean;
+  vacationStartDate: string | null;
+  vacationEndDate: string | null;
+}
+
 interface SettingsProps {
   user: User;
   family: FamilyUser[];
-  onToggleVacation: (enabled: boolean) => void;
+  vacationConfig?: VacationConfig;
+  onUpdateVacation?: (data: { vacationMode?: boolean; vacationEndDate?: string | null }) => Promise<void>;
   onUpdateRole: (userId: number, role: 'admin' | 'member' | 'child') => void;
   onAddMember: (data: { username: string; password: string; displayName: string; role: 'child' }) => Promise<void>;
   onDeleteUser: (userId: number) => Promise<void>;
@@ -40,6 +47,7 @@ interface SettingsProps {
   onChangeTheme: (theme: 'orange' | 'blue' | 'rose' | 'night') => void;
   onExport: () => void;
   onImport: () => void;
+  onAdjustCoins?: (userId: number, amount: number) => Promise<void>;
 }
 
 const COLORS = ['#F97316', '#9B72CF', '#4AABDE', '#5CB85C', '#D4A017', '#E25A5A', '#38BDF8', '#EC4899'];
@@ -47,7 +55,8 @@ const COLORS = ['#F97316', '#9B72CF', '#4AABDE', '#5CB85C', '#D4A017', '#E25A5A'
 export function Settings({
   user,
   family,
-  onToggleVacation,
+  vacationConfig,
+  onUpdateVacation,
   onUpdateRole,
   onAddMember,
   onDeleteUser,
@@ -60,6 +69,7 @@ export function Settings({
   onChangeTheme,
   onExport,
   onImport,
+  onAdjustCoins,
 }: SettingsProps) {
   const { t } = useTranslation(user.language);
   const isAdmin = user.role === 'admin';
@@ -84,6 +94,10 @@ export function Settings({
   }>>({});
   const [memberProfileMsg, setMemberProfileMsg] = useState<Record<number, string>>({});
   const [memberGoalMsg, setMemberGoalMsg] = useState<Record<number, string>>({});
+  const [coinAdjust, setCoinAdjust] = useState<Record<number, string>>({});
+  const [coinAdjustMsg, setCoinAdjustMsg] = useState<Record<number, string>>({});
+  const [vacationEnabled, setVacationEnabled] = useState(!!vacationConfig?.vacationMode);
+  const [vacationEndDate, setVacationEndDate] = useState(vacationConfig?.vacationEndDate ?? null);
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifChatId, setNotifChatId] = useState('');
@@ -137,6 +151,11 @@ export function Settings({
   useEffect(() => {
     setCoinsDraft(coinsByEffort);
   }, [coinsByEffort]);
+
+  useEffect(() => {
+    setVacationEnabled(!!vacationConfig?.vacationMode);
+    setVacationEndDate(vacationConfig?.vacationEndDate ?? null);
+  }, [vacationConfig?.vacationMode, vacationConfig?.vacationEndDate]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -361,6 +380,7 @@ export function Settings({
     <div className="page-enter settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 980 }}>
       <div className="tq-card" style={{ padding: 24 }}>
         <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 18px' }}>{t('settings.general')}</h3>
+        {user.role !== 'child' && (<>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: isAdmin ? 'none' : '1px solid var(--warm-border)' }}>
           <BellIcon />
           <div style={{ flex: 1 }}>
@@ -447,6 +467,7 @@ export function Settings({
             {notifMsg && <div style={{ fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>{notifMsg}</div>}
           </div>
         )}
+        </>)}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid var(--warm-border)' }}>
           <div style={{ width: 20, height: 20, borderRadius: 6, background: 'linear-gradient(135deg, var(--warm-accent), var(--warm-accent-light))', border: '1px solid var(--warm-border)' }} />
           <div style={{ flex: 1 }}>
@@ -464,17 +485,55 @@ export function Settings({
             <option value="night">{t('settings.themeNight')}</option>
           </select>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0' }}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="8" r="4" stroke="#B0A090" strokeWidth="1.5" fill="none" />
-            <path d="M5 17L6.5 13H13.5L15 17" stroke="#B0A090" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.vacationMode')}</div>
-            <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.vacationDesc')}</div>
+        {isAdmin && (
+        <div style={{ padding: '14px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="8" r="4" stroke="#B0A090" strokeWidth="1.5" fill="none" />
+              <path d="M5 17L6.5 13H13.5L15 17" stroke="#B0A090" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.vacationMode')}</div>
+              <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.vacationDesc')}</div>
+              {vacationEnabled && vacationConfig?.vacationStartDate && (
+                <div style={{ fontSize: 11, color: 'var(--warm-accent)', marginTop: 2 }}>
+                  {t('settings.vacationSince')} {new Date(vacationConfig.vacationStartDate).toLocaleDateString(locale)}
+                </div>
+              )}
+            </div>
+            <Toggle
+              checked={vacationEnabled}
+              onChange={async (val) => {
+                setVacationEnabled(val);
+                if (!val) setVacationEndDate(null);
+                void onUpdateVacation?.({ vacationMode: val }).catch(() => {
+                  setVacationEnabled(!val);
+                });
+              }}
+            />
           </div>
-          <Toggle checked={!!user.isVacationMode} onChange={isAdmin ? onToggleVacation : () => {}} />
+          {vacationEnabled && (
+            <div style={{ marginTop: 10, paddingLeft: 34, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--warm-text-light)' }}>
+                {t('settings.vacationReturnDate')}
+              </label>
+              <input
+                type="date"
+                value={vacationEndDate ? vacationEndDate.slice(0, 10) : ''}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={async (e) => {
+                  const val = e.target.value || null;
+                  setVacationEndDate(val);
+                  void onUpdateVacation?.({ vacationEndDate: val }).catch(() => {
+                    setVacationEndDate(vacationConfig?.vacationEndDate ?? null);
+                  });
+                }}
+                style={{ fontSize: 13, padding: '4px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', background: 'var(--warm-bg)', color: 'var(--warm-text)' }}
+              />
+            </div>
+          )}
         </div>
+        )}
         {isAdmin && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -630,6 +689,7 @@ export function Settings({
         </div>
       )}
 
+      {isAdmin && (
       <div className="tq-card" style={{ padding: 24 }}>
         <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 18px' }}>{t('settings.dataPrivacy')}</h3>
         {[
@@ -651,6 +711,7 @@ export function Settings({
           </div>
         ))}
       </div>
+      )}
 
       <div className="tq-card settings-admin-card family-members-card" style={{ padding: 24, gridColumn: '1 / -1' }}>
         <div className="family-members-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
@@ -769,6 +830,29 @@ export function Settings({
                   {memberPasswordMsg[u.id] && (
                     <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberPasswordMsg[u.id]}</div>
                   )}
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-light)' }}>{t('settings.coinsBalance')}: {u.coins}</span>
+                    <input
+                      type="number"
+                      value={coinAdjust[u.id] || ''}
+                      onChange={(e) => setCoinAdjust((prev) => ({ ...prev, [u.id]: e.target.value }))}
+                      placeholder={t('settings.adjustCoins')}
+                      style={{ width: 80, padding: '5px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', fontSize: 11 }}
+                    />
+                    <button className="tq-btn tq-btn-secondary" style={{ padding: '5px 10px', fontSize: 11 }} onClick={async () => {
+                      const amt = parseInt(coinAdjust[u.id] || '0');
+                      if (!amt) return;
+                      if (onAdjustCoins) {
+                        await onAdjustCoins(u.id, amt);
+                      } else {
+                        await api.adjustCoins(u.id, amt);
+                      }
+                      setCoinAdjust((prev) => ({ ...prev, [u.id]: '' }));
+                      setCoinAdjustMsg((prev) => ({ ...prev, [u.id]: `${amt > 0 ? '+' : ''}${amt} ✓` }));
+                      setTimeout(() => setCoinAdjustMsg((prev) => ({ ...prev, [u.id]: '' })), 2000);
+                    }}>{t('settings.adjustCoins')}</button>
+                    {coinAdjustMsg[u.id] && <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-accent)' }}>{coinAdjustMsg[u.id]}</span>}
+                  </div>
                 </div>
               )}
             </div>

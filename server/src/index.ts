@@ -26,6 +26,12 @@ app.use(cors({ origin: corsOrigin }));
 
 app.use(express.json({ limit: '50mb' }));
 
+// Prevent browser caching of API responses
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
 // Serve uploaded avatars
 const avatarsDir = path.join(__dirname, '..', '..', 'data', 'avatars');
 app.use('/api/avatars', express.static(avatarsDir));

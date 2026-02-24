@@ -152,6 +152,8 @@
       "themeNight": "Nacht",
       "vacationMode": "Urlaubsmodus",
       "vacationDesc": "Alle Aufgabenerinnerungen während Ihrer Abwesenheit pausieren",
+      "vacationSince": "Im Urlaub seit",
+      "vacationReturnDate": "Rückkehrdatum",
       "registrationEnabled": "Neue Registrierungen erlauben",
       "registrationEnabledDesc": "Wenn deaktiviert, können keine neuen Konten über die Registrierungsseite erstellt werden.",
       "adminRequired": "Ein Admin-Elternteil ist erforderlich, um Einstellungen zu ändern.",
@@ -197,6 +199,8 @@
       "streak": "Serie",
       "roleMember": "Mitglied",
       "deleteUser": "Benutzer löschen",
+      "adjustCoins": "Anpassen",
+      "coinsBalance": "Guthaben",
       "deleteUserConfirm": "\"{user}\" löschen? Dies kann nicht rückgängig gemacht werden.",
       "goalCoins": "Zielmünzen",
       "goalTitle": "Zieltitel",
@@ -258,7 +262,17 @@
       "settingsSubtitle": "Erlebnis konfigurieren",
       "achievementsSubtitle": "Mache Aufgaben mit Abzeichen und Meilensteinen zum Spiel",
       "alreadyDoneToday": "Du hast diese Aufgabe heute bereits erledigt!",
-      "alreadyDoneByOther": "Jemand anderes hat diese Aufgabe heute bereits erledigt!"
+      "alreadyDoneByOther": "Jemand anderes hat diese Aufgabe heute bereits erledigt!",
+      "notAssigned": "Diese Aufgabe ist dir nicht zugewiesen",
+      "doneBy": "Erledigt von {name}",
+      "childrenGroup": "Kinder"
+    },
+    "admin": {
+      "whoDidThisTask": "Wer hat diese Aufgabe erledigt?",
+      "confirmCompletion": "Bestätigen",
+      "alreadyCompletedBy": "Bereits erledigt von {name}",
+      "completeForSelf": "Für mich abschließen",
+      "noOneSelected": "Wähle mindestens eine Person aus"
     },
     "calendar": {
       "mon": "Mo",
@@ -344,7 +358,8 @@
       "noActivity": "Noch keine Aktivität. Erledige eine Aufgabe, um zu starten!",
       "previous": "Zurück",
       "next": "Weiter",
-      "of": "von"
+      "of": "von",
+      "cancel": "Abschluss rückgängig machen"
     },
     "roomDetail": {
       "name": "Name",
@@ -354,12 +369,20 @@
       "effort": "Aufwand",
       "frequency": "Häufigkeit",
       "actions": "Aktionen",
+      "assigned": "Zugewiesen",
+      "coins": "Münzen",
+      "reset": "Abschluss rückgängig",
       "deleteTask": "Aufgabe löschen",
       "done": "Erledigt",
+      "assignToChildren": "Der Kindergruppe zuweisen",
       "seasonal": "Saisonal",
       "taskName": "Aufgabenname...",
       "addTask": "Aufgabe hinzufügen",
-      "icon": "Symbol"
+      "icon": "Symbol",
+      "nextDue": "Nächste Fälligkeit",
+      "overdue": "Überfällig",
+      "today": "Heute",
+      "tomorrow": "Morgen"
     },
     "avatars": {
       "cat": "Katze",
@@ -411,6 +434,10 @@
       "healthNeedsAttention": "Aufmerksamkeit nötig",
       "healthCritical": "Kritisch",
       "deleteRoomConfirm": "\"{room}\" und alle Aufgaben löschen? Dies kann nicht rückgängig gemacht werden.",
+      "assignedTo": "Zugewiesen an {name}",
+      "assignRoom": "Raum zuweisen",
+      "noAssignment": "Keine Zuweisung (alle)",
+      "specificUsers": "Bestimmte Benutzer",
       "noRoomsYet": "Noch keine Räume",
       "clickAddRoom": "Klicken Sie auf \"Raum hinzufügen\", um zu starten!",
       "addRoomTitle": "Raum hinzufügen",
@@ -428,7 +455,14 @@
       "roomNotFound": "Raum nicht gefunden.",
       "backToRooms": "Zurück zu Räumen",
       "tasksTracked": "Aufgaben erfasst",
-      "icon": "Symbol"
+      "icon": "Symbol",
+      "assignConflictError": "Die folgenden Aufgaben sind bereits einem anderen Benutzer zugewiesen: {tasks}. Durch die Zuweisung wird diese Person alle Aufgaben in diesem Raum übernehmen. Fortfahren?",
+      "assignConflictConfirm": "Ja, neu zuweisen",
+      "modeFirst": "Erster gewinnt",
+      "modeShared": "Geteilt",
+      "modeCustom": "Benutzerdefiniert",
+      "totalPercentage": "Gesamt: {total}%",
+      "done": "erledigt"
     },
     "common": {
       "save": "Speichern",
@@ -437,7 +471,8 @@
       "delete": "Löschen",
       "edit": "Bearbeiten",
       "loading": "Laden",
-      "add": "Hinzufügen"
+      "add": "Hinzufügen",
+      "you": "Sie"
     },
     "units": {
       "hours": "Stunden",
@@ -528,7 +563,7 @@
       "housePride": "Hausstolz",
       "housePrideDesc": "Halte 5 Zimmer gleichzeitig gesund",
       "weekendWarrior": "Wochenend-Krieger",
-      "weekendWarriorDesc": "Erledige 5 Aufgaben in einer Woche",
+      "weekendWarriorDesc": "Erledige 5 Aufgaben an einem Wochenende",
       "superWeek": "Super Woche",
       "superWeekDesc": "Erledige 15 Aufgaben in einer Woche",
       "perfectWeek": "Perfekte Woche",

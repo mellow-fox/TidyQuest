@@ -152,6 +152,8 @@
       "themeNight": "Noche",
       "vacationMode": "Modo vacaciones",
       "vacationDesc": "Pausar todos los recordatorios de tareas mientras estás fuera",
+      "vacationSince": "De vacaciones desde",
+      "vacationReturnDate": "Fecha de regreso",
       "registrationEnabled": "Permitir nuevos registros",
       "registrationEnabledDesc": "Si está desactivado, no se pueden crear nuevas cuentas desde la página de registro.",
       "adminRequired": "Se requiere un padre administrador para cambiar ajustes.",
@@ -197,6 +199,8 @@
       "streak": "racha",
       "roleMember": "Miembro",
       "deleteUser": "Eliminar usuario",
+      "adjustCoins": "Ajustar",
+      "coinsBalance": "Saldo",
       "deleteUserConfirm": "¿Eliminar a \"{user}\"? Esta acción no se puede deshacer.",
       "goalCoins": "Monedas objetivo",
       "goalTitle": "Título del objetivo",
@@ -258,7 +262,17 @@
       "settingsSubtitle": "Configura tu experiencia",
       "achievementsSubtitle": "Convierte las tareas en juego con insignias e hitos",
       "alreadyDoneToday": "¡Ya completaste esta tarea hoy!",
-      "alreadyDoneByOther": "¡Alguien más ya completó esta tarea hoy!"
+      "alreadyDoneByOther": "¡Alguien más ya completó esta tarea hoy!",
+      "notAssigned": "Esta tarea no te está asignada",
+      "doneBy": "Hecho por {name}",
+      "childrenGroup": "Niños"
+    },
+    "admin": {
+      "whoDidThisTask": "¿Quién completó esta tarea?",
+      "confirmCompletion": "Confirmar",
+      "alreadyCompletedBy": "Ya completado por {name}",
+      "completeForSelf": "Completar para mí",
+      "noOneSelected": "Selecciona al menos una persona"
     },
     "calendar": {
       "mon": "Lun",
@@ -344,7 +358,8 @@
       "noActivity": "Aún no hay actividad. ¡Completa una tarea para empezar!",
       "previous": "Anterior",
       "next": "Siguiente",
-      "of": "de"
+      "of": "de",
+      "cancel": "Cancelar compleción"
     },
     "roomDetail": {
       "name": "Nombre",
@@ -354,12 +369,20 @@
       "effort": "Esfuerzo",
       "frequency": "Frecuencia",
       "actions": "Acciones",
+      "assigned": "Asignado",
+      "coins": "Monedas",
+      "reset": "Deshacer compleción",
       "deleteTask": "Eliminar tarea",
       "done": "Hecho",
+      "assignToChildren": "Asignar al grupo de niños",
       "seasonal": "Estacional",
       "taskName": "Nombre de la tarea...",
       "addTask": "Añadir tarea",
-      "icon": "Icono"
+      "icon": "Icono",
+      "nextDue": "Próxima fecha",
+      "overdue": "Atrasada",
+      "today": "Hoy",
+      "tomorrow": "Mañana"
     },
     "avatars": {
       "cat": "Gato",
@@ -411,6 +434,10 @@
       "healthNeedsAttention": "Necesita atención",
       "healthCritical": "Crítico",
       "deleteRoomConfirm": "¿Eliminar \"{room}\" y todas sus tareas? Esta acción no se puede deshacer.",
+      "assignedTo": "Asignado a {name}",
+      "assignRoom": "Asignar habitación",
+      "noAssignment": "Sin asignación (todos)",
+      "specificUsers": "Usuarios específicos",
       "noRoomsYet": "Aún no hay habitaciones",
       "clickAddRoom": "¡Haz clic en \"Añadir habitación\" para empezar!",
       "addRoomTitle": "Añadir una habitación",
@@ -428,7 +455,14 @@
       "roomNotFound": "Habitación no encontrada.",
       "backToRooms": "Volver a habitaciones",
       "tasksTracked": "tareas seguidas",
-      "icon": "Icono"
+      "icon": "Icono",
+      "assignConflictError": "Las siguientes tareas ya están asignadas a otro usuario: {tasks}. Asignar esta persona reasignará todas las tareas de esta habitación. ¿Deseas continuar?",
+      "assignConflictConfirm": "Sí, reasignar",
+      "modeFirst": "El primero gana",
+      "modeShared": "Compartido",
+      "modeCustom": "Personalizado",
+      "totalPercentage": "Total: {total}%",
+      "done": "hecho"
     },
     "common": {
       "save": "Guardar",
@@ -437,7 +471,8 @@
       "delete": "Eliminar",
       "edit": "Editar",
       "loading": "Cargando",
-      "add": "Añadir"
+      "add": "Añadir",
+      "you": "tú"
     },
     "units": {
       "hours": "horas",
@@ -528,7 +563,7 @@
       "housePride": "Orgullo del hogar",
       "housePrideDesc": "Mantener 5 habitaciones sanas al mismo tiempo",
       "weekendWarrior": "Guerrero del fin de semana",
-      "weekendWarriorDesc": "Completa 5 tareas en una semana",
+      "weekendWarriorDesc": "Completa 5 tareas en un fin de semana",
       "superWeek": "Super semana",
       "superWeekDesc": "Completa 15 tareas en una semana",
       "perfectWeek": "Semana perfecta",

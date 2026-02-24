@@ -3,13 +3,15 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { buildAchievements } from '../utils/achievements';
 import { calculateHealth } from '../utils/health';
+import { getGlobalVacation } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
 
 function getUserStats(userId: number) {
-  const user = db.prepare('SELECT id, displayName, role, coins, currentStreak, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, isVacationMode, vacationStartDate FROM users WHERE id = ?').get(userId) as any;
+  const user = db.prepare('SELECT id, displayName, role, coins, currentStreak, avatarColor, avatarType, avatarPreset, avatarPhotoUrl FROM users WHERE id = ?').get(userId) as any;
   if (!user) return null;
+  const vacation = getGlobalVacation();
 
   const completionsRow = db.prepare('SELECT COUNT(*) as count FROM task_completions WHERE userId = ?').get(userId) as { count: number };
 
@@ -29,7 +31,7 @@ function getUserStats(userId: number) {
     const forAvg = nonSeasonal.length > 0 ? nonSeasonal : tasks;
     const totalEffort = forAvg.reduce((s: number, t: any) => s + t.effort, 0);
     const health = totalEffort > 0
-      ? Math.round(forAvg.reduce((s: number, t: any) => s + calculateHealth(t.lastCompletedAt, t.frequencyDays, !!user.isVacationMode, user.vacationStartDate) * t.effort, 0) / totalEffort)
+      ? Math.round(forAvg.reduce((s: number, t: any) => s + calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate) * t.effort, 0) / totalEffort)
       : 100;
     if (health >= 70) roomsClean++;
   }
@@ -43,6 +45,20 @@ function getUserStats(userId: number) {
   const weeklyRow = db.prepare(
     'SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND completedAt >= ?'
   ).get(userId, monday.toISOString()) as { count: number };
+
+  // Tasks completed on the most recent weekend (Sat+Sun)
+  // Find the last Saturday (day 6 in UTC)
+  const nowDay = now.getUTCDay(); // 0=Sun, 6=Sat
+  const daysToLastSat = nowDay === 6 ? 0 : nowDay === 0 ? 1 : nowDay + 1;
+  const lastSat = new Date(now);
+  lastSat.setUTCDate(now.getUTCDate() - daysToLastSat);
+  lastSat.setUTCHours(0, 0, 0, 0);
+  const lastSun = new Date(lastSat);
+  lastSun.setUTCDate(lastSat.getUTCDate() + 1);
+  lastSun.setUTCHours(23, 59, 59, 999);
+  const weekendRow = db.prepare(
+    `SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND completedAt >= ? AND completedAt <= ?`
+  ).get(userId, lastSat.toISOString(), lastSun.toISOString()) as { count: number };
 
   // Perfect weeks: weeks where user completed at least 1 task every day (Mon-Sun)
   // We count how many full weeks had all 7 days with at least one completion
@@ -96,6 +112,7 @@ function getUserStats(userId: number) {
       coins: user.coins || 0,
       rooms_clean: roomsClean,
       weekly_tasks: weeklyRow.count,
+      weekend_tasks: weekendRow.count,
       perfect_weeks: perfectWeeks,
     }),
   };

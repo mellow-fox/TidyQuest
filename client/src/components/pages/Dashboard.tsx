@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import HealthBar from '../shared/HealthBar';
 import RingGauge from '../shared/RingGauge';
 import UserAvatar from '../shared/UserAvatar';
@@ -7,6 +7,8 @@ import { getRoomIcon } from '../icons/RoomIcons';
 import { TaskIcon } from '../icons/TaskIcons';
 import { getHealthColor } from '../../utils/health';
 import { useTranslation } from '../../hooks/useTranslation';
+import { AdminCompleteModal } from '../shared/AdminCompleteModal';
+import { api } from '../../hooks/useApi';
 
 /* ── Types ── */
 
@@ -37,9 +39,17 @@ interface Quest {
   frequencyDays: number;
   dueDate?: string;
   dueInDays?: number;
+  assignedToChildren?: boolean;
+  effectiveAssignedUserId?: number | null;
+  effectiveAssignedUserIds?: number[];
+  assignedUsers?: Array<{ id: number; displayName: string; avatarColor: string; avatarType?: string; avatarPreset?: string; avatarPhotoUrl?: string }>;
+  assignmentMode?: 'first' | 'shared';
+  sharedCompletions?: Array<{ userId: number; displayName: string }>;
+  completedTodayBy?: { userId: number; displayName: string; avatarColor: string } | null;
 }
 
 interface CurrentUser {
+  id: number;
   role?: 'admin' | 'member' | 'child';
   displayName: string;
   coins: number;
@@ -88,8 +98,10 @@ interface DashboardProps {
     recentActivity: ActivityEntry[];
   };
   family: FamilyMember[];
+  users?: Array<{ id: number; displayName: string; role: string; avatarColor: string; avatarType?: string; avatarPreset?: string; avatarPhotoUrl?: string }>;
   language?: string;
   onCompleteTask: (taskId: number) => void;
+  onRefresh?: () => void;
   onNavigateToRoom: (roomId: number) => void;
   onNavigateToActivity: () => void;
   onRewardRequestAction: (id: number, status: 'approved' | 'rejected') => void | Promise<void>;
@@ -100,14 +112,17 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({
   data,
   family,
+  users,
   language,
   onCompleteTask,
+  onRefresh,
   onNavigateToRoom,
   onNavigateToActivity,
   onRewardRequestAction,
 }) => {
   const { taskName, roomDisplayName, timeAgo, t } = useTranslation(language);
   const { houseHealth, rooms, todaysQuests, nextTasks, myGoal, childrenGoals = [], pendingRewardRequests = [], currentUser, recentActivity } = data;
+  const [adminModalQuest, setAdminModalQuest] = useState<Quest | null>(null);
   const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
   const locale = localeMap[language || 'en'] || 'en-US';
 
@@ -128,6 +143,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         : t('dashboard.healthLow');
 
   return (
+    <>
     <div
       className="dashboard-grid"
       style={{
@@ -205,7 +221,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Today's Quests Card */}
-        <div className="tq-card" style={{ padding: 20, flex: 1 }}>
+        <div className="tq-card" style={{ padding: 20 }}>
           <div
             style={{
               display: 'flex',
@@ -232,6 +248,38 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {todaysQuests.slice(0, 6).map((q) => {
+              const isAdminOrMember = currentUser.role === 'admin' || currentUser.role === 'member';
+              const hasAssignees = (q.effectiveAssignedUserIds && q.effectiveAssignedUserIds.length > 0) || q.assignedToChildren;
+              // Determine done button state
+              let btnDisabled = false;
+              let btnLabel = t('roomDetail.done');
+              if (q.assignmentMode === 'shared') {
+                const myCompletion = q.sharedCompletions?.find(c => c.userId === currentUser.id);
+                if (myCompletion && !isAdminOrMember) {
+                  btnDisabled = true;
+                  btnLabel = t('app.doneBy').replace('{name}', t('common.you') || 'You');
+                }
+              } else if (q.completedTodayBy) {
+                if (!isAdminOrMember || !hasAssignees) {
+                  btnDisabled = true;
+                  btnLabel = t('app.doneBy').replace('{name}', q.completedTodayBy.displayName);
+                }
+              } else if (!isAdminOrMember) {
+                if (q.effectiveAssignedUserId !== null && q.effectiveAssignedUserId !== undefined) {
+                  if (q.effectiveAssignedUserId !== currentUser.id) {
+                    btnDisabled = true;
+                    btnLabel = t('app.notAssigned');
+                  }
+                }
+              }
+              const handleQuestDone = () => {
+                if (btnDisabled) return;
+                if (isAdminOrMember && hasAssignees) {
+                  setAdminModalQuest(q);
+                } else {
+                  onCompleteTask(q.id);
+                }
+              };
               return (
                 <div
                   key={q.id}
@@ -274,17 +322,27 @@ const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                   </div>
                   <button
-                    onClick={() => onCompleteTask(q.id)}
-                    className="tq-btn tq-btn-primary"
+                    onClick={handleQuestDone}
+                    disabled={btnDisabled}
+                    className={btnDisabled ? 'tq-btn' : 'tq-btn tq-btn-primary'}
                     style={{
                       padding: '8px 14px',
-                      backgroundColor: 'var(--warm-accent)',
-                      color: '#fff',
                       fontSize: 12,
-                      boxShadow: '0 4px 14px var(--warm-primary-shadow)',
+                      ...(btnDisabled ? {
+                        opacity: 0.55,
+                        cursor: 'default',
+                        backgroundColor: 'var(--warm-bg-subtle)',
+                        border: '1.5px solid var(--warm-border)',
+                        color: 'var(--warm-text-muted)',
+                        boxShadow: 'none',
+                      } : {
+                        backgroundColor: 'var(--warm-accent)',
+                        color: '#fff',
+                        boxShadow: '0 4px 14px var(--warm-primary-shadow)',
+                      }),
                     }}
                   >
-                    <CheckIcon /> {t('roomDetail.done')}
+                    {btnDisabled ? btnLabel : <><CheckIcon /> {btnLabel}</>}
                   </button>
                 </div>
               );
@@ -336,7 +394,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* ── Column 2: Rooms ── */}
-      <div className="tq-card" style={{ padding: 20 }}>
+      <div className="tq-card" style={{ padding: 20, alignSelf: 'start' }}>
         <div
           style={{
             display: 'flex',
@@ -711,6 +769,22 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
     </div>
+    {adminModalQuest && (
+      <AdminCompleteModal
+        task={adminModalQuest}
+        allUsers={(users || []) as any[]}
+        language={language}
+        onConfirm={async (userIds) => {
+          for (const uid of userIds) {
+            await api.completeTask(adminModalQuest.id, uid);
+          }
+          setAdminModalQuest(null);
+          onRefresh?.();
+        }}
+        onClose={() => setAdminModalQuest(null)}
+      />
+    )}
+  </>
   );
 };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { api } from './hooks/useApi';
@@ -39,31 +39,58 @@ function AppContent() {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('tidyquest_theme') : null;
     return (saved === 'blue' || saved === 'rose' || saved === 'night') ? saved : 'orange';
   });
+  const [vacationConfig, setVacationConfig] = useState<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null } | null>(null);
+  const vacationUpdatePending = useRef(false);
+  const dashboardLoadInFlight = useRef<Promise<void> | null>(null);
+  const roomsRefreshInFlight = useRef<Promise<void> | null>(null);
   const [confetti, setConfetti] = useState(false);
   const [taskErrorMsg, setTaskErrorMsg] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
+  const refreshRooms = useCallback(async () => {
+    if (roomsRefreshInFlight.current) return roomsRefreshInFlight.current;
+    const p = (async () => {
+      try {
+        const roomsData = await api.getRooms();
+        setRooms(roomsData);
+      } catch { /* ignore */ }
+    })().finally(() => {
+      roomsRefreshInFlight.current = null;
+    });
+    roomsRefreshInFlight.current = p;
+    return p;
+  }, []);
+
   const loadDashboard = useCallback(async () => {
-    try {
-      const [dash, lb, hist, users, coinCfg, ach] = await Promise.all([
-        api.dashboard(),
-        api.leaderboard(leaderboardPeriod),
-        api.history(50, 0),
-        api.getUsers(),
-        api.getCoinsConfig(),
-        api.achievements(),
-      ]);
-      setDashboardData(dash);
-      setRooms(await api.getRooms());
-      setLeaderboard(lb);
-      setFamily(lb);
-      setFamilySettings(users);
-      setCompletions(hist.history || []);
-      setCoinsByEffort(coinCfg.coinsByEffort || { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
-      setAchievementsData(ach);
-    } catch { /* not logged in */ }
+    if (dashboardLoadInFlight.current) return dashboardLoadInFlight.current;
+    const p = (async () => {
+      try {
+        const [dash, lb, hist, users, coinCfg, ach, roomsData] = await Promise.all([
+          api.dashboard(),
+          api.leaderboard(leaderboardPeriod),
+          api.history(50, 0),
+          api.getUsers(),
+          api.getCoinsConfig(),
+          api.achievements(),
+          api.getRooms(),
+        ]);
+        setDashboardData(dash);
+        if (dash.vacation && !vacationUpdatePending.current) setVacationConfig(dash.vacation);
+        setRooms(roomsData);
+        setLeaderboard(lb);
+        setFamily(lb);
+        setFamilySettings(users);
+        setCompletions(hist.history || []);
+        setCoinsByEffort(coinCfg.coinsByEffort || { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
+        setAchievementsData(ach);
+      } catch { /* not logged in */ }
+    })().finally(() => {
+      dashboardLoadInFlight.current = null;
+    });
+    dashboardLoadInFlight.current = p;
+    return p;
   }, [leaderboardPeriod]);
 
   useEffect(() => {
@@ -74,13 +101,33 @@ function AppContent() {
   useEffect(() => {
     if (!user) return;
     const path = location.pathname;
-    if (path === '/' || path === '/rooms' || path.startsWith('/rooms/')) {
+    if (path === '/') {
       loadDashboard();
+    } else if (path === '/rooms' || path.startsWith('/rooms/')) {
+      refreshRooms();
     }
     if (path === '/rewards') {
       loadRewards();
     }
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Poll every 15s to reflect other users' actions without requiring F5
+  useEffect(() => {
+    if (!user) return;
+    const isDashboardPath = location.pathname === '/';
+    const isRoomsPath = location.pathname === '/rooms' || location.pathname.startsWith('/rooms/');
+    const tick = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (isDashboardPath) loadDashboard();
+      if (isRoomsPath) refreshRooms();
+    };
+    const interval = setInterval(tick, 15000);
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', tick);
+    };
+  }, [user, location.pathname, loadDashboard, refreshRooms]);
 
   const loadRewards = useCallback(async () => {
     try {
@@ -119,8 +166,8 @@ function AppContent() {
     try {
       setConfetti(true);
       await api.completeTask(taskId);
-      await refreshUser();
-      await loadDashboard();
+      refreshUser();
+      await refreshRooms();
       setTimeout(() => setConfetti(false), 2200);
     } catch (err) {
       setConfetti(false);
@@ -129,6 +176,8 @@ function AppContent() {
         setTaskErrorMsg(t('app.alreadyDoneToday'));
       } else if (msg === 'already_done_by_other') {
         setTaskErrorMsg(t('app.alreadyDoneByOther'));
+      } else if (msg === 'not_assigned') {
+        setTaskErrorMsg(t('app.notAssigned'));
       } else {
         setTaskErrorMsg(msg || t('common.error'));
       }
@@ -258,8 +307,10 @@ function AppContent() {
                 <Dashboard
                   data={dashboardData}
                   family={family}
+                  users={familySettings}
                   language={user.language}
                   onCompleteTask={handleCompleteTask}
+                  onRefresh={loadDashboard}
                   onNavigateToRoom={(id) => navigate(`/rooms/${id}`)}
                   onNavigateToActivity={() => navigate('/activity')}
                   onRewardRequestAction={async (id, status) => {
@@ -276,20 +327,25 @@ function AppContent() {
               <PageHeader title={t('nav.rooms')} subtitle={`${rooms.length} ${t('app.roomsConfigured')}`} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
               <RoomsList rooms={rooms} language={user.language} onSelectRoom={(id) => navigate(`/rooms/${id}`)}
                 isAdmin={user.role === 'admin'}
+                users={familySettings}
                 onCreateRoom={async (data) => {
-                  await api.createRoom({ name: data.name, roomType: data.roomType, color: data.color, accentColor: data.accentColor, tasks: data.tasks });
-                  setRooms(await api.getRooms());
+                  await api.createRoom({ name: data.name, roomType: data.roomType, color: data.color, accentColor: data.accentColor, tasks: data.tasks, assignedUserId: data.assignedUserId });
+                  void refreshRooms();
                 }}
                 onDeleteRoom={async (roomId) => {
                   await api.deleteRoom(roomId);
-                  setRooms(await api.getRooms());
+                  void refreshRooms();
+                }}
+                onAssignRoom={async (roomId, assignedUserId, force) => {
+                  await api.updateRoom(roomId, { assignedUserId, ...(force ? { force: true } : {}) });
+                  void refreshRooms();
                 }}
               />
             </>
           } />
 
           <Route path="/rooms/:id" element={
-            <RoomDetailWrapper rooms={rooms} user={user} onCompleteTask={handleCompleteTask} onRefresh={loadDashboard} />
+            <RoomDetailWrapper rooms={rooms} user={user} users={familySettings} coinsByEffort={coinsByEffort} onCompleteTask={handleCompleteTask} onRefresh={refreshRooms} />
           } />
 
           <Route path="/calendar" element={
@@ -309,20 +365,20 @@ function AppContent() {
           <Route path="/activity" element={
             <>
               <PageHeader title={t('nav.activity')} subtitle={t('app.activitySubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
-              <History language={user.language} />
+              <History language={user.language} isAdmin={user.role === 'admin'} />
             </>
           } />
           <Route path="/history" element={
             <>
               <PageHeader title={t('nav.activity')} subtitle={t('app.activitySubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
-              <History language={user.language} />
+              <History language={user.language} isAdmin={user.role === 'admin'} />
             </>
           } />
 
           <Route path="/profile" element={
             <>
               <PageHeader title={t('nav.profile')} subtitle={t('app.profileSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
-              <Profile user={user} onSave={async () => { await refreshUser(); }} onLogout={logout} />
+              <Profile user={user} onSave={async () => { await refreshUser(); }} onLogout={() => { logout(); navigate('/login', { replace: true }); }} />
             </>
           } />
 
@@ -332,9 +388,15 @@ function AppContent() {
               <Settings
                 user={user}
                 family={familySettings}
-                onToggleVacation={async (enabled) => {
-                  await api.updateSettings(user.id, { isVacationMode: enabled });
-                  await refreshUser();
+                vacationConfig={vacationConfig ?? undefined}
+                onUpdateVacation={async (data) => {
+                  vacationUpdatePending.current = true;
+                  try {
+                    const updated = await api.updateVacationConfig(data);
+                    setVacationConfig(updated);
+                  } finally {
+                    vacationUpdatePending.current = false;
+                  }
                 }}
                 onUpdateRole={async (targetUserId, role) => {
                   await api.updateUserRole(targetUserId, role);
@@ -374,6 +436,10 @@ function AppContent() {
                 onChangeTheme={setTheme}
                 onExport={handleExport}
                 onImport={handleImport}
+                onAdjustCoins={async (userId: number, amount: number) => {
+                  await api.adjustCoins(userId, amount);
+                  setFamilySettings(await api.getUsers());
+                }}
               />
             </>
           } />
@@ -391,13 +457,13 @@ function AppContent() {
                 rewards={rewardsData.rewards}
                 mine={rewardsData.mine}
                 userCoins={user.coins}
-                onRedeem={async (rewardId) => {
+                onRedeem={async (rewardId: number) => {
                   await api.redeemReward(rewardId);
                   await refreshUser();
                   await loadDashboard();
                   await loadRewards();
                 }}
-                onCancel={async (redemptionId) => {
+                onCancel={async (redemptionId: number) => {
                   await api.cancelRedemption(redemptionId);
                   await refreshUser();
                   await loadDashboard();
@@ -413,7 +479,7 @@ function AppContent() {
   );
 }
 
-function RoomDetailWrapper({ rooms, user, onCompleteTask, onRefresh }: { rooms: any[]; user: any; onCompleteTask: (id: number) => void; onRefresh: () => void }) {
+function RoomDetailWrapper({ rooms, user, users, coinsByEffort, onCompleteTask, onRefresh }: { rooms: any[]; user: any; users?: any[]; coinsByEffort: Record<number, number>; onCompleteTask: (id: number) => void; onRefresh: () => void }) {
   const navigate = useNavigate();
   const { t, roomDisplayName } = useTranslation(user?.language || 'en');
   const { id: idParam } = useParams<{ id: string }>();
@@ -435,7 +501,7 @@ function RoomDetailWrapper({ rooms, user, onCompleteTask, onRefresh }: { rooms: 
   return (
     <>
       <PageHeader title={roomDisplayName(room.name, room.roomType)} subtitle={`${room.tasks?.length || 0} ${t('rooms.tasksTracked')}`} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
-      <RoomDetail room={room} language={user?.language} isAdmin={user?.role === 'admin'} onCompleteTask={onCompleteTask} onBack={() => navigate('/rooms')} onRefresh={onRefresh} />
+      <RoomDetail room={room} language={user?.language} isAdmin={user?.role === 'admin'} currentUserId={user?.id} currentUserRole={user?.role} users={users} coinsByEffort={coinsByEffort} onCompleteTask={onCompleteTask} onBack={() => navigate('/rooms')} onRefresh={onRefresh} />
     </>
   );
 }
