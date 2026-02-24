@@ -30,6 +30,19 @@ interface VacationConfig {
   vacationEndDate: string | null;
 }
 
+interface PendingCompletion {
+  id: number;
+  taskId: number;
+  userId: number;
+  completedAt: string;
+  coinsEarned: number;
+  taskName: string;
+  translationKey?: string | null;
+  roomId: number;
+  roomName: string;
+  displayName: string;
+}
+
 interface SettingsProps {
   user: User;
   family: FamilyUser[];
@@ -99,6 +112,8 @@ export function Settings({
   const [vacationEnabled, setVacationEnabled] = useState(!!vacationConfig?.vacationMode);
   const [vacationEndDate, setVacationEndDate] = useState(vacationConfig?.vacationEndDate ?? null);
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
+  const [strictModeEnabled, setStrictModeEnabled] = useState(false);
+  const [pendingCompletions, setPendingCompletions] = useState<PendingCompletion[]>([]);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifChatId, setNotifChatId] = useState('');
   const [notifToken, setNotifToken] = useState('');
@@ -166,6 +181,13 @@ export function Settings({
 
   useEffect(() => {
     if (!isAdmin) return;
+    api.getStrictModeConfig()
+      .then((cfg) => setStrictModeEnabled(!!cfg.strictMode))
+      .catch(() => {});
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
     api.getNotificationsConfig()
       .then((cfg) => {
         setNotifEnabled(!!cfg.enabled);
@@ -194,10 +216,17 @@ export function Settings({
     setRewardRequests(data.redemptions || []);
   };
 
+  const loadPendingCompletions = async () => {
+    if (!isAdmin) return;
+    const data = await api.getPendingCompletions();
+    setPendingCompletions(data.pending || []);
+  };
+
   useEffect(() => {
     if (!isAdmin) return;
     void loadAdminGoals();
     void loadRewardsAdmin();
+    void loadPendingCompletions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, family.length]);
 
@@ -554,12 +583,72 @@ export function Settings({
             />
           </div>
         )}
+        {isAdmin && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 6h12M4 10h12M4 14h12" stroke="#B0A090" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M14 4l2 2-2 2" stroke="#B0A090" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.strictMode')}</div>
+              <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.strictModeDesc')}</div>
+            </div>
+            <Toggle
+              checked={strictModeEnabled}
+              onChange={async (val) => {
+                setStrictModeEnabled(val);
+                await api.updateStrictModeConfig({ strictMode: val }).catch(() => {
+                  setStrictModeEnabled(!val);
+                });
+              }}
+            />
+          </div>
+        )}
         {!isAdmin && (
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>
             {t('settings.adminRequired')}
           </div>
         )}
       </div>
+
+      {isAdmin && (
+        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.pendingValidations')}</h3>
+          <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.pendingValidationsDesc')}</div>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {pendingCompletions.map((pc) => (
+              <div key={pc.id} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.1fr 110px auto auto', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: 'var(--warm-bg-subtle)' }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text)' }}>{pc.displayName}</div>
+                <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{pc.taskName}</div>
+                <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{formatDate(pc.completedAt)}</div>
+                <button
+                  className="tq-btn tq-btn-secondary"
+                  style={{ padding: '5px 10px', fontSize: 11 }}
+                  onClick={async () => {
+                    await api.approveCompletion(pc.id);
+                    await loadPendingCompletions();
+                  }}
+                >
+                  {t('settings.approve')}
+                </button>
+                <button
+                  className="tq-btn"
+                  style={{ padding: '5px 10px', fontSize: 11, backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}
+                  onClick={async () => {
+                    await api.rejectPendingCompletion(pc.id);
+                    await loadPendingCompletions();
+                  }}
+                >
+                  {t('settings.reject')}
+                </button>
+              </div>
+            ))}
+            {pendingCompletions.length === 0 && (
+              <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.noPendingValidations')}</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {isAdmin && (
         <div className="tq-card settings-admin-card" style={{ padding: 24 }}>

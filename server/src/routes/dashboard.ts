@@ -30,7 +30,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     `SELECT tc.taskId, tc.userId, u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
      FROM task_completions tc
      JOIN users u ON tc.userId = u.id
-     WHERE date(tc.completedAt) = date(?)`
+     WHERE tc.status = 'approved' AND date(tc.completedAt) = date(?)`
   ).all(nowIso) as any[];
   const completedTodayByTask = new Map(todayCompletions.map((c: any) => [c.taskId, {
     userId: c.userId, displayName: c.displayName, avatarColor: c.avatarColor,
@@ -129,6 +129,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     JOIN tasks t ON tc.taskId = t.id
     JOIN rooms r ON t.roomId = r.id
     JOIN users u ON tc.userId = u.id
+    WHERE tc.status = 'approved'
     ORDER BY tc.completedAt DESC
     LIMIT 5
   `).all();
@@ -138,7 +139,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     const from = targetUser.goalStartAt || '1970-01-01T00:00:00.000Z';
     const to = targetUser.goalEndAt || '9999-12-31T23:59:59.999Z';
     const row = db.prepare(
-      'SELECT COALESCE(SUM(coinsEarned), 0) as total FROM task_completions WHERE userId = ? AND completedAt >= ? AND completedAt <= ?'
+      "SELECT COALESCE(SUM(coinsEarned), 0) as total FROM task_completions WHERE userId = ? AND status = 'approved' AND completedAt >= ? AND completedAt <= ?"
     ).get(targetUser.id, from, to) as { total: number };
     return row?.total || 0;
   }

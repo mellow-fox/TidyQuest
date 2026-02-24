@@ -23,7 +23,7 @@ router.get('/export', (req: AuthRequest, res: Response) => {
   const rewardRedemptions = db.prepare('SELECT * FROM reward_redemptions').all();
 
   res.setHeader('Content-Disposition', 'attachment; filename=tidyquest-backup.json');
-  res.json({ version: 5, exportedAt: new Date().toISOString(), users, rooms, tasks, taskAssignees, completions, settings, goals, rewards, rewardRedemptions });
+  res.json({ version: 6, exportedAt: new Date().toISOString(), users, rooms, tasks, taskAssignees, completions, settings, goals, rewards, rewardRedemptions });
 });
 
 // Import data from JSON
@@ -120,8 +120,17 @@ router.post('/import', (req: AuthRequest, res: Response) => {
 
     for (const c of completions) {
       db.prepare(
-        'INSERT INTO task_completions (id, taskId, userId, completedAt, coinsEarned) VALUES (?, ?, ?, ?, ?)'
-      ).run(c.id, c.taskId, c.userId, c.completedAt, c.coinsEarned);
+        'INSERT INTO task_completions (id, taskId, userId, completedAt, coinsEarned, status, approvedByUserId, approvedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(
+        c.id,
+        c.taskId,
+        c.userId,
+        c.completedAt,
+        c.coinsEarned,
+        c.status || 'approved',
+        c.approvedByUserId ?? null,
+        c.approvedAt ?? null,
+      );
     }
 
     if (Array.isArray(settings)) {

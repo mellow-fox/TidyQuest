@@ -164,8 +164,15 @@ function AppContent() {
 
   const handleCompleteTask = async (taskId: number) => {
     try {
+      const result = await api.completeTask(taskId);
+      if (result.pendingApproval) {
+        setConfetti(false);
+        setTaskErrorMsg(t('app.pendingApproval'));
+        setTimeout(() => setTaskErrorMsg(null), 3500);
+        await refreshRooms();
+        return;
+      }
       setConfetti(true);
-      await api.completeTask(taskId);
       refreshUser();
       await refreshRooms();
       setTimeout(() => setConfetti(false), 2200);

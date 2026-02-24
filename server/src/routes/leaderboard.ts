@@ -39,7 +39,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
 
   const leaderboard = users.map((user) => {
     const result = db.prepare(
-      'SELECT COALESCE(SUM(coinsEarned), 0) as points FROM task_completions WHERE userId = ? AND completedAt >= ?'
+      "SELECT COALESCE(SUM(coinsEarned), 0) as points FROM task_completions WHERE userId = ? AND status = 'approved' AND completedAt >= ?"
     ).get(user.id, startDate) as any;
 
     return {

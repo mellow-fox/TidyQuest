@@ -148,7 +148,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     `SELECT tc.id as completionId, tc.taskId, tc.userId, u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
      FROM task_completions tc
      JOIN users u ON tc.userId = u.id
-     WHERE date(tc.completedAt) = date(?)`
+     WHERE tc.status = 'approved' AND date(tc.completedAt) = date(?)`
   ).all(nowIso) as any[];
   const completedTodayByTask = new Map(todayCompletions.map((c: any) => [c.taskId, {
     completionId: c.completionId, userId: c.userId, displayName: c.displayName, avatarColor: c.avatarColor,

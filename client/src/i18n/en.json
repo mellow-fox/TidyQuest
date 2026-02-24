@@ -154,6 +154,8 @@
       "vacationDesc": "Pause all task reminders while you're away",
       "vacationSince": "On vacation since",
       "vacationReturnDate": "Return date",
+      "strictMode": "Strict Mode",
+      "strictModeDesc": "Require parent admin approval when a child marks a task as done.",
       "registrationEnabled": "Allow New Registrations",
       "registrationEnabledDesc": "When disabled, no new accounts can be created from the registration page.",
       "adminRequired": "Parent admin required to change settings.",
@@ -235,7 +237,12 @@
       "notificationsSaved": "Notifications settings saved.",
       "notificationsSaveFailed": "Failed to save notifications settings.",
       "notificationsTestSent": "Test notification sent.",
-      "notificationsTestFailed": "Failed to send test notification."
+      "notificationsTestFailed": "Failed to send test notification.",
+      "pendingValidations": "Pending Task Validations",
+      "pendingValidationsDesc": "Approve or reject tasks completed by children while Strict Mode is enabled.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "noPendingValidations": "No pending validations."
     },
     "nav": {
       "home": "Home",
@@ -264,6 +271,7 @@
       "alreadyDoneToday": "You already completed this task today!",
       "alreadyDoneByOther": "Someone else already completed this task today!",
       "notAssigned": "This task is not assigned to you",
+      "pendingApproval": "Completion submitted. Waiting for admin approval.",
       "doneBy": "Done by {name}",
       "childrenGroup": "Children"
     },

@@ -154,6 +154,8 @@
       "vacationDesc": "Pausar todos los recordatorios de tareas mientras estás fuera",
       "vacationSince": "De vacaciones desde",
       "vacationReturnDate": "Fecha de regreso",
+      "strictMode": "Modo estricto",
+      "strictModeDesc": "Requiere validación de admin cuando un niño marca una tarea como completada.",
       "registrationEnabled": "Permitir nuevos registros",
       "registrationEnabledDesc": "Si está desactivado, no se pueden crear nuevas cuentas desde la página de registro.",
       "adminRequired": "Se requiere un padre administrador para cambiar ajustes.",
@@ -235,7 +237,12 @@
       "notificationsSaved": "Configuración de notificaciones guardada.",
       "notificationsSaveFailed": "No se pudo guardar la configuración de notificaciones.",
       "notificationsTestSent": "Notificacion de prueba enviada.",
-      "notificationsTestFailed": "No se pudo enviar la notificación de prueba."
+      "notificationsTestFailed": "No se pudo enviar la notificación de prueba.",
+      "pendingValidations": "Validaciones pendientes",
+      "pendingValidationsDesc": "Aprueba o rechaza tareas marcadas por niños cuando el modo estricto está activo.",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "noPendingValidations": "No hay validaciones pendientes."
     },
     "nav": {
       "home": "Inicio",
@@ -264,6 +271,7 @@
       "alreadyDoneToday": "¡Ya completaste esta tarea hoy!",
       "alreadyDoneByOther": "¡Alguien más ya completó esta tarea hoy!",
       "notAssigned": "Esta tarea no te está asignada",
+      "pendingApproval": "Tarea enviada. Esperando aprobación del admin.",
       "doneBy": "Hecho por {name}",
       "childrenGroup": "Niños"
     },

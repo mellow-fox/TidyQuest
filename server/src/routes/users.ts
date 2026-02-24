@@ -7,7 +7,7 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { DEFAULT_COINS_BY_EFFORT, normalizeCoinsByEffortConfig } from '../utils/health';
 import { NotificationTypeSettings, sendTelegramMessageDetailed } from '../utils/notifications';
-import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation } from '../utils/adminHelpers';
+import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation, isStrictModeEnabled } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -588,6 +588,22 @@ router.put('/vacation-config', (req: AuthRequest, res: Response) => {
 
   const v = getGlobalVacation();
   res.json({ vacationMode: v.isVacation, vacationStartDate: v.startDate, vacationEndDate: v.endDate });
+});
+
+router.get('/strict-mode-config', (req: AuthRequest, res: Response) => {
+  if (!ensureAdmin(req.userId)) return res.status(403).json({ error: 'Admin only' });
+  res.json({ strictMode: isStrictModeEnabled() });
+});
+
+router.put('/strict-mode-config', (req: AuthRequest, res: Response) => {
+  if (!ensureAdmin(req.userId)) return res.status(403).json({ error: 'Admin only' });
+  const { strictMode } = req.body as { strictMode?: boolean };
+  if (typeof strictMode !== 'boolean') {
+    return res.status(400).json({ error: 'strictMode must be a boolean' });
+  }
+  db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'strictMode'")
+    .run(strictMode ? '1' : '0');
+  res.json({ strictMode });
 });
 
 router.get('/registration-config', authMiddleware, (req: AuthRequest, res: Response) => {

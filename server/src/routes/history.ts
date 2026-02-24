@@ -18,6 +18,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     JOIN tasks t ON tc.taskId = t.id
     JOIN rooms r ON t.roomId = r.id
     JOIN users u ON tc.userId = u.id
+    WHERE tc.status = 'approved'
     ORDER BY tc.completedAt DESC
   `).all() as any[];
 

@@ -66,7 +66,7 @@ export const api = {
   deleteTask: (id: number) =>
     apiFetch<any>(`/tasks/${id}`, { method: 'DELETE' }),
   completeTask: (id: number, onBehalfOfUserId?: number) =>
-    apiFetch<{ coinsEarned: number; health: number }>(`/tasks/${id}/complete`, {
+    apiFetch<{ coinsEarned: number; health: number; pendingApproval?: boolean }>(`/tasks/${id}/complete`, {
       method: 'POST', body: JSON.stringify(onBehalfOfUserId ? { onBehalfOfUserId } : {}),
     }),
 
@@ -173,6 +173,23 @@ export const api = {
 
   cancelCompletion: (completionId: number) =>
     apiFetch<{ success: boolean; coinsDeducted: number }>(`/completions/${completionId}`, { method: 'DELETE' }),
+  getPendingCompletions: () =>
+    apiFetch<{ pending: Array<{
+      id: number;
+      taskId: number;
+      userId: number;
+      completedAt: string;
+      coinsEarned: number;
+      taskName: string;
+      translationKey?: string | null;
+      roomId: number;
+      roomName: string;
+      displayName: string;
+    }> }>('/completions/pending'),
+  approveCompletion: (completionId: number) =>
+    apiFetch<{ success: boolean }>(`/completions/${completionId}/approve`, { method: 'POST' }),
+  rejectPendingCompletion: (completionId: number) =>
+    apiFetch<{ success: boolean }>(`/completions/${completionId}/reject`, { method: 'DELETE' }),
 
   adjustCoins: (userId: number, amount: number) =>
     apiFetch<any>(`/users/${userId}/adjust-coins`, { method: 'POST', body: JSON.stringify({ amount }) }),
@@ -181,4 +198,8 @@ export const api = {
     apiFetch<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null }>('/users/vacation-config'),
   updateVacationConfig: (data: { vacationMode?: boolean; vacationEndDate?: string | null }) =>
     apiFetch<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null }>('/users/vacation-config', { method: 'PUT', body: JSON.stringify(data) }),
+  getStrictModeConfig: () =>
+    apiFetch<{ strictMode: boolean }>('/users/strict-mode-config'),
+  updateStrictModeConfig: (data: { strictMode: boolean }) =>
+    apiFetch<{ strictMode: boolean }>('/users/strict-mode-config', { method: 'PUT', body: JSON.stringify(data) }),
 };

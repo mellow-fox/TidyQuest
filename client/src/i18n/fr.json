@@ -154,6 +154,8 @@
       "vacationDesc": "Suspendre tous les rappels de tâches pendant votre absence",
       "vacationSince": "En vacances depuis le",
       "vacationReturnDate": "Date de retour",
+      "strictMode": "Mode strict",
+      "strictModeDesc": "Demander l'approbation d'un parent admin quand un enfant marque une tâche comme faite.",
       "registrationEnabled": "Autoriser les nouvelles inscriptions",
       "registrationEnabledDesc": "Si désactivé, aucun nouveau compte ne peut être créé depuis la page d'inscription.",
       "adminRequired": "Un parent admin est requis pour modifier les paramètres.",
@@ -235,7 +237,12 @@
       "notificationsSaved": "Paramètres de notification enregistrés.",
       "notificationsSaveFailed": "Échec de l'enregistrement des notifications.",
       "notificationsTestSent": "Notification de test envoyée.",
-      "notificationsTestFailed": "Échec de l'envoi de la notification test."
+      "notificationsTestFailed": "Échec de l'envoi de la notification test.",
+      "pendingValidations": "Validations de tâches en attente",
+      "pendingValidationsDesc": "Approuver ou refuser les tâches marquées comme faites par les enfants en mode strict.",
+      "approve": "Approuver",
+      "reject": "Refuser",
+      "noPendingValidations": "Aucune validation en attente."
     },
     "nav": {
       "home": "Accueil",
@@ -264,6 +271,7 @@
       "alreadyDoneToday": "Tu as déjà fait cette tâche aujourd'hui !",
       "alreadyDoneByOther": "Cette tâche a déjà été faite par quelqu'un d'autre aujourd'hui !",
       "notAssigned": "Cette tâche ne t'est pas attribuée",
+      "pendingApproval": "Tâche envoyée. En attente d'approbation admin.",
       "doneBy": "Fait par {name}",
       "childrenGroup": "Enfants"
     },
