@@ -41,6 +41,8 @@ function AppContent() {
   });
   const [vacationConfig, setVacationConfig] = useState<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null } | null>(null);
   const vacationUpdatePending = useRef(false);
+  const dashboardLoadInFlight = useRef<Promise<void> | null>(null);
+  const roomsRefreshInFlight = useRef<Promise<void> | null>(null);
   const [confetti, setConfetti] = useState(false);
   const [taskErrorMsg, setTaskErrorMsg] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -48,35 +50,48 @@ function AppContent() {
   const location = useLocation();
 
   const refreshRooms = useCallback(async () => {
-    try {
-      const roomsData = await api.getRooms();
-      setRooms(roomsData);
-    } catch { /* ignore */ }
+    if (roomsRefreshInFlight.current) return roomsRefreshInFlight.current;
+    const p = (async () => {
+      try {
+        const roomsData = await api.getRooms();
+        setRooms(roomsData);
+      } catch { /* ignore */ }
+    })().finally(() => {
+      roomsRefreshInFlight.current = null;
+    });
+    roomsRefreshInFlight.current = p;
+    return p;
   }, []);
 
   const loadDashboard = useCallback(async () => {
-    try {
-      const [dash, lb, hist, users, coinCfg, ach, roomsData] = await Promise.all([
-        api.dashboard(),
-        api.leaderboard(leaderboardPeriod),
-        api.history(50, 0),
-        api.getUsers(),
-        api.getCoinsConfig(),
-        api.achievements(),
-        api.getRooms(),
-      ]);
-      setDashboardData(dash);
-      if (dash.vacation && !vacationUpdatePending.current) setVacationConfig(dash.vacation);
-      setRooms(roomsData);
-      setLeaderboard(lb);
-      setFamily(lb);
-      setFamilySettings(users);
-      setCompletions(hist.history || []);
-      setCoinsByEffort(coinCfg.coinsByEffort || { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
-      setAchievementsData(ach);
-      refreshUser();
-    } catch { /* not logged in */ }
-  }, [leaderboardPeriod, refreshUser]);
+    if (dashboardLoadInFlight.current) return dashboardLoadInFlight.current;
+    const p = (async () => {
+      try {
+        const [dash, lb, hist, users, coinCfg, ach, roomsData] = await Promise.all([
+          api.dashboard(),
+          api.leaderboard(leaderboardPeriod),
+          api.history(50, 0),
+          api.getUsers(),
+          api.getCoinsConfig(),
+          api.achievements(),
+          api.getRooms(),
+        ]);
+        setDashboardData(dash);
+        if (dash.vacation && !vacationUpdatePending.current) setVacationConfig(dash.vacation);
+        setRooms(roomsData);
+        setLeaderboard(lb);
+        setFamily(lb);
+        setFamilySettings(users);
+        setCompletions(hist.history || []);
+        setCoinsByEffort(coinCfg.coinsByEffort || { 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
+        setAchievementsData(ach);
+      } catch { /* not logged in */ }
+    })().finally(() => {
+      dashboardLoadInFlight.current = null;
+    });
+    dashboardLoadInFlight.current = p;
+    return p;
+  }, [leaderboardPeriod]);
 
   useEffect(() => {
     if (user) loadDashboard();
@@ -86,9 +101,9 @@ function AppContent() {
   useEffect(() => {
     if (!user) return;
     const path = location.pathname;
-    if (path === '/' || path === '/rooms') {
+    if (path === '/') {
       loadDashboard();
-    } else if (path.startsWith('/rooms/')) {
+    } else if (path === '/rooms' || path.startsWith('/rooms/')) {
       refreshRooms();
     }
     if (path === '/rewards') {
@@ -99,8 +114,12 @@ function AppContent() {
   // Poll every 15s to reflect other users' actions without requiring F5
   useEffect(() => {
     if (!user) return;
+    const isDashboardPath = location.pathname === '/';
+    const isRoomsPath = location.pathname === '/rooms' || location.pathname.startsWith('/rooms/');
     const tick = () => {
-      if (document.visibilityState === 'visible') loadDashboard();
+      if (document.visibilityState !== 'visible') return;
+      if (isDashboardPath) loadDashboard();
+      if (isRoomsPath) refreshRooms();
     };
     const interval = setInterval(tick, 15000);
     document.addEventListener('visibilitychange', tick);
@@ -108,7 +127,7 @@ function AppContent() {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', tick);
     };
-  }, [user, loadDashboard]);
+  }, [user, location.pathname, loadDashboard, refreshRooms]);
 
   const loadRewards = useCallback(async () => {
     try {
@@ -311,15 +330,15 @@ function AppContent() {
                 users={familySettings}
                 onCreateRoom={async (data) => {
                   await api.createRoom({ name: data.name, roomType: data.roomType, color: data.color, accentColor: data.accentColor, tasks: data.tasks, assignedUserId: data.assignedUserId });
-                  setRooms(await api.getRooms());
+                  void refreshRooms();
                 }}
                 onDeleteRoom={async (roomId) => {
                   await api.deleteRoom(roomId);
-                  setRooms(await api.getRooms());
+                  void refreshRooms();
                 }}
                 onAssignRoom={async (roomId, assignedUserId, force) => {
                   await api.updateRoom(roomId, { assignedUserId, ...(force ? { force: true } : {}) });
-                  setRooms(await api.getRooms());
+                  void refreshRooms();
                 }}
               />
             </>
@@ -359,7 +378,7 @@ function AppContent() {
           <Route path="/profile" element={
             <>
               <PageHeader title={t('nav.profile')} subtitle={t('app.profileSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
-              <Profile user={user} onSave={async () => { await refreshUser(); }} onLogout={logout} />
+              <Profile user={user} onSave={async () => { await refreshUser(); }} onLogout={() => { logout(); navigate('/login', { replace: true }); }} />
             </>
           } />
 

@@ -506,7 +506,9 @@ export function Settings({
               onChange={async (val) => {
                 setVacationEnabled(val);
                 if (!val) setVacationEndDate(null);
-                await onUpdateVacation?.({ vacationMode: val });
+                void onUpdateVacation?.({ vacationMode: val }).catch(() => {
+                  setVacationEnabled(!val);
+                });
               }}
             />
           </div>
@@ -522,7 +524,9 @@ export function Settings({
                 onChange={async (e) => {
                   const val = e.target.value || null;
                   setVacationEndDate(val);
-                  await onUpdateVacation?.({ vacationEndDate: val });
+                  void onUpdateVacation?.({ vacationEndDate: val }).catch(() => {
+                    setVacationEndDate(vacationConfig?.vacationEndDate ?? null);
+                  });
                 }}
                 style={{ fontSize: 13, padding: '4px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', background: 'var(--warm-bg)', color: 'var(--warm-text)' }}
               />
