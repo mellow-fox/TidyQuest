@@ -409,6 +409,8 @@ Mark a task as completed, earn coins, update streak.
 
 **Endpoint**: `POST /api/tasks/:id/complete`
 
+**Simple completion** (single user):
+
 **Response** (200):
 ```json
 {
@@ -437,10 +439,60 @@ Mark a task as completed, earn coins, update streak.
 }
 ```
 
+**Shared completion** (multiple participants):
+
+To complete a task with multiple participants and split rewards, include the `participants` array in the request body:
+
+**Request Body**:
+```json
+{
+  "participants": [
+    { "userId": 1, "percentage": 50 },
+    { "userId": 2, "percentage": 50 }
+  ]
+}
+```
+
+Or with custom percentages:
+```json
+{
+  "participants": [
+    { "userId": 1, "percentage": 30 },
+    { "userId": 2, "percentage": 70 }
+  ]
+}
+```
+
+**Response** (200):
+```json
+{
+  "shared": true,
+  "participants": [
+    { "userId": 1, "coinsEarned": 5 },
+    { "userId": 2, "coinsEarned": 5 }
+  ],
+  "totalCoinsEarned": 10,
+  "health": 100
+}
+```
+
+**Notes**:
+- Percentages must sum to 100
+- Maximum 10 participants allowed
+- Each participant receives their share of coins and streak credit
+- The `sharedTaskEnabled` feature flag must be enabled for shared completions
+
 **cURL Example**:
 ```bash
+# Simple completion
 curl -X POST http://localhost:3020/api/tasks/1/complete \
   -H "Authorization: Bearer <your-token>"
+
+# Shared completion
+curl -X POST http://localhost:3020/api/tasks/1/complete \
+  -H "Authorization: Bearer <your-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"participants": [{"userId": 1, "percentage": 50}, {"userId": 2, "percentage": 50}]}'
 ```
 
 ---
@@ -765,6 +817,53 @@ Or reset to defaults:
 ```json
 {
   "coinsByEffort": { ... }
+}
+```
+
+---
+
+### Get Feature Settings
+
+Get app feature flags configuration.
+
+**Endpoint**: `GET /api/users/feature-settings`
+
+**Response** (200):
+```json
+{
+  "sharedTaskEnabled": false,
+  "sharedTaskAllowCustomPercentage": false
+}
+```
+
+**cURL Example**:
+```bash
+curl -X GET http://localhost:3020/api/users/feature-settings \
+  -H "Authorization: Bearer <admin-token>"
+```
+
+---
+
+### Update Feature Settings
+
+Update app feature flags configuration. Only available to admin users.
+
+**Endpoint**: `PUT /api/users/feature-settings`
+
+**Request Body**:
+```json
+{
+  "sharedTaskEnabled": true,
+  "sharedTaskAllowCustomPercentage": true
+}
+```
+
+All fields are optional. Only provided fields will be updated.
+
+**Response** (200):
+```json
+{
+  "success": true
 }
 ```
 
