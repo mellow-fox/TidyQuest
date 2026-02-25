@@ -86,6 +86,8 @@ export function Settings({
   const [rewardsAdmin, setRewardsAdmin] = useState<Array<{ id: number; title: string; description?: string | null; costCoins: number; isActive?: boolean; isPreset?: boolean }>>([]);
   const [rewardRequests, setRewardRequests] = useState<Array<{ id: number; title: string; displayName: string; costCoins: number; redeemedAt: string; status: string }>>([]);
   const [rewardDraft, setRewardDraft] = useState({ title: '', description: '', costCoins: '30' });
+  const [editingRewardId, setEditingRewardId] = useState<number | null>(null);
+  const [editingRewardCost, setEditingRewardCost] = useState('');
   const [memberProfile, setMemberProfile] = useState<Record<number, {
     language: string;
     avatarType: 'letter' | 'preset';
@@ -313,6 +315,29 @@ export function Settings({
         await api.createReward(p);
       }
     }
+    await loadRewardsAdmin();
+  };
+
+  const startRewardEdit = (r: { id: number; costCoins: number }) => {
+    setEditingRewardId(r.id);
+    setEditingRewardCost(String(r.costCoins));
+  };
+
+  const cancelRewardEdit = () => {
+    setEditingRewardId(null);
+    setEditingRewardCost('');
+  };
+
+  const saveRewardEdit = async (r: { id: number; title: string; description?: string | null; isActive?: boolean }) => {
+    const parsed = Math.max(1, Math.round(Number(editingRewardCost)));
+    if (!Number.isFinite(parsed)) return;
+    await api.updateReward(r.id, {
+      title: r.title,
+      description: r.description || '',
+      costCoins: parsed,
+      isActive: r.isActive !== false,
+    });
+    cancelRewardEdit();
     await loadRewardsAdmin();
   };
 
@@ -661,11 +686,35 @@ export function Settings({
           </div>
           <div style={{ display: 'grid', gap: 6 }}>
             {rewardsAdmin.map((r) => (
-              <div key={r.id} className="rewards-list-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 80px auto', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: r.isActive ? 'var(--warm-bg-subtle)' : 'var(--warm-bg-warm)' }}>
+              <div key={r.id} className="rewards-list-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 100px auto', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: r.isActive ? 'var(--warm-bg-subtle)' : 'var(--warm-bg-warm)' }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text)' }}>{rewardTitle(r)}</div>
                 <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{rewardDesc(r)}</div>
-                <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-accent)', display: 'flex', alignItems: 'center', gap: 4 }}><CoinIcon /> {r.costCoins}</div>
-                <button className="tq-btn" onClick={async () => { await api.deleteReward(r.id); await loadRewardsAdmin(); }} style={{ padding: '4px 8px', fontSize: 10, backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}>{t('common.delete')}</button>
+                {editingRewardId === r.id ? (
+                  <input
+                    type="number"
+                    min={1}
+                    value={editingRewardCost}
+                    onChange={(e) => setEditingRewardCost(e.target.value)}
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter') await saveRewardEdit(r);
+                      if (e.key === 'Escape') cancelRewardEdit();
+                    }}
+                    style={{ padding: '6px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', fontSize: 12 }}
+                  />
+                ) : (
+                  <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-accent)', display: 'flex', alignItems: 'center', gap: 4 }}><CoinIcon /> {r.costCoins}</div>
+                )}
+                {editingRewardId === r.id ? (
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                    <button className="tq-btn tq-btn-primary" onClick={async () => { await saveRewardEdit(r); }} style={{ padding: '4px 8px', fontSize: 10 }}>{t('common.save')}</button>
+                    <button className="tq-btn" onClick={cancelRewardEdit} style={{ padding: '4px 8px', fontSize: 10 }}>{t('common.cancel')}</button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                    <button className="tq-btn" onClick={() => startRewardEdit(r)} style={{ padding: '4px 8px', fontSize: 10 }}>{t('common.edit')}</button>
+                    <button className="tq-btn" onClick={async () => { await api.deleteReward(r.id); await loadRewardsAdmin(); }} style={{ padding: '4px 8px', fontSize: 10, backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}>{t('common.delete')}</button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
