@@ -148,7 +148,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* House Health Card */}
         <div
-          className="tq-card tq-card-padded"
+          className="tq-card tq-card-padded dashboard-hero"
           style={{
             display: 'flex',
             alignItems: 'center',

@@ -354,13 +354,16 @@ body {
 /* Dashboard — CSS columns masonry layout */
 /* column-width lets the browser auto-pick column count based on available space */
 .dashboard-grid {
-  columns: 280px;
+  columns: 300px;
   column-gap: var(--space-xl);
   animation: fadeIn 0.3s ease;
 }
 .dashboard-grid > * {
   break-inside: avoid;
   margin-bottom: var(--space-xl);
+}
+.dashboard-grid > .dashboard-hero {
+  column-span: all;
 }
 
 /* Settings grid — via CSS class, not inline */
