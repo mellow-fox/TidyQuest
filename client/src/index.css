@@ -352,8 +352,9 @@ body {
 .tq-page-wide { max-width: 900px; }
 
 /* Dashboard — CSS columns masonry layout */
+/* column-width lets the browser auto-pick column count based on available space */
 .dashboard-grid {
-  columns: 3;
+  columns: 280px;
   column-gap: var(--space-xl);
   animation: fadeIn 0.3s ease;
 }
@@ -411,9 +412,6 @@ html[data-theme='night'] option {
     font-size: 14px;
   }
 
-  .dashboard-grid {
-    columns: 2;
-  }
 }
 
 /* Mobile breakpoint (max-width: 768px) */
@@ -505,9 +503,9 @@ html[data-theme='night'] option {
     display: none !important;
   }
 
-  /* Dashboard: 1 column on mobile */
+  /* Dashboard: force single column on mobile */
   .dashboard-grid {
-    columns: 1;
+    columns: 1 !important;
   }
 
   .page-header {
