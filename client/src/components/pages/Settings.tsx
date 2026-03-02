@@ -377,7 +377,7 @@ export function Settings({
   };
 
   return (
-    <div className="page-enter settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 980 }}>
+    <div className="page-enter settings-grid">
       <div className="tq-card tq-card-padded">
         <h3 className="tq-card-title">{t('settings.general')}</h3>
         {user.role !== 'child' && (<>

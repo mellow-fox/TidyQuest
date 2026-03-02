@@ -30,7 +30,7 @@ export function History({ language, isAdmin }: { language?: string; isAdmin?: bo
   };
 
   return (
-    <div className="page-enter tq-page-medium" style={{ maxWidth: 750 }}>
+    <div className="page-enter tq-page-wide">
       <div className="tq-card tq-card-padded">
         <div className="history-table-scroll">
           <div className="history-header" style={{

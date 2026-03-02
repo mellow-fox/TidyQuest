@@ -146,8 +146,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     <>
     <div className="dashboard-grid">
 
-      {/* ── Column 1 ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* House Health Card */}
         <div
           className="tq-card tq-card-padded"
@@ -383,10 +381,83 @@ const Dashboard: React.FC<DashboardProps> = ({
             )}
           </div>
         </div>
+
+      {/* Streak Card */}
+      <div
+        className="tq-card tq-card-padded"
+        style={{
+          background: 'var(--warm-streak-bg)',
+          borderColor: 'var(--warm-streak-border)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            marginBottom: 14,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 16,
+              backgroundColor: 'var(--warm-card)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1.5px solid var(--warm-streak-border)',
+            }}
+          >
+            <FireIcon />
+          </div>
+          <div>
+            <div
+              style={{
+                fontSize: 30,
+                fontWeight: 900,
+                color: 'var(--warm-streak-text)',
+                lineHeight: 1,
+              }}
+            >
+              {currentUser.currentStreak}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--warm-streak-subtext)', fontWeight: 700 }}>
+              {t('dashboard.dayStreak')}
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {Array.from({ length: 7 }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: 7,
+                borderRadius: 4,
+                backgroundColor:
+                  i < (currentUser.currentStreak % 7 || 7)
+                    ? 'var(--warm-accent)'
+                    : 'var(--warm-streak-border)',
+              }}
+            />
+          ))}
+        </div>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'var(--warm-streak-subtext)',
+            marginTop: 10,
+            fontWeight: 600,
+          }}
+        >
+          {streakDoneToday ? t('dashboard.streakDoneToday') : t('dashboard.keepStreak')}
+        </div>
       </div>
 
-      {/* ── Column 2: Rooms ── */}
-      <div className="tq-card tq-card-padded" style={{ alignSelf: 'start' }}>
+      {/* ── Rooms ── */}
+      <div className="tq-card tq-card-padded">
         <div
           style={{
             display: 'flex',
@@ -467,83 +538,8 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* ── Column 3: Widgets ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {/* Streak Card */}
-        <div
-          className="tq-card tq-card-padded"
-          style={{
-            background: 'var(--warm-streak-bg)',
-            borderColor: 'var(--warm-streak-border)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 14,
-              marginBottom: 14,
-            }}
-          >
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 16,
-                backgroundColor: 'var(--warm-card)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1.5px solid var(--warm-streak-border)',
-              }}
-            >
-              <FireIcon />
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: 30,
-                  fontWeight: 900,
-                  color: 'var(--warm-streak-text)',
-                  lineHeight: 1,
-                }}
-              >
-                {currentUser.currentStreak}
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--warm-streak-subtext)', fontWeight: 700 }}>
-                {t('dashboard.dayStreak')}
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 4 }}>
-            {Array.from({ length: 7 }, (_, i) => (
-              <div
-                key={i}
-                style={{
-                  flex: 1,
-                  height: 7,
-                  borderRadius: 4,
-                  backgroundColor:
-                    i < (currentUser.currentStreak % 7 || 7)
-                      ? 'var(--warm-accent)'
-                      : 'var(--warm-streak-border)',
-                }}
-              />
-            ))}
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: 'var(--warm-streak-subtext)',
-              marginTop: 10,
-              fontWeight: 600,
-            }}
-          >
-            {streakDoneToday ? t('dashboard.streakDoneToday') : t('dashboard.keepStreak')}
-          </div>
-        </div>
-
-        <div className="tq-card tq-card-padded">
+      {/* Coins Status */}
+      <div className="tq-card tq-card-padded">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)' }}>{t('dashboard.coinsStatusTitle')}</div>
             <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: '3px 8px', backgroundColor: 'var(--warm-accent-light)', color: 'var(--warm-accent)', border: '1px solid var(--warm-accent)' }}>
@@ -758,7 +754,6 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           ))}
         </div>
-      </div>
     </div>
     {adminModalQuest && (
       <AdminCompleteModal

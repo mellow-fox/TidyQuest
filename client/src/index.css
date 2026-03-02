@@ -349,13 +349,24 @@ body {
 /* Page containers */
 .tq-page-narrow { max-width: 520px; }
 .tq-page-medium { max-width: 700px; }
+.tq-page-wide { max-width: 900px; }
 
-/* Dashboard grid — responsive via CSS */
+/* Dashboard — CSS columns masonry layout */
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 310px;
-  gap: var(--space-xl);
+  columns: 3;
+  column-gap: var(--space-xl);
   animation: fadeIn 0.3s ease;
+}
+.dashboard-grid > * {
+  break-inside: avoid;
+  margin-bottom: var(--space-xl);
+}
+
+/* Settings grid — via CSS class, not inline */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
 }
 
 /* Night theme: ensure inputs and selects are readable */
@@ -401,7 +412,7 @@ html[data-theme='night'] option {
   }
 
   .dashboard-grid {
-    grid-template-columns: 1fr 1fr;
+    columns: 2;
   }
 }
 
@@ -475,7 +486,7 @@ html[data-theme='night'] option {
 
   /* Page-specific responsive grids */
   .settings-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .room-type-grid {
@@ -494,9 +505,9 @@ html[data-theme='night'] option {
     display: none !important;
   }
 
-  /* Dashboard: 3 columns -> 1 column */
+  /* Dashboard: 1 column on mobile */
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    columns: 1;
   }
 
   .page-header {

@@ -24,7 +24,7 @@ export function Leaderboard({ users, period, language, onPeriodChange }: Leaderb
   ];
 
   return (
-    <div className="page-enter tq-page-medium">
+    <div className="page-enter tq-page-wide">
       {/* Period Toggle */}
       <div style={{
         display: 'flex', gap: 4, backgroundColor: 'var(--warm-accent-light)', borderRadius: 14,
