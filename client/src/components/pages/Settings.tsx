@@ -378,8 +378,8 @@ export function Settings({
 
   return (
     <div className="page-enter settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 980 }}>
-      <div className="tq-card" style={{ padding: 24 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 18px' }}>{t('settings.general')}</h3>
+      <div className="tq-card tq-card-padded">
+        <h3 className="tq-card-title">{t('settings.general')}</h3>
         {user.role !== 'child' && (<>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: isAdmin ? 'none' : '1px solid var(--warm-border)' }}>
           <BellIcon />
@@ -397,24 +397,24 @@ export function Settings({
                   <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>{t('settings.notificationTime')}</label>
                   <input
                     type="time"
+                    className="tq-input"
                     value={notifTime}
                     onChange={(e) => setNotifTime(e.target.value || '09:00')}
-                    style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
                   />
                 </div>
                 <input
+                  className="tq-input"
                   value={notifChatId}
                   onChange={(e) => setNotifChatId(e.target.value)}
                   placeholder={t('settings.telegramChatId')}
-                  style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
                 />
                 <div style={{ fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>{t('settings.telegramChatIdHint')}</div>
                 <input
                   type="password"
+                  className="tq-input"
                   value={notifToken}
                   onChange={(e) => setNotifToken(e.target.value)}
                   placeholder={notifHasToken ? t('settings.telegramTokenConfigured') : t('settings.telegramToken')}
-                  style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
                 />
                 <div style={{ fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>{t('settings.telegramTokenHint')}</div>
                 <div style={{ display: 'grid', gap: 6, marginTop: 2 }}>
@@ -455,10 +455,10 @@ export function Settings({
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {notifEnabled && (
                 <>
-                  <button className="tq-btn tq-btn-secondary" onClick={saveNotifications} style={{ padding: '6px 10px', fontSize: 11 }}>
+                  <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={saveNotifications}>
                     {t('common.save')}
                   </button>
-                  <button className="tq-btn tq-btn-secondary" onClick={testNotifications} style={{ padding: '6px 10px', fontSize: 11 }}>
+                  <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={testNotifications}>
                     {t('settings.sendTestNotification')}
                   </button>
                 </>
@@ -475,9 +475,10 @@ export function Settings({
             <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.themeDesc')}</div>
           </div>
           <select
+            className="tq-input"
             value={theme}
             onChange={(e) => onChangeTheme(e.target.value as 'orange' | 'blue' | 'rose' | 'night')}
-            style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
+            style={{ width: 'auto', cursor: 'pointer' }}
           >
             <option value="orange">{t('settings.themeOrange')}</option>
             <option value="blue">{t('settings.themeBlue')}</option>
@@ -519,6 +520,7 @@ export function Settings({
               </label>
               <input
                 type="date"
+                className="tq-input-compact"
                 value={vacationEndDate ? vacationEndDate.slice(0, 10) : ''}
                 min={new Date().toISOString().slice(0, 10)}
                 onChange={async (e) => {
@@ -528,7 +530,6 @@ export function Settings({
                     setVacationEndDate(vacationConfig?.vacationEndDate ?? null);
                   });
                 }}
-                style={{ fontSize: 13, padding: '4px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', background: 'var(--warm-bg)', color: 'var(--warm-text)' }}
               />
             </div>
           )}
@@ -562,8 +563,8 @@ export function Settings({
       </div>
 
       {isAdmin && (
-        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.coinsPerEffort')}</h3>
+        <div className="tq-card tq-card-padded settings-admin-card">
+          <h3 className="tq-card-title">{t('settings.coinsPerEffort')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.coinsPerEffortDesc')}</div>
           <div style={{ display: 'grid', gap: 8, marginBottom: 10 }}>
             {[1, 2, 3, 4, 5].map((e) => (
@@ -574,26 +575,26 @@ export function Settings({
                     <CoinIcon />
                     <input
                       type="number"
+                      className="tq-input"
                     min={0}
                     value={coinsDraft[e] ?? coinsByEffort[e] ?? e * 5}
                     onChange={(ev) => setCoinsDraft((prev) => ({ ...prev, [e]: Math.max(0, parseInt(ev.target.value || '0', 10)) }))}
                     title={`${t('roomDetail.effort')} ${e}`}
-                    style={{ width: '100%', padding: '7px 8px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
                   />
                 </div>
               </div>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="tq-btn tq-btn-primary" onClick={saveCoins} style={{ padding: '7px 12px', fontSize: 12 }}>{t('common.save')}</button>
-            <button className="tq-btn tq-btn-secondary" onClick={resetCoins} style={{ padding: '7px 12px', fontSize: 12 }}>{t('settings.useDefaultCoins')}</button>
+            <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={saveCoins}>{t('common.save')}</button>
+            <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={resetCoins}>{t('settings.useDefaultCoins')}</button>
           </div>
         </div>
       )}
 
       {isAdmin && (
-        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.goalsSection')}</h3>
+        <div className="tq-card tq-card-padded settings-admin-card">
+          <h3 className="tq-card-title">{t('settings.goalsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.goalsSectionDesc')}</div>
           <div style={{ display: 'grid', gap: 10 }}>
             {family
@@ -607,7 +608,7 @@ export function Settings({
                         <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--warm-text)' }}>{g.title}</div>
                         <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--warm-accent)', display: 'inline-flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}><CoinIcon /> {g.goalCoins}</div>
                         <div style={{ fontSize: 10, color: 'var(--warm-text-light)', fontWeight: 700 }}>{formatDate(g.endAt)}</div>
-                        <button className="tq-btn" onClick={() => handleDeleteGoal(g.id, u.id)} style={{ padding: '4px 8px', fontSize: 10, backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}>
+                        <button className="tq-btn tq-btn-sm" onClick={() => handleDeleteGoal(g.id, u.id)} style={{ backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}>
                           {t('common.delete')}
                         </button>
                       </div>
@@ -618,29 +619,29 @@ export function Settings({
                   )}
                   <div className="goal-member-form" style={{ display: 'grid', gridTemplateColumns: '1.4fr 100px 130px auto', gap: 8 }}>
                     <input
+                      className="tq-input"
                       value={goalDraft[u.id]?.title || ''}
                       onChange={(e) => setGoalDraft((prev) => ({ ...prev, [u.id]: { ...(prev[u.id] || { title: '', goalCoins: '', endAt: '' }), title: e.target.value } }))}
                       placeholder={t('settings.goalTitle')}
-                      style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
                     />
                     <input
                       type="number"
+                      className="tq-input"
                       min={1}
                       value={goalDraft[u.id]?.goalCoins || ''}
                       onChange={(e) => setGoalDraft((prev) => ({ ...prev, [u.id]: { ...(prev[u.id] || { title: '', goalCoins: '', endAt: '' }), goalCoins: e.target.value } }))}
                       placeholder={t('settings.goalCoins')}
-                      style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
                     />
                     <input
                       type="date"
-                      className="goal-member-end-date"
+                      className="tq-input goal-member-end-date"
                       value={goalDraft[u.id]?.endAt || ''}
                       onChange={(e) => setGoalDraft((prev) => ({ ...prev, [u.id]: { ...(prev[u.id] || { title: '', goalCoins: '', endAt: '' }), endAt: e.target.value } }))}
                       title={t('settings.goalEnd')}
                       lang={locale}
-                      style={{ minWidth: 0, padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
+                      style={{ minWidth: 0 }}
                     />
-                    <button className="tq-btn tq-btn-secondary" onClick={() => handleAddGoal(u)} style={{ padding: '6px 10px', fontSize: 11 }}>{t('settings.addGoal')}</button>
+                    <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={() => handleAddGoal(u)}>{t('settings.addGoal')}</button>
                   </div>
                 </div>
               ))}
@@ -649,15 +650,15 @@ export function Settings({
       )}
 
       {isAdmin && (
-        <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.rewardsSection')}</h3>
+        <div className="tq-card tq-card-padded settings-admin-card">
+          <h3 className="tq-card-title">{t('settings.rewardsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.rewardsSectionDesc')}</div>
           <div className="rewards-add-form" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 100px auto auto', gap: 8, marginBottom: 10 }}>
-            <input value={rewardDraft.title} onChange={(e) => setRewardDraft((p) => ({ ...p, title: e.target.value }))} placeholder={t('settings.rewardTitle')} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
-            <input value={rewardDraft.description} onChange={(e) => setRewardDraft((p) => ({ ...p, description: e.target.value }))} placeholder={t('settings.rewardDesc')} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
-            <input type="number" min={1} value={rewardDraft.costCoins} onChange={(e) => setRewardDraft((p) => ({ ...p, costCoins: e.target.value }))} placeholder={t('settings.rewardCost')} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
-            <button className="tq-btn tq-btn-secondary" onClick={handleSeedRewards} style={{ padding: '6px 10px', fontSize: 11 }}>{t('settings.addPresetRewards')}</button>
-            <button className="tq-btn tq-btn-primary" onClick={handleCreateReward} style={{ padding: '6px 10px', fontSize: 11 }}>{t('settings.create')}</button>
+            <input className="tq-input" value={rewardDraft.title} onChange={(e) => setRewardDraft((p) => ({ ...p, title: e.target.value }))} placeholder={t('settings.rewardTitle')} />
+            <input className="tq-input" value={rewardDraft.description} onChange={(e) => setRewardDraft((p) => ({ ...p, description: e.target.value }))} placeholder={t('settings.rewardDesc')} />
+            <input className="tq-input" type="number" min={1} value={rewardDraft.costCoins} onChange={(e) => setRewardDraft((p) => ({ ...p, costCoins: e.target.value }))} placeholder={t('settings.rewardCost')} />
+            <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={handleSeedRewards}>{t('settings.addPresetRewards')}</button>
+            <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={handleCreateReward}>{t('settings.create')}</button>
           </div>
           <div style={{ display: 'grid', gap: 6 }}>
             {rewardsAdmin.map((r) => (
@@ -665,12 +666,12 @@ export function Settings({
                 <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text)' }}>{rewardTitle(r)}</div>
                 <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{rewardDesc(r)}</div>
                 <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-accent)', display: 'flex', alignItems: 'center', gap: 4 }}><CoinIcon /> {r.costCoins}</div>
-                <button className="tq-btn" onClick={async () => { await api.deleteReward(r.id); await loadRewardsAdmin(); }} style={{ padding: '4px 8px', fontSize: 10, backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}>{t('common.delete')}</button>
+                <button className="tq-btn tq-btn-sm" onClick={async () => { await api.deleteReward(r.id); await loadRewardsAdmin(); }} style={{ backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}>{t('common.delete')}</button>
               </div>
             ))}
           </div>
           <div style={{ marginTop: 14 }}>
-            <h4 style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 800, color: 'var(--warm-text)' }}>{t('settings.rewardRequests')}</h4>
+            <h4 className="tq-card-title" style={{ fontSize: 13 }}>{t('settings.rewardRequests')}</h4>
             <div style={{ display: 'grid', gap: 6 }}>
               {rewardRequests.map((rr) => (
                 <div key={rr.id} className="rewards-requests-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 90px 110px 130px', gap: 8, alignItems: 'center', border: '1px solid var(--warm-border)', borderRadius: 10, padding: '8px 10px', backgroundColor: 'var(--warm-bg-subtle)' }}>
@@ -690,8 +691,8 @@ export function Settings({
       )}
 
       {isAdmin && (
-      <div className="tq-card" style={{ padding: 24 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 18px' }}>{t('settings.dataPrivacy')}</h3>
+      <div className="tq-card tq-card-padded">
+        <h3 className="tq-card-title">{t('settings.dataPrivacy')}</h3>
         {[
           { icon: <DownloadIcon />, title: t('settings.exportData'), desc: t('settings.exportDesc'), btn: t('settings.download'), action: onExport },
           { icon: <UploadIcon />, title: t('settings.importData'), desc: t('settings.importDesc'), btn: t('settings.upload'), action: onImport },
@@ -704,7 +705,7 @@ export function Settings({
               <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{s.desc}</div>
             </div>
             {s.btn && (
-              <button className="tq-btn" onClick={isAdmin ? s.action! : () => {}} disabled={!isAdmin} style={{ padding: '7px 16px', backgroundColor: 'var(--warm-accent-light)', color: 'var(--warm-accent)', fontSize: 12, border: '1.5px solid var(--warm-accent)' }}>
+              <button className="tq-btn tq-btn-sm" onClick={isAdmin ? s.action! : () => {}} disabled={!isAdmin} style={{ backgroundColor: 'var(--warm-accent-light)', color: 'var(--warm-accent)', border: '1.5px solid var(--warm-accent)' }}>
                 {s.btn}
               </button>
             )}
@@ -713,21 +714,21 @@ export function Settings({
       </div>
       )}
 
-      <div className="tq-card settings-admin-card family-members-card" style={{ padding: 24, gridColumn: '1 / -1' }}>
+      <div className="tq-card tq-card-padded settings-admin-card family-members-card" style={{ gridColumn: '1 / -1' }}>
         <div className="family-members-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: 0 }}>{t('settings.familyMembers')}</h3>
-          <button className="tq-btn tq-btn-primary" onClick={() => isAdmin && setShowAddMember(true)} disabled={!isAdmin} style={{ padding: '7px 18px', fontSize: 12, opacity: isAdmin ? 1 : 0.5 }}>
+          <h3 className="tq-card-title" style={{ margin: 0 }}>{t('settings.familyMembers')}</h3>
+          <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={() => isAdmin && setShowAddMember(true)} disabled={!isAdmin} style={{ opacity: isAdmin ? 1 : 0.5 }}>
             + {t('settings.addMember')}
           </button>
         </div>
         {showAddMember && (
           <div style={{ marginBottom: 14, padding: 12, borderRadius: 12, backgroundColor: 'var(--warm-bg-warm)', border: '1.5px solid var(--warm-border)' }}>
             <div className="family-members-add-form" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto auto', gap: 8 }}>
-              <input value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} placeholder={t('settings.memberDisplayName')} style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
-              <input value={newMemberUsername} onChange={(e) => setNewMemberUsername(e.target.value)} placeholder={t('settings.memberUsername')} style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
-              <input value={newMemberPassword} onChange={(e) => setNewMemberPassword(e.target.value)} type="password" placeholder={t('settings.memberPassword')} style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
-              <button className="tq-btn tq-btn-secondary" onClick={resetMemberForm} style={{ padding: '8px 12px', fontSize: 12 }}>{t('common.cancel')}</button>
-              <button className="tq-btn tq-btn-primary" onClick={handleAddMember} style={{ padding: '8px 12px', fontSize: 12 }}>{t('settings.create')}</button>
+              <input className="tq-input" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} placeholder={t('settings.memberDisplayName')} />
+              <input className="tq-input" value={newMemberUsername} onChange={(e) => setNewMemberUsername(e.target.value)} placeholder={t('settings.memberUsername')} />
+              <input className="tq-input" value={newMemberPassword} onChange={(e) => setNewMemberPassword(e.target.value)} type="password" placeholder={t('settings.memberPassword')} />
+              <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={resetMemberForm}>{t('common.cancel')}</button>
+              <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={handleAddMember}>{t('settings.create')}</button>
             </div>
           </div>
         )}
@@ -758,9 +759,10 @@ export function Settings({
               {isAdmin && u.id !== user.id && (
                 <div className="family-member-actions" style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                   <select
+                    className="tq-input"
                     value={u.role || 'member'}
                     onChange={(e) => onUpdateRole(u.id, e.target.value as 'admin' | 'member' | 'child')}
-                    style={{ padding: '6px 8px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', fontSize: 11 }}
+                    style={{ width: 'auto', cursor: 'pointer', fontSize: 11 }}
                   >
                     <option value="admin">{t('settings.roleAdmin')}</option>
                     <option value="member">{t('settings.roleMember')}</option>
@@ -772,8 +774,7 @@ export function Settings({
                         initMemberProfile(u);
                         setMemberEditOpen((prev) => ({ ...prev, [u.id]: !prev[u.id] }));
                       }}
-                      className="tq-btn tq-btn-secondary"
-                      style={{ padding: '5px 10px', fontSize: 11 }}
+                      className="tq-btn tq-btn-secondary tq-btn-sm"
                     >
                       {t('settings.manageMember')}
                     </button>
@@ -784,8 +785,8 @@ export function Settings({
                         onDeleteUser(u.id);
                       }
                     }}
-                    className="tq-btn"
-                    style={{ padding: '5px 10px', fontSize: 11, backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}
+                    className="tq-btn tq-btn-sm"
+                    style={{ backgroundColor: 'var(--warm-danger-bg)', color: 'var(--warm-danger)', border: '1.5px solid var(--warm-danger-border)' }}
                   >
                     {t('settings.deleteUser')}
                   </button>
@@ -793,14 +794,14 @@ export function Settings({
               )}
               {isAdmin && u.role !== 'admin' && memberEditOpen[u.id] && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--warm-border)', display: 'grid', gap: 8 }}>
-                  <select value={memberProfile[u.id]?.language || 'en'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], language: e.target.value } }))} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}>
+                  <select className="tq-input" value={memberProfile[u.id]?.language || 'en'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], language: e.target.value } }))} style={{ cursor: 'pointer' }}>
                     <option value="en">English</option>
                     <option value="fr">Français</option>
                     <option value="de">Deutsch</option>
                     <option value="es">Español</option>
                     <option value="it">Italiano</option>
                   </select>
-                  <select value={memberProfile[u.id]?.avatarType || 'letter'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarType: e.target.value as 'letter' | 'preset' } }))} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}>
+                  <select className="tq-input" value={memberProfile[u.id]?.avatarType || 'letter'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarType: e.target.value as 'letter' | 'preset' } }))} style={{ cursor: 'pointer' }}>
                     <option value="letter">{t('profile.letterMode')}</option>
                     <option value="preset">{t('profile.characterMode')}</option>
                   </select>
@@ -811,21 +812,21 @@ export function Settings({
                       ))}
                     </div>
                   ) : (
-                    <select value={memberProfile[u.id]?.avatarPreset || 'cat'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarPreset: e.target.value } }))} style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}>
+                    <select className="tq-input" value={memberProfile[u.id]?.avatarPreset || 'cat'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarPreset: e.target.value } }))} style={{ cursor: 'pointer' }}>
                       {Object.keys(AVATAR_PRESETS).map((id) => (
                         <option key={id} value={id}>{t(`avatars.${id}`)}</option>
                       ))}
                     </select>
                   )}
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <button className="tq-btn tq-btn-primary" onClick={() => handleSaveChildProfile(u)} style={{ padding: '6px 10px', fontSize: 11 }}>{t('common.save')}</button>
+                    <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={() => handleSaveChildProfile(u)}>{t('common.save')}</button>
                     {memberProfileMsg[u.id] && (
                       <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberProfileMsg[u.id]}</div>
                     )}
                   </div>
                   <div className="member-edit-password-row" style={{ display: 'flex', gap: 8 }}>
-                    <input type="password" value={memberPassword[u.id] || ''} onChange={(e) => setMemberPassword((prev) => ({ ...prev, [u.id]: e.target.value }))} placeholder={t('settings.newPassword')} style={{ flex: 1, padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
-                    <button className="tq-btn tq-btn-secondary" onClick={() => handleSetChildPassword(u)} style={{ padding: '6px 10px', fontSize: 11 }}>{t('settings.resetPassword')}</button>
+                    <input type="password" className="tq-input" value={memberPassword[u.id] || ''} onChange={(e) => setMemberPassword((prev) => ({ ...prev, [u.id]: e.target.value }))} placeholder={t('settings.newPassword')} style={{ flex: 1 }} />
+                    <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={() => handleSetChildPassword(u)}>{t('settings.resetPassword')}</button>
                   </div>
                   {memberPasswordMsg[u.id] && (
                     <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberPasswordMsg[u.id]}</div>
@@ -834,12 +835,13 @@ export function Settings({
                     <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-light)' }}>{t('settings.coinsBalance')}: {u.coins}</span>
                     <input
                       type="number"
+                      className="tq-input-compact"
                       value={coinAdjust[u.id] || ''}
                       onChange={(e) => setCoinAdjust((prev) => ({ ...prev, [u.id]: e.target.value }))}
                       placeholder={t('settings.adjustCoins')}
-                      style={{ width: 80, padding: '5px 8px', borderRadius: 8, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', fontSize: 11 }}
+                      style={{ width: 80 }}
                     />
-                    <button className="tq-btn tq-btn-secondary" style={{ padding: '5px 10px', fontSize: 11 }} onClick={async () => {
+                    <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={async () => {
                       const amt = parseInt(coinAdjust[u.id] || '0');
                       if (!amt) return;
                       if (onAdjustCoins) {

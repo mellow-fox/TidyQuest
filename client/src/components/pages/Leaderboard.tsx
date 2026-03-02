@@ -24,7 +24,7 @@ export function Leaderboard({ users, period, language, onPeriodChange }: Leaderb
   ];
 
   return (
-    <div className="page-enter" style={{ maxWidth: 700 }}>
+    <div className="page-enter tq-page-medium">
       {/* Period Toggle */}
       <div style={{
         display: 'flex', gap: 4, backgroundColor: 'var(--warm-accent-light)', borderRadius: 14,
@@ -34,7 +34,7 @@ export function Leaderboard({ users, period, language, onPeriodChange }: Leaderb
           <button key={p} onClick={() => onPeriodChange(p)}
             className="tq-btn"
             style={{
-              padding: '9px 22px', borderRadius: 11,
+              padding: '10px 16px', borderRadius: 11,
               backgroundColor: period === p ? 'var(--warm-accent)' : 'transparent',
               fontSize: 13, fontWeight: 800,
               color: period === p ? '#fff' : 'var(--warm-text-light)',
@@ -76,7 +76,7 @@ export function Leaderboard({ users, period, language, onPeriodChange }: Leaderb
       {/* Stats List */}
       {sorted.map((u, i) => (
         <div key={u.id} className="tq-card" style={{
-          display: 'flex', alignItems: 'center', gap: 16, padding: '16px 22px', marginBottom: 10,
+          display: 'flex', alignItems: 'center', gap: 16, padding: 'var(--card-padding)', marginBottom: 10,
         }}>
           <div style={{
             width: 32, height: 32, borderRadius: 10,
@@ -102,7 +102,7 @@ export function Leaderboard({ users, period, language, onPeriodChange }: Leaderb
       ))}
 
       {sorted.length === 0 && (
-        <div className="tq-card" style={{ padding: 40, textAlign: 'center', color: 'var(--warm-text-light)', fontWeight: 600 }}>
+        <div className="tq-card tq-empty-state">
           {t('leaderboard.noData')}
         </div>
       )}

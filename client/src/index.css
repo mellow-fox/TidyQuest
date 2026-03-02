@@ -45,6 +45,30 @@
   --health-red-bg: #FDECEC;
   --warm-shadow: rgba(180, 150, 100, 0.1);
   --warm-primary-shadow: rgba(249, 115, 22, 0.25);
+
+  /* Design System — Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+
+  /* Design System — Radius scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Design System — Card padding */
+  --card-padding: 20px;
+
+  /* Design System — Input sizing */
+  --input-padding: 10px 14px;
+  --input-radius: 12px;
+  --input-border: 1.5px solid var(--warm-border);
+  --input-font-size: 14px;
 }
 
 html[data-theme='blue'] {
@@ -206,6 +230,134 @@ body {
   color: var(--warm-accent);
 }
 
+/* ========================================
+   DESIGN SYSTEM — Utility Classes
+   ======================================== */
+
+/* Button sizes */
+.tq-btn-sm { padding: 6px 12px; font-size: 12px; }
+.tq-btn-md { padding: 10px 16px; font-size: 13px; }
+.tq-btn-lg { padding: 12px 20px; font-size: 14px; }
+
+/* Standardized input */
+.tq-input {
+  width: 100%;
+  padding: var(--input-padding);
+  border-radius: var(--input-radius);
+  border: var(--input-border);
+  font-size: var(--input-font-size);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  color: var(--warm-text);
+  background-color: var(--warm-bg-input);
+  outline: none;
+  box-sizing: border-box;
+}
+.tq-input:focus {
+  border-color: var(--warm-accent);
+}
+
+/* Compact input variant (for inline number fields, small selects) */
+.tq-input-compact {
+  padding: 5px 6px;
+  border-radius: var(--radius-sm);
+  border: var(--input-border);
+  font-size: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  color: var(--warm-text);
+  background-color: var(--warm-bg-input);
+  outline: none;
+  box-sizing: border-box;
+}
+.tq-input-compact:focus {
+  border-color: var(--warm-accent);
+}
+
+/* Standardized label */
+.tq-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--warm-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Card title */
+.tq-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--warm-text);
+  margin: 0 0 12px;
+}
+
+/* Card with standard padding */
+.tq-card-padded {
+  padding: var(--card-padding);
+}
+
+/* Modal overlay */
+.tq-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* Modal container — responsive by default */
+.tq-modal {
+  width: 90vw;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.tq-modal-wide {
+  max-width: 680px;
+}
+.tq-modal-narrow {
+  max-width: 380px;
+}
+.tq-modal-inner {
+  padding: var(--space-3xl);
+  max-height: 85vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Empty state */
+.tq-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--warm-text-light);
+  font-weight: 600;
+  font-size: 13px;
+}
+.tq-empty-state-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--warm-text-light);
+  margin-bottom: 8px;
+}
+
+/* Page containers */
+.tq-page-narrow { max-width: 520px; }
+.tq-page-medium { max-width: 700px; }
+
+/* Dashboard grid — responsive via CSS */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 310px;
+  gap: var(--space-xl);
+  animation: fadeIn 0.3s ease;
+}
+
 /* Night theme: ensure inputs and selects are readable */
 html[data-theme='night'] input,
 html[data-theme='night'] textarea,
@@ -247,10 +399,19 @@ html[data-theme='night'] option {
     padding: 10px 16px;
     font-size: 14px;
   }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* Mobile breakpoint (max-width: 768px) */
 @media (max-width: 768px) {
+  :root {
+    --card-padding: 16px;
+    --space-3xl: 24px;
+  }
+
   .mobile-only { display: block; }
   .desktop-only { display: none; }
 
@@ -269,6 +430,13 @@ html[data-theme='night'] option {
     font-size: 15px;
     min-height: 44px; /* Touch-friendly tap target */
     justify-content: center;
+  }
+
+  /* Keep small buttons small on mobile */
+  .tq-btn-sm {
+    padding: 8px 14px;
+    font-size: 13px;
+    min-height: auto;
   }
 
   /* Make buttons full-width on mobile when in containers */
@@ -296,6 +464,15 @@ html[data-theme='night'] option {
     max-width: 100% !important;
   }
 
+  /* Responsive modal */
+  .tq-modal {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+  }
+  .tq-modal-inner {
+    padding: var(--space-xl);
+  }
+
   /* Page-specific responsive grids */
   .settings-grid {
     grid-template-columns: 1fr !important;
@@ -319,7 +496,7 @@ html[data-theme='night'] option {
 
   /* Dashboard: 3 columns -> 1 column */
   .dashboard-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .page-header {

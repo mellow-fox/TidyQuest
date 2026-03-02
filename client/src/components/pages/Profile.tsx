@@ -94,8 +94,8 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
   ];
 
   return (
-    <div className="page-enter" style={{ maxWidth: 520 }}>
-      <div className="tq-card" style={{ padding: 32 }}>
+    <div className="page-enter tq-page-narrow">
+      <div className="tq-card" style={{ padding: 'var(--space-3xl)' }}>
         {/* Avatar preview */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
           <UserAvatar
@@ -110,25 +110,20 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
 
         {/* Display name */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+          <label className="tq-label">
             {t('profile.displayName')}
           </label>
           <input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            style={{
-              width: '100%', padding: '10px 14px', borderRadius: 12,
-              border: '1.5px solid var(--warm-border)', fontSize: 14, fontWeight: 700,
-              color: 'var(--warm-text)', fontFamily: 'Nunito', backgroundColor: 'var(--warm-bg-input)',
-              outline: 'none', boxSizing: 'border-box',
-            }}
+            className="tq-input" style={{ fontWeight: 700 }}
           />
         </div>
 
         {/* Avatar mode tabs */}
         <div style={{ marginBottom: 20 }}>
-          <label style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'block' }}>
+          <label className="tq-label">
             {t('profile.avatarMode')}
           </label>
           <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
@@ -219,7 +214,7 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
 
         {/* Language */}
         <div style={{ marginBottom: 28 }}>
-          <label style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'block' }}>
+          <label className="tq-label">
             {t('profile.language')}
           </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -227,12 +222,7 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              style={{
-                flex: 1, padding: '10px 14px', borderRadius: 12,
-                border: '1.5px solid var(--warm-border)', fontSize: 14, fontWeight: 700,
-                color: 'var(--warm-text)', fontFamily: 'Nunito', backgroundColor: 'var(--warm-bg-input)',
-                cursor: 'pointer', outline: 'none',
-              }}
+              className="tq-input" style={{ flex: 1, fontWeight: 700, cursor: 'pointer' }}
             >
               <option value="en">English</option>
               <option value="fr">Fran{'\u00E7'}ais</option>
@@ -244,13 +234,13 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
         </div>
 
         <div style={{ marginBottom: 24, display: 'grid', gap: 8 }}>
-          <label style={{ fontSize: 12, fontWeight: 800, color: 'var(--warm-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, display: 'block' }}>
+          <label className="tq-label">
             {t('settings.passwordSection')}
           </label>
-          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder={t('settings.currentPassword')} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', backgroundColor: 'var(--warm-bg-input)', color: 'var(--warm-text)' }} />
-          <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('settings.newPassword')} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', backgroundColor: 'var(--warm-bg-input)', color: 'var(--warm-text)' }} />
-          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('settings.confirmPassword')} style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito', backgroundColor: 'var(--warm-bg-input)', color: 'var(--warm-text)' }} />
-          <button className="tq-btn tq-btn-secondary" onClick={handlePasswordChange} style={{ width: 'fit-content', padding: '8px 12px', fontSize: 12 }}>
+          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder={t('settings.currentPassword')} className="tq-input" />
+          <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('settings.newPassword')} className="tq-input" />
+          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('settings.confirmPassword')} className="tq-input" />
+          <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={handlePasswordChange} style={{ width: 'fit-content' }}>
             {t('settings.updatePassword')}
           </button>
           {passwordMsg && <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{passwordMsg}</div>}
@@ -258,17 +248,17 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
 
         {/* Save */}
         <button
-          className="tq-btn tq-btn-primary"
+          className="tq-btn tq-btn-primary tq-btn-lg"
           onClick={handleSave}
           disabled={saving}
-          style={{ width: '100%', padding: '12px', fontSize: 14, fontWeight: 800 }}
+          style={{ width: '100%', fontWeight: 800 }}
         >
           {saving ? t('common.loading') : saved ? t('profile.saved') : t('profile.save')}
         </button>
         <button
-          className="tq-btn tq-btn-secondary"
+          className="tq-btn tq-btn-secondary tq-btn-md"
           onClick={onLogout}
-          style={{ width: '100%', padding: '10px', fontSize: 13, fontWeight: 800, marginTop: 10 }}
+          style={{ width: '100%', fontWeight: 800, marginTop: 10 }}
         >
           {t('profile.logout')}
         </button>
