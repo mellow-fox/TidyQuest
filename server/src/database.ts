@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import { suggestTaskIcon } from './utils/taskIcons';
 
 const DB_PATH = path.join(__dirname, '..', '..', 'data', 'tidyquest.db');
@@ -377,6 +378,17 @@ export function initDatabase() {
     const firstUser = db.prepare('SELECT id FROM users ORDER BY id ASC LIMIT 1').get() as { id: number } | undefined;
     if (firstUser) {
       db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(firstUser.id);
+    }
+  }
+
+  // Emergency admin password recovery via environment variable
+  const resetPassword = process.env.ADMIN_RESET_PASSWORD;
+  if (resetPassword) {
+    const admin = db.prepare("SELECT id, username FROM users WHERE role = 'admin' ORDER BY id ASC LIMIT 1").get() as { id: number; username: string } | undefined;
+    if (admin) {
+      const hash = bcrypt.hashSync(resetPassword, 10);
+      db.prepare('UPDATE users SET passwordHash = ? WHERE id = ?').run(hash, admin.id);
+      console.log(`[RECOVERY] Password reset for admin "${admin.username}". Remove ADMIN_RESET_PASSWORD from your environment now.`);
     }
   }
 }
