@@ -146,25 +146,15 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <>
-    <div
-      className="dashboard-grid"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr 310px',
-        gap: 20,
-        animation: 'fadeIn 0.3s ease',
-      }}
-    >
-      {/* ── Column 1 ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="dashboard-grid">
+
         {/* House Health Card */}
         <div
-          className="tq-card"
+          className="tq-card tq-card-padded dashboard-hero"
           style={{
-            padding: 28,
             display: 'flex',
             alignItems: 'center',
-            gap: 28,
+            gap: 20,
             background: 'var(--warm-streak-bg)',
           }}
         >
@@ -223,7 +213,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Today's Quests Card */}
-        <div className="tq-card" style={{ padding: 20 }}>
+        <div className="tq-card tq-card-padded">
           <div
             style={{
               display: 'flex',
@@ -350,7 +340,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               );
             })}
             {todaysQuests.length === 0 && (
-              <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 700, padding: '8px 4px' }}>
+              <div className="tq-empty-state" style={{ padding: '16px 4px' }}>
                 {t('dashboard.noQuests')}
               </div>
             )}
@@ -358,7 +348,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Next Tasks Card */}
-        <div className="tq-card" style={{ padding: 20 }}>
+        <div className="tq-card tq-card-padded">
           <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>
             {t('dashboard.nextTasks')}
           </h3>
@@ -387,16 +377,15 @@ const Dashboard: React.FC<DashboardProps> = ({
               );
             })}
             {nextTasks.length === 0 && (
-              <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 700, padding: '8px 4px' }}>
+              <div className="tq-empty-state" style={{ padding: '16px 4px' }}>
                 {t('calendar.allCaughtUp')}
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      {/* ── Column 2: Rooms ── */}
-      <div className="tq-card" style={{ padding: 20, alignSelf: 'start' }}>
+      {/* ── Rooms ── */}
+      <div className="tq-card tq-card-padded">
         <div
           style={{
             display: 'flex',
@@ -481,9 +470,8 @@ const Dashboard: React.FC<DashboardProps> = ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Streak Card */}
         {gamificationEnabled && <div
-          className="tq-card"
+          className="tq-card tq-card-padded"
           style={{
-            padding: 20,
             background: 'var(--warm-streak-bg)',
             borderColor: 'var(--warm-streak-border)',
           }}
@@ -554,7 +542,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>}
 
-        {gamificationEnabled && <div className="tq-card" style={{ padding: 20 }}>
+        {gamificationEnabled && <div className="tq-card tq-card-padded">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)' }}>{t('dashboard.coinsStatusTitle')}</div>
             <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: '3px 8px', backgroundColor: 'var(--warm-accent-light)', color: 'var(--warm-accent)', border: '1px solid var(--warm-accent)' }}>
@@ -575,7 +563,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>}
 
         {gamificationEnabled && myGoal && (
-          <div className="tq-card" style={{ padding: 20 }}>
+          <div className="tq-card tq-card-padded">
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)', marginBottom: 6 }}>{t('dashboard.myGoal')}</div>
             <div style={{ fontSize: 12, color: 'var(--warm-text-muted)', fontWeight: 700, marginBottom: 8 }}>
               {myGoal.currentCoins}/{myGoal.goalCoins} {t('leaderboard.points')}
@@ -590,7 +578,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {gamificationEnabled && currentUser.role === 'admin' && childrenGoals.length > 0 && (
-          <div className="tq-card" style={{ padding: 20 }}>
+          <div className="tq-card tq-card-padded">
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)', marginBottom: 8 }}>{t('dashboard.childrenGoals')}</div>
             <div style={{ display: 'grid', gap: 8 }}>
               {childrenGoals.map((cg) => (
@@ -612,7 +600,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {gamificationEnabled && currentUser.role === 'admin' && (
-          <div className="tq-card" style={{ padding: 20 }}>
+          <div className="tq-card tq-card-padded">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)' }}>{t('dashboard.rewardRequestsTitle')}</div>
               <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: '3px 8px', backgroundColor: 'var(--warm-accent-light)', color: 'var(--warm-accent)', border: '1px solid var(--warm-accent)' }}>
@@ -652,7 +640,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {/* Mini Leaderboard */}
-        {gamificationEnabled && <div className="tq-card" style={{ padding: 20 }}>
+        {gamificationEnabled && <div className="tq-card tq-card-padded">
           <h3
             style={{
               fontSize: 14,
@@ -711,7 +699,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>}
 
         {/* Recent Activity */}
-        <div className="tq-card" style={{ padding: 20 }}>
+        <div className="tq-card tq-card-padded">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h3
               style={{

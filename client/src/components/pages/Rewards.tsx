@@ -126,7 +126,7 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
           100% { opacity: 0; transform: translateY(-24px) scale(1.04); }
         }
       `}</style>
-      <div className="tq-card" style={{ padding: 18 }}>
+      <div className="tq-card tq-card-padded">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <CoinIcon />
           <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)' }}>{userCoins} {t('settings.coins')}</div>
@@ -134,8 +134,8 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
         <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginTop: 4 }}>{t('rewards.balanceHint')}</div>
       </div>
 
-      <div className="tq-card rewards-catalog-card" style={{ padding: 20 }}>
-        <h3 style={{ margin: '0 0 10px', fontSize: 16, fontWeight: 900, color: 'var(--warm-text)' }}>{t('rewards.catalog')}</h3>
+      <div className="tq-card rewards-catalog-card tq-card-padded">
+        <h3 className="tq-card-title">{t('rewards.catalog')}</h3>
         <div className="rewards-catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
           {rewards.map((r) => {
             const canBuy = userCoins >= r.costCoins;
@@ -148,8 +148,8 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
                     <CoinIcon /> {r.costCoins}
                   </div>
                   <button
-                    className="tq-btn tq-btn-primary"
-                    style={{ padding: '6px 10px', fontSize: 11, opacity: canBuy ? 1 : 0.6 }}
+                    className="tq-btn tq-btn-primary tq-btn-sm"
+                    style={{ opacity: canBuy ? 1 : 0.6 }}
                     disabled={!canBuy}
                     onClick={() => setPendingRewardId(r.id)}
                   >
@@ -162,10 +162,10 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
         </div>
       </div>
 
-      <div className="tq-card" style={{ padding: 20 }}>
-        <h3 style={{ margin: '0 0 10px', fontSize: 16, fontWeight: 900, color: 'var(--warm-text)' }}>{t('rewards.myRequests')}</h3>
+      <div className="tq-card tq-card-padded">
+        <h3 className="tq-card-title">{t('rewards.myRequests')}</h3>
         {mine.length === 0 ? (
-          <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('rewards.noRequests')}</div>
+          <div className="tq-empty-state" style={{ padding: '16px 0' }}>{t('rewards.noRequests')}</div>
         ) : (
           <div style={{ display: 'grid', gap: 8 }}>
             {mine.map((m) => (
@@ -191,15 +191,15 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
         )}
       </div>
       {pendingReward && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 120, backgroundColor: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="tq-card rewards-confirm-modal" style={{ width: 380, maxWidth: 'calc(100vw - 24px)', padding: 20 }}>
+        <div className="tq-modal-overlay" style={{ zIndex: 120 }}>
+          <div className="tq-card rewards-confirm-modal tq-modal tq-modal-narrow tq-card-padded">
             <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--warm-text)', marginBottom: 6 }}>{t('rewards.confirmTitle')}</div>
             <div style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 14 }}>
               {t('rewards.confirmText').replace('{reward}', rewardTitle(pendingReward)).replace('{coins}', String(pendingReward.costCoins))}
             </div>
             <div className="rewards-confirm-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button className="tq-btn tq-btn-secondary" onClick={() => setPendingRewardId(null)} style={{ padding: '6px 12px', fontSize: 12 }}>{t('common.cancel')}</button>
-              <button className="tq-btn tq-btn-primary" onClick={confirmRedeem} style={{ padding: '6px 12px', fontSize: 12 }}>{t('rewards.confirmBuy')}</button>
+              <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={() => setPendingRewardId(null)}>{t('common.cancel')}</button>
+              <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={confirmRedeem}>{t('rewards.confirmBuy')}</button>
             </div>
           </div>
         </div>

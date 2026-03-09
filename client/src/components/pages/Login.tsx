@@ -82,33 +82,25 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#8A7A6A', display: 'block', marginBottom: 6 }}>{t('auth.username')}</label>
+            <label className="tq-label" style={{ textTransform: 'none' }}>{t('auth.username')}</label>
             <input value={username} onChange={(e) => setUsername(e.target.value)}
-              style={{
-                width: '100%', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #F0E6D9',
-                fontSize: 14, fontFamily: 'Nunito', fontWeight: 600, color: '#3D2F1E',
-                outline: 'none', backgroundColor: '#FFFBF5',
-              }}
+              className="tq-input" style={{ backgroundColor: '#FFFBF5' }}
               placeholder={t('auth.usernamePlaceholder')}
             />
           </div>
           <div style={{ marginBottom: 20 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#8A7A6A', display: 'block', marginBottom: 6 }}>{t('auth.password')}</label>
+            <label className="tq-label" style={{ textTransform: 'none' }}>{t('auth.password')}</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #F0E6D9',
-                fontSize: 14, fontFamily: 'Nunito', fontWeight: 600, color: '#3D2F1E',
-                outline: 'none', backgroundColor: '#FFFBF5',
-              }}
+              className="tq-input" style={{ backgroundColor: '#FFFBF5' }}
               placeholder={t('auth.passwordPlaceholder')}
             />
           </div>
 
           {error && <div style={{ fontSize: 12, color: '#E25A5A', fontWeight: 700, marginBottom: 14, textAlign: 'center' }}>{error}</div>}
 
-          <button type="submit" className="tq-btn tq-btn-primary"
+          <button type="submit" className="tq-btn tq-btn-primary tq-btn-lg"
             disabled={loading}
-            style={{ width: '100%', padding: '12px', fontSize: 15, justifyContent: 'center' }}>
+            style={{ width: '100%', justifyContent: 'center' }}>
             {loading ? t('auth.loggingIn') : t('auth.logIn')}
           </button>
         </form>
