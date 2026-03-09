@@ -137,6 +137,10 @@ export const api = {
       hasToken: boolean;
       notificationTime: string;
       notificationTypes: { taskDue: boolean; rewardRequest: boolean; achievementUnlocked: boolean };
+      ntfyEnabled: boolean;
+      ntfyServerUrl: string;
+      ntfyTopic: string;
+      hasNtfyToken: boolean;
     }>('/users/notifications-config'),
   updateNotificationsConfig: (data: {
     enabled?: boolean;
@@ -144,6 +148,10 @@ export const api = {
     chatId?: string;
     notificationTime?: string;
     notificationTypes?: { taskDue: boolean; rewardRequest: boolean; achievementUnlocked: boolean };
+    ntfyEnabled?: boolean;
+    ntfyServerUrl?: string;
+    ntfyTopic?: string;
+    ntfyToken?: string;
   }) =>
     apiFetch<{
       enabled: boolean;
@@ -151,8 +159,12 @@ export const api = {
       hasToken: boolean;
       notificationTime: string;
       notificationTypes: { taskDue: boolean; rewardRequest: boolean; achievementUnlocked: boolean };
+      ntfyEnabled: boolean;
+      ntfyServerUrl: string;
+      ntfyTopic: string;
+      hasNtfyToken: boolean;
     }>('/users/notifications-config', { method: 'PUT', body: JSON.stringify(data) }),
-  sendNotificationsTest: (data?: { botToken?: string; chatId?: string }) =>
+  sendNotificationsTest: (data?: { botToken?: string; chatId?: string; provider?: 'telegram' | 'ntfy'; ntfyServerUrl?: string; ntfyTopic?: string; ntfyToken?: string }) =>
     apiFetch<{ success: boolean }>('/users/notifications-test', { method: 'POST', body: JSON.stringify(data || {}) }),
   getRewards: () =>
     apiFetch<{ rewards: Array<{ id: number; title: string; description?: string | null; costCoins: number }>; mine: Array<{ id: number; title: string; costCoins: number; redeemedAt: string; status: string }> }>('/rewards'),

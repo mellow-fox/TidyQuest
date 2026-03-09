@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
-import { isNotificationTypeEnabled, sendTelegramMessage } from '../utils/notifications';
+import { isNotificationTypeEnabled, sendNotification } from '../utils/notifications';
 import { ensureAdmin } from '../utils/adminHelpers';
 
 const router = Router();
@@ -155,7 +155,7 @@ router.post('/:id/redeem', (req: AuthRequest, res: Response) => {
   ).get(redemptionId);
 
   if (isNotificationTypeEnabled('rewardRequest')) {
-    void sendTelegramMessage(
+    void sendNotification(
       `🎁 Reward request: ${me.displayName} requested "${reward.title}" (${reward.costCoins} coins).`
     );
   }

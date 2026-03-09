@@ -106,6 +106,12 @@ export function Settings({
   const [notifTypes, setNotifTypes] = useState({ taskDue: true, rewardRequest: true, achievementUnlocked: true });
   const [notifHasToken, setNotifHasToken] = useState(false);
   const [notifMsg, setNotifMsg] = useState('');
+  const [ntfyEnabled, setNtfyEnabled] = useState(false);
+  const [ntfyServerUrl, setNtfyServerUrl] = useState('https://ntfy.sh');
+  const [ntfyTopic, setNtfyTopic] = useState('');
+  const [ntfyToken, setNtfyToken] = useState('');
+  const [ntfyHasToken, setNtfyHasToken] = useState(false);
+  const [ntfyMsg, setNtfyMsg] = useState('');
 
   const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
   const locale = localeMap[user.language || 'en'] || 'en-US';
@@ -173,6 +179,10 @@ export function Settings({
         setNotifTime(cfg.notificationTime || '09:00');
         setNotifTypes(cfg.notificationTypes || { taskDue: true, rewardRequest: true, achievementUnlocked: true });
         setNotifHasToken(!!cfg.hasToken);
+        setNtfyEnabled(!!cfg.ntfyEnabled);
+        setNtfyServerUrl(cfg.ntfyServerUrl || 'https://ntfy.sh');
+        setNtfyTopic(cfg.ntfyTopic || '');
+        setNtfyHasToken(!!cfg.hasNtfyToken);
       })
       .catch(() => {});
   }, [isAdmin]);
@@ -328,19 +338,17 @@ export function Settings({
         return;
       }
 
-      const payload: {
-        enabled: boolean;
-        chatId: string;
-        notificationTime: string;
-        notificationTypes: { taskDue: boolean; rewardRequest: boolean; achievementUnlocked: boolean };
-        botToken?: string;
-      } = {
+      const payload: Record<string, any> = {
         enabled: notifEnabled,
         chatId: notifChatId.trim(),
         notificationTime: notifTime,
         notificationTypes: notifTypes,
+        ntfyEnabled,
+        ntfyServerUrl: ntfyServerUrl.trim() || 'https://ntfy.sh',
+        ntfyTopic: ntfyTopic.trim(),
       };
       if (notifToken.trim()) payload.botToken = notifToken.trim();
+      if (ntfyToken.trim()) payload.ntfyToken = ntfyToken.trim();
       const next = await api.updateNotificationsConfig(payload);
       setNotifEnabled(next.enabled);
       setNotifChatId(next.chatId || '');
@@ -348,6 +356,11 @@ export function Settings({
       setNotifTypes(next.notificationTypes || { taskDue: true, rewardRequest: true, achievementUnlocked: true });
       setNotifHasToken(next.hasToken);
       setNotifToken('');
+      setNtfyEnabled(!!next.ntfyEnabled);
+      setNtfyServerUrl(next.ntfyServerUrl || 'https://ntfy.sh');
+      setNtfyTopic(next.ntfyTopic || '');
+      setNtfyHasToken(!!next.hasNtfyToken);
+      setNtfyToken('');
       setNotifMsg(t('settings.notificationsSaved'));
     } catch (err: any) {
       setNotifMsg(err?.message || t('settings.notificationsSaveFailed'));
@@ -465,6 +478,74 @@ export function Settings({
               )}
             </div>
             {notifMsg && <div style={{ fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>{notifMsg}</div>}
+          </div>
+        )}
+        {isAdmin && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid var(--warm-border)' }}>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2a7 7 0 0 0-7 7v3l-1.5 2h17L17 12V9a7 7 0 0 0-7-7z" stroke="var(--warm-text-light)" strokeWidth="1.5" fill="none"/><path d="M8 16a2 2 0 0 0 4 0" stroke="var(--warm-text-light)" strokeWidth="1.5" fill="none"/></svg>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.ntfyTitle')}</div>
+            <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.ntfyDesc')}</div>
+          </div>
+          <Toggle checked={ntfyEnabled} onChange={setNtfyEnabled} />
+        </div>
+        )}
+        {isAdmin && (
+          <div style={{ display: 'grid', gap: 8, marginTop: 10, marginBottom: 8, padding: 10, border: '1px solid var(--warm-border)', borderRadius: 10 }}>
+            {ntfyEnabled ? (
+              <>
+                <div style={{ display: 'grid', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>{t('settings.ntfyServerUrl')}</label>
+                  <input
+                    value={ntfyServerUrl}
+                    onChange={(e) => setNtfyServerUrl(e.target.value)}
+                    placeholder="https://ntfy.sh"
+                    style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
+                  />
+                </div>
+                <div style={{ display: 'grid', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>{t('settings.ntfyTopic')}</label>
+                  <input
+                    value={ntfyTopic}
+                    onChange={(e) => setNtfyTopic(e.target.value)}
+                    placeholder={t('settings.ntfyTopicPlaceholder')}
+                    style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
+                  />
+                </div>
+                <div style={{ display: 'grid', gap: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>{t('settings.ntfyToken')}</label>
+                  <input
+                    type="password"
+                    value={ntfyToken}
+                    onChange={(e) => setNtfyToken(e.target.value)}
+                    placeholder={ntfyHasToken ? t('settings.ntfyTokenConfigured') : t('settings.ntfyTokenPlaceholder')}
+                    style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }}
+                  />
+                  <div style={{ fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>{t('settings.ntfyTokenHint')}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button className="tq-btn tq-btn-secondary" onClick={saveNotifications} style={{ padding: '6px 10px', fontSize: 11 }}>
+                    {t('common.save')}
+                  </button>
+                  <button className="tq-btn tq-btn-secondary" onClick={async () => {
+                    setNtfyMsg('');
+                    try {
+                      await api.sendNotificationsTest({ provider: 'ntfy', ntfyServerUrl: ntfyServerUrl.trim() || undefined, ntfyTopic: ntfyTopic.trim() || undefined, ntfyToken: ntfyToken.trim() || undefined });
+                      setNtfyMsg(t('settings.ntfyTestSent'));
+                    } catch (err: any) {
+                      setNtfyMsg(err?.message || t('settings.ntfyTestFailed'));
+                    }
+                  }} style={{ padding: '6px 10px', fontSize: 11 }}>
+                    {t('settings.sendTestNotification')}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>
+                {t('settings.ntfyDisabledHint')}
+              </div>
+            )}
+            {ntfyMsg && <div style={{ fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>{ntfyMsg}</div>}
           </div>
         )}
         </>)}
