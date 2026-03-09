@@ -3,7 +3,7 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { buildAchievements } from '../utils/achievements';
 import { calculateHealth } from '../utils/health';
-import { getGlobalVacation } from '../utils/adminHelpers';
+import { getGlobalVacation, getUserVacation, resolveVacation } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -11,7 +11,8 @@ router.use(authMiddleware);
 function getUserStats(userId: number) {
   const user = db.prepare('SELECT id, displayName, role, coins, currentStreak, avatarColor, avatarType, avatarPreset, avatarPhotoUrl FROM users WHERE id = ?').get(userId) as any;
   if (!user) return null;
-  const vacation = getGlobalVacation();
+  const globalVac = getGlobalVacation();
+  const vacation = resolveVacation(globalVac, getUserVacation(userId));
 
   const completionsRow = db.prepare("SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved'").get(userId) as { count: number };
 

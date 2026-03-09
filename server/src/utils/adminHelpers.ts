@@ -14,6 +14,21 @@ export function getGlobalVacation(): { isVacation: boolean; startDate: string | 
   return { isVacation: mode === '1', startDate: startDate || null, endDate: endDate || null };
 }
 
+export function getUserVacation(userId: number): { isVacation: boolean; startDate: string | null } {
+  const user = db.prepare('SELECT isVacationMode, vacationStartDate FROM users WHERE id = ?').get(userId) as { isVacationMode: number; vacationStartDate: string | null } | undefined;
+  if (!user) return { isVacation: false, startDate: null };
+  return { isVacation: user.isVacationMode === 1, startDate: user.vacationStartDate || null };
+}
+
+export function resolveVacation(
+  global: { isVacation: boolean; startDate: string | null },
+  user: { isVacation: boolean; startDate: string | null }
+): { isVacation: boolean; startDate: string | null } {
+  if (global.isVacation) return { isVacation: true, startDate: global.startDate };
+  if (user.isVacation) return { isVacation: true, startDate: user.startDate };
+  return { isVacation: false, startDate: null };
+}
+
 export function ensureAdmin(userId: number | undefined): boolean {
   if (!userId) return false;
   const user = db.prepare('SELECT role FROM users WHERE id = ?').get(userId) as { role: string } | undefined;

@@ -4,7 +4,7 @@ import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth, getCoinsForEffort } from '../utils/health';
 import { suggestTaskIcon } from '../utils/taskIcons';
 import { notifyAchievementUnlocksForUser } from '../utils/achievementNotifications';
-import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation, isStrictModeEnabled } from '../utils/adminHelpers';
+import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation, getUserVacation, resolveVacation, isStrictModeEnabled } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -77,7 +77,9 @@ function applyApprovedCompletion(
 
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(effectiveUserId) as any;
     const today = new Date().toISOString().slice(0, 10);
-    const streakVacation = getGlobalVacation();
+    const globalVac = getGlobalVacation();
+    const userVac = getUserVacation(effectiveUserId);
+    const streakVacation = resolveVacation(globalVac, userVac);
 
     if (!streakVacation.isVacation && user.lastActiveDate !== today) {
       const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -177,7 +179,12 @@ router.get('/rooms/:roomId/tasks', (req: AuthRequest, res: Response) => {
       completedTodayBy: completedTodayByTask.get(t.id) || null,
       assignmentMode: mode,
       sharedCompletions: (mode === 'shared' || mode === 'custom') ? (sharedCompletionsByTask.get(t.id) || []) : undefined,
-      health: calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate),
+      health: (() => {
+        const taskVac = effectiveAssignedUserIds.length === 1
+          ? resolveVacation(vacation, getUserVacation(effectiveAssignedUserIds[0]))
+          : vacation;
+        return calculateHealth(t.lastCompletedAt, t.frequencyDays, taskVac.isVacation, taskVac.startDate);
+      })(),
     };
   });
 

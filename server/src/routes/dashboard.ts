@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth } from '../utils/health';
-import { getGlobalVacation } from '../utils/adminHelpers';
+import { getGlobalVacation, getUserVacation, resolveVacation } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -59,13 +59,19 @@ router.get('/', (req: AuthRequest, res: Response) => {
   const roomsWithHealth = rooms.map((room) => {
     const tasks = tasksByRoom.get(room.id) || [];
     const tasksWithHealth = tasks.map((t) => {
-      const health = calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate);
+      const taskAssigneesForTask = assigneesByTask.get(t.id) || [];
+      const effectiveIds = room.assignedUserId
+        ? [room.assignedUserId]
+        : taskAssigneesForTask.map((a: any) => a.userId);
+      const taskVac = effectiveIds.length === 1
+        ? resolveVacation(vacation, getUserVacation(effectiveIds[0]))
+        : vacation;
+      const health = calculateHealth(t.lastCompletedAt, t.frequencyDays, taskVac.isVacation, taskVac.startDate);
       const safeFreq = Math.max(1 / 24, Number(t.frequencyDays) || 7);
       const dueDateTs = t.lastCompletedAt
         ? new Date(t.lastCompletedAt).getTime() + safeFreq * 86400000
         : nowTs;
       const dueInDays = Math.ceil((dueDateTs - nowTs) / 86400000);
-      const taskAssigneesForTask = assigneesByTask.get(t.id) || [];
       const taskWithHealth = {
         ...t,
         isSeasonal: !!t.isSeasonal,

@@ -2,14 +2,15 @@ import db from '../database';
 import { buildAchievements } from './achievements';
 import { isNotificationTypeEnabled, sendNotification } from './notifications';
 import { calculateHealth } from './health';
-import { getGlobalVacation } from './adminHelpers';
+import { getGlobalVacation, getUserVacation, resolveVacation } from './adminHelpers';
 
 function getUserAchievementStats(userId: number) {
   const user = db.prepare(
     'SELECT id, displayName, coins, currentStreak FROM users WHERE id = ?'
   ).get(userId) as any;
   if (!user) return null;
-  const vacation = getGlobalVacation();
+  const globalVac = getGlobalVacation();
+  const vacation = resolveVacation(globalVac, getUserVacation(userId));
 
   const completionsRow = db.prepare("SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved'").get(userId) as { count: number };
 

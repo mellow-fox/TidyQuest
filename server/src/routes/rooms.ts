@@ -3,7 +3,7 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth } from '../utils/health';
 import { suggestTaskIcon } from '../utils/taskIcons';
-import { ensureAdmin, getGlobalVacation } from '../utils/adminHelpers';
+import { ensureAdmin, getGlobalVacation, getUserVacation, resolveVacation } from '../utils/adminHelpers';
 
 const router = Router();
 
@@ -195,7 +195,12 @@ router.get('/', (req: AuthRequest, res: Response) => {
         completedTodayBy: completedTodayByTask.get(t.id) || null,
         assignmentMode: mode,
         sharedCompletions: (mode === 'shared' || mode === 'custom') ? (sharedCompletionsByTask.get(t.id) || []) : undefined,
-        health: calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate),
+        health: (() => {
+          const taskVac = effectiveAssignedUserIds.length === 1
+            ? resolveVacation(vacation, getUserVacation(effectiveAssignedUserIds[0]))
+            : vacation;
+          return calculateHealth(t.lastCompletedAt, t.frequencyDays, taskVac.isVacation, taskVac.startDate);
+        })(),
       };
     });
 
