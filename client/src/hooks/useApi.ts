@@ -126,6 +126,10 @@ export const api = {
   achievements: () => apiFetch<any>('/achievements'),
   getRegistrationStatus: () =>
     fetch('/api/auth/registration-status').then((r) => r.json()) as Promise<{ registrationEnabled: boolean }>,
+  getGamificationConfig: () =>
+    apiFetch<{ gamificationEnabled: boolean }>('/users/gamification-config'),
+  updateGamificationConfig: (data: { gamificationEnabled: boolean }) =>
+    apiFetch<{ gamificationEnabled: boolean }>('/users/gamification-config', { method: 'PUT', body: JSON.stringify(data) }),
   getRegistrationConfig: () =>
     apiFetch<{ registrationEnabled: boolean }>('/users/registration-config'),
   updateRegistrationConfig: (data: { registrationEnabled: boolean }) =>

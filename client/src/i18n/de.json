@@ -156,6 +156,8 @@
       "vacationReturnDate": "Rückkehrdatum",
       "registrationEnabled": "Neue Registrierungen erlauben",
       "registrationEnabledDesc": "Wenn deaktiviert, können keine neuen Konten über die Registrierungsseite erstellt werden.",
+      "gamificationEnabled": "Gamification",
+      "gamificationEnabledDesc": "Aktiviert Rangliste, Streaks, Erfolge, Belohnungen und Münzen. Deaktivieren für einen einfacheren Paarmodus.",
       "adminRequired": "Ein Admin-Elternteil ist erforderlich, um Einstellungen zu ändern.",
       "data": "Daten",
       "dataPrivacy": "Daten & Datenschutz",

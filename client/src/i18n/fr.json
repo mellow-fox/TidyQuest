@@ -156,6 +156,8 @@
       "vacationReturnDate": "Date de retour",
       "registrationEnabled": "Autoriser les nouvelles inscriptions",
       "registrationEnabledDesc": "Si désactivé, aucun nouveau compte ne peut être créé depuis la page d'inscription.",
+      "gamificationEnabled": "Gamification",
+      "gamificationEnabledDesc": "Active le classement, les séries, les succès, les récompenses et les pièces. Désactiver pour un mode couple simplifié.",
       "adminRequired": "Un parent admin est requis pour modifier les paramètres.",
       "data": "Données",
       "dataPrivacy": "Données et confidentialité",

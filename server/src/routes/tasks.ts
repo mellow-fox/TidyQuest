@@ -316,16 +316,23 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
   // Fetch assignees once — needed for coin splitting and lastCompletedAt logic
   const taskAssignees = db.prepare('SELECT userId, coinPercentage FROM task_assignees WHERE taskId = ?').all(task.id) as { userId: number; coinPercentage: number }[];
 
-  // Coin calculation based on assignment mode
-  const totalCoins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
+  // Coin calculation based on assignment mode (skip when gamification disabled)
+  const gamifRow = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  const gamificationOn = gamifRow ? gamifRow.value !== '0' : true;
+
   let coins: number;
-  if (task.assignmentMode === 'shared' && taskAssignees.length > 1) {
-    coins = Math.floor(totalCoins / taskAssignees.length);
-  } else if (task.assignmentMode === 'custom') {
-    const row = taskAssignees.find(a => a.userId === effectiveUserId);
-    coins = Math.floor(totalCoins * (row?.coinPercentage ?? 0) / 100);
+  if (!gamificationOn) {
+    coins = 0;
   } else {
-    coins = totalCoins;
+    const totalCoins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
+    if (task.assignmentMode === 'shared' && taskAssignees.length > 1) {
+      coins = Math.floor(totalCoins / taskAssignees.length);
+    } else if (task.assignmentMode === 'custom') {
+      const row = taskAssignees.find(a => a.userId === effectiveUserId);
+      coins = Math.floor(totalCoins * (row?.coinPercentage ?? 0) / 100);
+    } else {
+      coins = totalCoins;
+    }
   }
 
   // Record completion for the effective user
@@ -351,40 +358,41 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
     db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, req.params.id);
   }
 
-  // Update effective user's coins
-  db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coins, effectiveUserId);
+  // Update effective user's coins and streak (skip when gamification disabled)
+  if (gamificationOn) {
+    db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coins, effectiveUserId);
 
-  // Update streak for effective user
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(effectiveUserId) as any;
-  const today = new Date().toISOString().slice(0, 10);
-  const streakVacation = getGlobalVacation();
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(effectiveUserId) as any;
+    const today = new Date().toISOString().slice(0, 10);
+    const streakVacation = getGlobalVacation();
 
-  if (!streakVacation.isVacation && user.lastActiveDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    let keepGapWithoutPenalty = false;
-    if (user.lastActiveDate && user.lastActiveDate < yesterday) {
-      keepGapWithoutPenalty = true;
-      const start = new Date(`${user.lastActiveDate}T00:00:00.000Z`);
-      const end = new Date(`${yesterday}T00:00:00.000Z`);
-      for (let d = new Date(start.getTime() + 86400000); d <= end; d = new Date(d.getTime() + 86400000)) {
-        const day = d.toISOString().slice(0, 10);
-        if (hadDueTaskOnDate(day)) {
-          keepGapWithoutPenalty = false;
-          break;
+    if (!streakVacation.isVacation && user.lastActiveDate !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      let keepGapWithoutPenalty = false;
+      if (user.lastActiveDate && user.lastActiveDate < yesterday) {
+        keepGapWithoutPenalty = true;
+        const start = new Date(`${user.lastActiveDate}T00:00:00.000Z`);
+        const end = new Date(`${yesterday}T00:00:00.000Z`);
+        for (let d = new Date(start.getTime() + 86400000); d <= end; d = new Date(d.getTime() + 86400000)) {
+          const day = d.toISOString().slice(0, 10);
+          if (hadDueTaskOnDate(day)) {
+            keepGapWithoutPenalty = false;
+            break;
+          }
         }
       }
-    }
-    const newStreak = user.lastActiveDate === yesterday
-      ? user.currentStreak + 1
-      : keepGapWithoutPenalty
+      const newStreak = user.lastActiveDate === yesterday
         ? user.currentStreak + 1
-        : 1;
-    db.prepare('UPDATE users SET currentStreak = ?, lastActiveDate = ? WHERE id = ?')
-      .run(newStreak, today, effectiveUserId);
-  }
+        : keepGapWithoutPenalty
+          ? user.currentStreak + 1
+          : 1;
+      db.prepare('UPDATE users SET currentStreak = ?, lastActiveDate = ? WHERE id = ?')
+        .run(newStreak, today, effectiveUserId);
+    }
 
-  // Fire-and-forget achievement unlock notifications.
-  void notifyAchievementUnlocksForUser(effectiveUserId);
+    // Fire-and-forget achievement unlock notifications.
+    void notifyAchievementUnlocksForUser(effectiveUserId);
+  }
 
   res.json({ coinsEarned: coins, health: 100 });
 });

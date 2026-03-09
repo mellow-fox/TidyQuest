@@ -156,6 +156,8 @@
       "vacationReturnDate": "Data di ritorno",
       "registrationEnabled": "Consenti nuove registrazioni",
       "registrationEnabledDesc": "Quando disattivato, non si possono creare nuovi account dalla pagina di registrazione.",
+      "gamificationEnabled": "Gamification",
+      "gamificationEnabledDesc": "Attiva classifica, serie, obiettivi, ricompense e monete. Disattiva per una modalità coppia più semplice.",
       "adminRequired": "Serve un admin genitore per modificare le impostazioni.",
       "data": "Dati",
       "dataPrivacy": "Dati e privacy",

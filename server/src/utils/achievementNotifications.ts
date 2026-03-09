@@ -106,6 +106,8 @@ function getUserAchievementStats(userId: number) {
 }
 
 export async function notifyAchievementUnlocksForUser(userId: number): Promise<void> {
+  const gamifRow = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  if (gamifRow && gamifRow.value === '0') return;
   if (!isNotificationTypeEnabled('achievementUnlocked')) return;
   const stats = getUserAchievementStats(userId);
   if (!stats) return;
