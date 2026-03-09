@@ -562,16 +562,8 @@ export function Settings({
             />
           </div>
         )}
-        {!isAdmin && (
-          <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>
-            {t('settings.adminRequired')}
-          </div>
-        )}
-      </div>
-
-      {isAdmin && (
-        <div className="tq-card tq-card-padded settings-admin-card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        {isAdmin && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M10 1l2.5 5.5L18 7.5l-4 4 1 5.5L10 14.5 4.5 17l1-5.5-4-4 5.5-1z" fill="#B0A090" />
             </svg>
@@ -589,8 +581,13 @@ export function Settings({
               }}
             />
           </div>
-        </div>
-      )}
+        )}
+        {!isAdmin && (
+          <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>
+            {t('settings.adminRequired')}
+          </div>
+        )}
+      </div>
 
       {isAdmin && gamificationEnabled && (
         <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
