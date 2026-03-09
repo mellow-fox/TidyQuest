@@ -153,6 +153,7 @@
       "vacationMode": "Vacation Mode",
       "vacationDesc": "Pause all task reminders while you're away",
       "userVacationDesc": "Protect streak and freeze task health while away",
+      "perUserVacation": "Per member",
       "vacationSince": "On vacation since",
       "vacationReturnDate": "Return date",
       "strictMode": "Strict Mode",

@@ -153,6 +153,7 @@
       "vacationMode": "Mode vacances",
       "vacationDesc": "Suspendre tous les rappels de tâches pendant votre absence",
       "userVacationDesc": "Protéger la série et geler la santé des tâches pendant l'absence",
+      "perUserVacation": "Par membre",
       "vacationSince": "En vacances depuis le",
       "vacationReturnDate": "Date de retour",
       "strictMode": "Mode strict",

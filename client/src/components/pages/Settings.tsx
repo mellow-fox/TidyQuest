@@ -679,6 +679,29 @@ export function Settings({
               />
             </div>
           )}
+          {/* Per-user vacation toggles */}
+          <div style={{ marginTop: 14, paddingLeft: 34, display: 'grid', gap: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text-secondary)', marginBottom: 2 }}>{t('settings.perUserVacation')}</div>
+            {family.filter((u) => u.role !== 'admin').map((u) => (
+              <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', borderRadius: 12, backgroundColor: 'var(--warm-bg-subtle)', border: '1px solid var(--warm-border)' }}>
+                <UserAvatar name={u.displayName} color={u.avatarColor} size={28} avatarType={u.avatarType as any} avatarPreset={u.avatarPreset} avatarPhotoUrl={u.avatarPhotoUrl} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text)' }}>{u.displayName}</div>
+                  {!!(memberVacation[u.id] ?? u.isVacationMode) && u.vacationStartDate && (
+                    <div style={{ fontSize: 10, color: 'var(--warm-accent)' }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString(locale)}</div>
+                  )}
+                </div>
+                <Toggle checked={!!(memberVacation[u.id] ?? u.isVacationMode)} onChange={async (val) => {
+                  setMemberVacation((prev) => ({ ...prev, [u.id]: val }));
+                  try {
+                    await api.updateUserVacation(u.id, val);
+                  } catch {
+                    setMemberVacation((prev) => ({ ...prev, [u.id]: !val }));
+                  }
+                }} />
+              </div>
+            ))}
+          </div>
         </div>
         )}
         {isAdmin && (
@@ -1073,23 +1096,6 @@ export function Settings({
                     {memberProfileMsg[u.id] && (
                       <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberProfileMsg[u.id]}</div>
                     )}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.vacationMode')}</div>
-                      <div style={{ fontSize: 10, color: 'var(--warm-text-light)' }}>{t('settings.userVacationDesc')}</div>
-                      {!!(memberVacation[u.id] ?? u.isVacationMode) && u.vacationStartDate && (
-                        <div style={{ fontSize: 10, color: 'var(--warm-accent)', marginTop: 2 }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString(locale)}</div>
-                      )}
-                    </div>
-                    <Toggle checked={!!(memberVacation[u.id] ?? u.isVacationMode)} onChange={async (val) => {
-                      setMemberVacation((prev) => ({ ...prev, [u.id]: val }));
-                      try {
-                        await api.updateUserVacation(u.id, val);
-                      } catch {
-                        setMemberVacation((prev) => ({ ...prev, [u.id]: !val }));
-                      }
-                    }} />
                   </div>
                   <div className="member-edit-password-row" style={{ display: 'flex', gap: 8 }}>
                     <input type="password" className="tq-input" value={memberPassword[u.id] || ''} onChange={(e) => setMemberPassword((prev) => ({ ...prev, [u.id]: e.target.value }))} placeholder={t('settings.newPassword')} style={{ flex: 1 }} />

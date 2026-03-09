@@ -153,6 +153,7 @@
       "vacationMode": "Urlaubsmodus",
       "vacationDesc": "Alle Aufgabenerinnerungen während Ihrer Abwesenheit pausieren",
       "userVacationDesc": "Streak schützen und Aufgabengesundheit einfrieren",
+      "perUserVacation": "Pro Mitglied",
       "vacationSince": "Im Urlaub seit",
       "vacationReturnDate": "Rückkehrdatum",
       "strictMode": "Strenger Modus",
