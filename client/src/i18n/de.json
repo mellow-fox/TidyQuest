@@ -154,6 +154,8 @@
       "vacationDesc": "Alle Aufgabenerinnerungen während Ihrer Abwesenheit pausieren",
       "vacationSince": "Im Urlaub seit",
       "vacationReturnDate": "Rückkehrdatum",
+      "strictMode": "Strenger Modus",
+      "strictModeDesc": "Erfordert Admin-Freigabe, wenn ein Kind eine Aufgabe als erledigt markiert.",
       "registrationEnabled": "Neue Registrierungen erlauben",
       "registrationEnabledDesc": "Wenn deaktiviert, können keine neuen Konten über die Registrierungsseite erstellt werden.",
       "adminRequired": "Ein Admin-Elternteil ist erforderlich, um Einstellungen zu ändern.",
@@ -247,7 +249,12 @@
       "ntfyTokenHint": "Nur für private/geschützte Topics erforderlich.",
       "ntfyDisabledHint": "ntfy aktivieren, um Push-Benachrichtigungen einzurichten.",
       "ntfyTestSent": "ntfy-Testbenachrichtigung gesendet.",
-      "ntfyTestFailed": "Senden der ntfy-Testbenachrichtigung fehlgeschlagen."
+      "ntfyTestFailed": "Senden der ntfy-Testbenachrichtigung fehlgeschlagen.",
+"pendingValidations": "Ausstehende Aufgabenfreigaben",
+      "pendingValidationsDesc": "Aufgaben von Kindern im strengen Modus freigeben oder ablehnen.",
+      "approve": "Freigeben",
+      "reject": "Ablehnen",
+      "noPendingValidations": "Keine ausstehenden Freigaben."
     },
     "nav": {
       "home": "Startseite",
@@ -276,6 +283,7 @@
       "alreadyDoneToday": "Du hast diese Aufgabe heute bereits erledigt!",
       "alreadyDoneByOther": "Jemand anderes hat diese Aufgabe heute bereits erledigt!",
       "notAssigned": "Diese Aufgabe ist dir nicht zugewiesen",
+      "pendingApproval": "Erledigung gesendet. Warten auf Admin-Freigabe.",
       "doneBy": "Erledigt von {name}",
       "childrenGroup": "Kinder"
     },

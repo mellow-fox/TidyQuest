@@ -154,6 +154,8 @@
       "vacationDesc": "Metti in pausa i promemoria mentre sei via",
       "vacationSince": "In vacanza dal",
       "vacationReturnDate": "Data di ritorno",
+      "strictMode": "Modalità rigorosa",
+      "strictModeDesc": "Richiede approvazione admin quando un bambino segna un compito come completato.",
       "registrationEnabled": "Consenti nuove registrazioni",
       "registrationEnabledDesc": "Quando disattivato, non si possono creare nuovi account dalla pagina di registrazione.",
       "adminRequired": "Serve un admin genitore per modificare le impostazioni.",
@@ -247,7 +249,12 @@
       "ntfyTokenHint": "Necessario solo per topic privati/protetti.",
       "ntfyDisabledHint": "Attiva ntfy per configurare le notifiche push.",
       "ntfyTestSent": "Notifica di test ntfy inviata.",
-      "ntfyTestFailed": "Invio notifica di test ntfy non riuscito."
+      "ntfyTestFailed": "Invio notifica di test ntfy non riuscito.",
+"pendingValidations": "Validazioni compiti in attesa",
+      "pendingValidationsDesc": "Approva o rifiuta i compiti segnati dai bambini quando la modalità rigorosa è attiva.",
+      "approve": "Approva",
+      "reject": "Rifiuta",
+      "noPendingValidations": "Nessuna validazione in attesa."
     },
     "nav": {
       "home": "Home",
@@ -276,6 +283,7 @@
       "alreadyDoneToday": "Hai già completato questo compito oggi!",
       "alreadyDoneByOther": "Qualcun altro ha già completato questo compito oggi!",
       "notAssigned": "Questo compito non ti è assegnato",
+      "pendingApproval": "Compito inviato. In attesa di approvazione admin.",
       "doneBy": "Fatto da {name}",
       "childrenGroup": "Bambini"
     },

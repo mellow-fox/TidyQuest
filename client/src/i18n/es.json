@@ -154,6 +154,8 @@
       "vacationDesc": "Pausar todos los recordatorios de tareas mientras estás fuera",
       "vacationSince": "De vacaciones desde",
       "vacationReturnDate": "Fecha de regreso",
+      "strictMode": "Modo estricto",
+      "strictModeDesc": "Requiere validación de admin cuando un niño marca una tarea como completada.",
       "registrationEnabled": "Permitir nuevos registros",
       "registrationEnabledDesc": "Si está desactivado, no se pueden crear nuevas cuentas desde la página de registro.",
       "adminRequired": "Se requiere un padre administrador para cambiar ajustes.",
@@ -247,7 +249,12 @@
       "ntfyTokenHint": "Solo necesario para topics privados/protegidos.",
       "ntfyDisabledHint": "Activa ntfy para configurar las notificaciones push.",
       "ntfyTestSent": "Notificación de prueba ntfy enviada.",
-      "ntfyTestFailed": "No se pudo enviar la notificación de prueba ntfy."
+      "ntfyTestFailed": "No se pudo enviar la notificación de prueba ntfy.",
+"pendingValidations": "Validaciones pendientes",
+      "pendingValidationsDesc": "Aprueba o rechaza tareas marcadas por niños cuando el modo estricto está activo.",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "noPendingValidations": "No hay validaciones pendientes."
     },
     "nav": {
       "home": "Inicio",
@@ -276,6 +283,7 @@
       "alreadyDoneToday": "¡Ya completaste esta tarea hoy!",
       "alreadyDoneByOther": "¡Alguien más ya completó esta tarea hoy!",
       "notAssigned": "Esta tarea no te está asignada",
+      "pendingApproval": "Tarea enviada. Esperando aprobación del admin.",
       "doneBy": "Hecho por {name}",
       "childrenGroup": "Niños"
     },

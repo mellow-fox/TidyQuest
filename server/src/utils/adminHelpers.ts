@@ -29,3 +29,8 @@ export function getCoinsByEffortConfig(): Record<number, number> {
     return DEFAULT_COINS_BY_EFFORT;
   }
 }
+
+export function isStrictModeEnabled(): boolean {
+  const row = db.prepare("SELECT value FROM app_settings WHERE key = 'strictMode'").get() as { value?: string } | undefined;
+  return row?.value === '1';
+}

@@ -59,8 +59,12 @@ export function initDatabase() {
       userId INTEGER NOT NULL,
       completedAt TEXT NOT NULL DEFAULT (datetime('now')),
       coinsEarned INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'approved',
+      approvedByUserId INTEGER,
+      approvedAt TEXT,
       FOREIGN KEY (taskId) REFERENCES tasks(id) ON DELETE CASCADE,
-      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (approvedByUserId) REFERENCES users(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS task_due_notifications (
@@ -160,6 +164,9 @@ export function initDatabase() {
     `ALTER TABLE tasks ADD COLUMN assignedUserId INTEGER REFERENCES users(id) ON DELETE SET NULL`,
     `ALTER TABLE tasks ADD COLUMN assignmentMode TEXT NOT NULL DEFAULT 'first'`,
     `ALTER TABLE task_assignees ADD COLUMN coinPercentage INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE task_completions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'`,
+    `ALTER TABLE task_completions ADD COLUMN approvedByUserId INTEGER REFERENCES users(id) ON DELETE SET NULL`,
+    `ALTER TABLE task_completions ADD COLUMN approvedAt TEXT`,
   ];
 
   for (const sql of migrations) {
@@ -172,6 +179,8 @@ export function initDatabase() {
       }
     }
   }
+
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_task_completions_status ON task_completions(status);`);
 
   // One-time migration: populate task_assignees from legacy tasks.assignedUserId
   const migratedAssignees = db.prepare("SELECT value FROM app_settings WHERE key = 'taskAssigneesMigrated_v1'").get() as any;
@@ -362,6 +371,7 @@ export function initDatabase() {
   db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('vacationMode', '0')").run();
   db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('vacationStartDate', '')").run();
   db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('vacationEndDate', '')").run();
+  db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('strictMode', '0')").run();
 
   const rewardCount = (db.prepare('SELECT COUNT(*) as count FROM rewards').get() as { count: number }).count;
   if (rewardCount === 0) {
