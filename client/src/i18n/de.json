@@ -235,7 +235,19 @@
       "notificationsSaved": "Benachrichtigungseinstellungen gespeichert.",
       "notificationsSaveFailed": "Speichern der Benachrichtigungseinstellungen fehlgeschlagen.",
       "notificationsTestSent": "Testbenachrichtigung gesendet.",
-      "notificationsTestFailed": "Senden der Testbenachrichtigung fehlgeschlagen."
+      "notificationsTestFailed": "Senden der Testbenachrichtigung fehlgeschlagen.",
+      "ntfyTitle": "ntfy-Benachrichtigungen",
+      "ntfyDesc": "Benachrichtigungen über ntfy senden (Push-Nachrichten auf Ihr Handy)",
+      "ntfyServerUrl": "ntfy-Server-URL",
+      "ntfyTopic": "Topic",
+      "ntfyTopicPlaceholder": "z.B. tidyquest-familie",
+      "ntfyToken": "Zugriffstoken (optional)",
+      "ntfyTokenPlaceholder": "Zugriffstoken für private Topics",
+      "ntfyTokenConfigured": "Token konfiguriert (leer lassen zum Behalten)",
+      "ntfyTokenHint": "Nur für private/geschützte Topics erforderlich.",
+      "ntfyDisabledHint": "ntfy aktivieren, um Push-Benachrichtigungen einzurichten.",
+      "ntfyTestSent": "ntfy-Testbenachrichtigung gesendet.",
+      "ntfyTestFailed": "Senden der ntfy-Testbenachrichtigung fehlgeschlagen."
     },
     "nav": {
       "home": "Startseite",

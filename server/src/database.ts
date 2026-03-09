@@ -345,6 +345,18 @@ export function initDatabase() {
     "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('telegramNotificationTypes', ?)"
   ).run(JSON.stringify({ taskDue: true, rewardRequest: true, achievementUnlocked: true }));
   db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyEnabled', '0')"
+  ).run();
+  db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyServerUrl', 'https://ntfy.sh')"
+  ).run();
+  db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyTopic', '')"
+  ).run();
+  db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyToken', '')"
+  ).run();
+  db.prepare(
     "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('registrationEnabled', '1')"
   ).run();
   db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('vacationMode', '0')").run();

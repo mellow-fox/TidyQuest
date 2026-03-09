@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { DEFAULT_COINS_BY_EFFORT, normalizeCoinsByEffortConfig } from '../utils/health';
-import { NotificationTypeSettings, sendTelegramMessageDetailed } from '../utils/notifications';
+import { NotificationTypeSettings, sendTelegramMessageDetailed, sendNtfyMessageDetailed } from '../utils/notifications';
 import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation } from '../utils/adminHelpers';
 
 const router = Router();
@@ -442,7 +442,11 @@ router.get('/notifications-config', (req: AuthRequest, res: Response) => {
   const chatId = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramChatId'").get() as any)?.value || '';
   const notificationTime = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramNotificationTime'").get() as any)?.value || '09:00';
   const notificationTypes = readNotificationTypesSetting();
-  res.json({ enabled, chatId, hasToken: !!botToken, notificationTime, notificationTypes });
+  const ntfyEnabled = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyEnabled'").get() as any)?.value === '1';
+  const ntfyServerUrl = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyServerUrl'").get() as any)?.value || 'https://ntfy.sh';
+  const ntfyTopic = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyTopic'").get() as any)?.value || '';
+  const ntfyToken = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyToken'").get() as any)?.value || '';
+  res.json({ enabled, chatId, hasToken: !!botToken, notificationTime, notificationTypes, ntfyEnabled, ntfyServerUrl, ntfyTopic, hasNtfyToken: !!ntfyToken });
 });
 
 router.put('/notifications-config', (req: AuthRequest, res: Response) => {
@@ -451,12 +455,16 @@ router.put('/notifications-config', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Admin only' });
   }
 
-  const { enabled, botToken, chatId, notificationTime, notificationTypes } = req.body as {
+  const { enabled, botToken, chatId, notificationTime, notificationTypes, ntfyEnabled, ntfyServerUrl, ntfyTopic, ntfyToken } = req.body as {
     enabled?: boolean;
     botToken?: string;
     chatId?: string;
     notificationTime?: string;
     notificationTypes?: NotificationTypeSettings;
+    ntfyEnabled?: boolean;
+    ntfyServerUrl?: string;
+    ntfyTopic?: string;
+    ntfyToken?: string;
   };
   const normalizedTime = normalizeNotificationTime(notificationTime);
   if (notificationTime !== undefined && !normalizedTime) {
@@ -486,6 +494,29 @@ router.put('/notifications-config', (req: AuthRequest, res: Response) => {
     db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'telegramNotificationTypes'")
       .run(JSON.stringify(normalizedTypes));
   }
+  if (ntfyEnabled !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyEnabled'")
+      .run(ntfyEnabled ? '1' : '0');
+  }
+  if (ntfyServerUrl !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyServerUrl'")
+      .run(ntfyServerUrl.trim() || 'https://ntfy.sh');
+  }
+  if (ntfyTopic !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyTopic'")
+      .run(ntfyTopic.trim());
+  }
+  if (ntfyToken !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyToken'")
+      .run(ntfyToken.trim());
+  }
+
+  // Validate ntfy: if enabled, topic is required
+  const ntfyEnabledNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyEnabled'").get() as any)?.value === '1';
+  const ntfyTopicNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyTopic'").get() as any)?.value || '';
+  if (ntfyEnabledNow && !ntfyTopicNow) {
+    return res.status(400).json({ error: 'To enable ntfy notifications, a topic is required.' });
+  }
 
   const enabledNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramEnabled'").get() as any)?.value === '1';
   const tokenNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramBotToken'").get() as any)?.value || '';
@@ -495,7 +526,9 @@ router.put('/notifications-config', (req: AuthRequest, res: Response) => {
   }
   const notificationTimeNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramNotificationTime'").get() as any)?.value || '09:00';
   const notificationTypesNow = readNotificationTypesSetting();
-  res.json({ enabled: enabledNow, chatId: chatNow, hasToken: !!tokenNow, notificationTime: notificationTimeNow, notificationTypes: notificationTypesNow });
+  const ntfyServerUrlNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyServerUrl'").get() as any)?.value || 'https://ntfy.sh';
+  const ntfyTokenNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyToken'").get() as any)?.value || '';
+  res.json({ enabled: enabledNow, chatId: chatNow, hasToken: !!tokenNow, notificationTime: notificationTimeNow, notificationTypes: notificationTypesNow, ntfyEnabled: ntfyEnabledNow, ntfyServerUrl: ntfyServerUrlNow, ntfyTopic: ntfyTopicNow, hasNtfyToken: !!ntfyTokenNow });
 });
 
 router.post('/notifications-test', async (req: AuthRequest, res: Response) => {
@@ -503,14 +536,21 @@ router.post('/notifications-test', async (req: AuthRequest, res: Response) => {
   if (!requester || requester.role !== 'admin') {
     return res.status(403).json({ error: 'Admin only' });
   }
-  const { botToken, chatId } = req.body as { botToken?: string; chatId?: string };
-  const result = await sendTelegramMessageDetailed(
-    `TidyQuest test notification from ${requester.displayName} (${new Date().toISOString()})`,
-    { ignoreEnabled: true, botToken, chatId }
-  );
-  if (!result.ok) {
-    return res.status(400).json({ error: result.error || 'Telegram notification failed.' });
+  const { botToken, chatId, provider, ntfyServerUrl, ntfyTopic, ntfyToken } = req.body as {
+    botToken?: string; chatId?: string; provider?: 'telegram' | 'ntfy';
+    ntfyServerUrl?: string; ntfyTopic?: string; ntfyToken?: string;
+  };
+  const testMessage = `TidyQuest test notification from ${requester.displayName} (${new Date().toISOString()})`;
+
+  if (provider === 'ntfy') {
+    const result = await sendNtfyMessageDetailed(testMessage, { ignoreEnabled: true, serverUrl: ntfyServerUrl, topic: ntfyTopic, token: ntfyToken });
+    if (!result.ok) return res.status(400).json({ error: result.error || 'ntfy notification failed.' });
+    return res.json({ success: true });
   }
+
+  // Default: Telegram
+  const result = await sendTelegramMessageDetailed(testMessage, { ignoreEnabled: true, botToken, chatId });
+  if (!result.ok) return res.status(400).json({ error: result.error || 'Telegram notification failed.' });
   res.json({ success: true });
 });
 

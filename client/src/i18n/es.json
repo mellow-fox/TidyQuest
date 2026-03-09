@@ -235,7 +235,19 @@
       "notificationsSaved": "Configuración de notificaciones guardada.",
       "notificationsSaveFailed": "No se pudo guardar la configuración de notificaciones.",
       "notificationsTestSent": "Notificacion de prueba enviada.",
-      "notificationsTestFailed": "No se pudo enviar la notificación de prueba."
+      "notificationsTestFailed": "No se pudo enviar la notificación de prueba.",
+      "ntfyTitle": "Notificaciones ntfy",
+      "ntfyDesc": "Enviar notificaciones a través de ntfy (notificaciones push en tu teléfono)",
+      "ntfyServerUrl": "URL del servidor ntfy",
+      "ntfyTopic": "Topic",
+      "ntfyTopicPlaceholder": "ej. tidyquest-familia",
+      "ntfyToken": "Token de acceso (opcional)",
+      "ntfyTokenPlaceholder": "Token de acceso para topics privados",
+      "ntfyTokenConfigured": "Token configurado (dejar vacío para mantener)",
+      "ntfyTokenHint": "Solo necesario para topics privados/protegidos.",
+      "ntfyDisabledHint": "Activa ntfy para configurar las notificaciones push.",
+      "ntfyTestSent": "Notificación de prueba ntfy enviada.",
+      "ntfyTestFailed": "No se pudo enviar la notificación de prueba ntfy."
     },
     "nav": {
       "home": "Inicio",

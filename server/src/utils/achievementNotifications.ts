@@ -1,6 +1,6 @@
 import db from '../database';
 import { buildAchievements } from './achievements';
-import { isNotificationTypeEnabled, sendTelegramMessage } from './notifications';
+import { isNotificationTypeEnabled, sendNotification } from './notifications';
 import { calculateHealth } from './health';
 import { getGlobalVacation } from './adminHelpers';
 
@@ -117,7 +117,7 @@ export async function notifyAchievementUnlocksForUser(userId: number): Promise<v
     ).run(userId, ach.id);
     if (inserted.changes < 1) continue;
 
-    await sendTelegramMessage(
+    await sendNotification(
       `🏆 ${stats.userDisplayName} unlocked an achievement: ${ach.id}`
     );
   }
