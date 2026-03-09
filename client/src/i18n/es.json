@@ -152,6 +152,7 @@
       "themeNight": "Noche",
       "vacationMode": "Modo vacaciones",
       "vacationDesc": "Pausar todos los recordatorios de tareas mientras estás fuera",
+      "userVacationDesc": "Proteger racha y congelar salud de tareas durante la ausencia",
       "vacationSince": "De vacaciones desde",
       "vacationReturnDate": "Fecha de regreso",
       "registrationEnabled": "Permitir nuevos registros",

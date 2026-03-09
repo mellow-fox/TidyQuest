@@ -12,7 +12,7 @@ import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation } from '../utils
 const router = Router();
 router.use(authMiddleware);
 
-const USER_SELECT = 'id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, isVacationMode, language, createdAt';
+const USER_SELECT = 'id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, isVacationMode, vacationStartDate, language, createdAt';
 
 function normalizeNotificationTime(value: string | undefined): string | null {
   if (value === undefined) return null;
@@ -341,6 +341,33 @@ router.put('/:id/goal', (req: AuthRequest, res: Response) => {
     db.prepare('UPDATE users SET goalCoins = ?, goalStartAt = ?, goalEndAt = ? WHERE id = ?')
       .run(normalizedGoalCoins, normalizedGoalStartAt, normalizedGoalEndAt, targetId);
   }
+  const updated = db.prepare(`SELECT ${USER_SELECT} FROM users WHERE id = ?`).get(targetId);
+  res.json(updated);
+});
+
+router.put('/:id/vacation', (req: AuthRequest, res: Response) => {
+  const requester = db.prepare('SELECT id, role FROM users WHERE id = ?').get(req.userId) as any;
+  if (!requester || requester.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const targetId = parseInt(req.params.id as string);
+  const target = db.prepare('SELECT id, isVacationMode FROM users WHERE id = ?').get(targetId) as any;
+  if (!target) return res.status(404).json({ error: 'User not found' });
+
+  const { isVacationMode } = req.body as { isVacationMode?: boolean };
+  if (isVacationMode === undefined) {
+    return res.status(400).json({ error: 'isVacationMode is required' });
+  }
+
+  if (isVacationMode && !target.isVacationMode) {
+    db.prepare('UPDATE users SET isVacationMode = 1, vacationStartDate = ? WHERE id = ?')
+      .run(new Date().toISOString(), targetId);
+  } else if (!isVacationMode && target.isVacationMode) {
+    db.prepare('UPDATE users SET isVacationMode = 0, vacationStartDate = NULL WHERE id = ?')
+      .run(targetId);
+  }
+
   const updated = db.prepare(`SELECT ${USER_SELECT} FROM users WHERE id = ?`).get(targetId);
   res.json(updated);
 });

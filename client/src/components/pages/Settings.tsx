@@ -22,6 +22,8 @@ interface FamilyUser {
   goalCoins?: number | null;
   goalStartAt?: string | null;
   goalEndAt?: string | null;
+  isVacationMode?: number;
+  vacationStartDate?: string | null;
 }
 
 interface VacationConfig {
@@ -96,6 +98,7 @@ export function Settings({
   const [memberGoalMsg, setMemberGoalMsg] = useState<Record<number, string>>({});
   const [coinAdjust, setCoinAdjust] = useState<Record<number, string>>({});
   const [coinAdjustMsg, setCoinAdjustMsg] = useState<Record<number, string>>({});
+  const [memberVacation, setMemberVacation] = useState<Record<number, boolean>>({});
   const [vacationEnabled, setVacationEnabled] = useState(!!vacationConfig?.vacationMode);
   const [vacationEndDate, setVacationEndDate] = useState(vacationConfig?.vacationEndDate ?? null);
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
@@ -822,6 +825,23 @@ export function Settings({
                     {memberProfileMsg[u.id] && (
                       <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberProfileMsg[u.id]}</div>
                     )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.vacationMode')}</div>
+                      <div style={{ fontSize: 10, color: 'var(--warm-text-light)' }}>{t('settings.userVacationDesc')}</div>
+                      {!!(memberVacation[u.id] ?? u.isVacationMode) && u.vacationStartDate && (
+                        <div style={{ fontSize: 10, color: 'var(--warm-accent)', marginTop: 2 }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString(locale)}</div>
+                      )}
+                    </div>
+                    <Toggle checked={!!(memberVacation[u.id] ?? u.isVacationMode)} onChange={async (val) => {
+                      setMemberVacation((prev) => ({ ...prev, [u.id]: val }));
+                      try {
+                        await api.updateUserVacation(u.id, val);
+                      } catch {
+                        setMemberVacation((prev) => ({ ...prev, [u.id]: !val }));
+                      }
+                    }} />
                   </div>
                   <div className="member-edit-password-row" style={{ display: 'flex', gap: 8 }}>
                     <input type="password" value={memberPassword[u.id] || ''} onChange={(e) => setMemberPassword((prev) => ({ ...prev, [u.id]: e.target.value }))} placeholder={t('settings.newPassword')} style={{ flex: 1, padding: '7px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)', fontFamily: 'Nunito' }} />
