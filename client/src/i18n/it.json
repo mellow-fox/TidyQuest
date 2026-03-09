@@ -373,6 +373,7 @@
       "coins": "Monete",
       "reset": "Annulla completamento",
       "deleteTask": "Elimina attività",
+      "deleteTaskConfirm": "Eliminare questa attività? Questa azione è irreversibile.",
       "done": "Fatto",
       "assignToChildren": "Assegna al gruppo bambini",
       "seasonal": "Stagionale",

@@ -373,6 +373,7 @@
       "coins": "Coins",
       "reset": "Undo completion",
       "deleteTask": "Delete Task",
+      "deleteTaskConfirm": "Delete this task? This cannot be undone.",
       "done": "Done",
       "assignToChildren": "Assign to Children group",
       "seasonal": "Seasonal",

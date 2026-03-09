@@ -293,6 +293,7 @@ export function RoomDetail({ room, language, isAdmin, currentUserId, currentUser
   }
 
   const deleteTask = async (taskId: number) => {
+    if (!window.confirm(t('roomDetail.deleteTaskConfirm'))) return;
     await api.deleteTask(taskId);
     setEditingTask(null);
     onRefresh?.();

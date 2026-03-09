@@ -373,6 +373,7 @@
       "coins": "Pièces",
       "reset": "Annuler la complétion",
       "deleteTask": "Supprimer la tâche",
+      "deleteTaskConfirm": "Supprimer cette tâche ? Cette action est définitive.",
       "done": "Fait",
       "assignToChildren": "Attribuer au groupe enfants",
       "seasonal": "Saisonnier",

@@ -373,6 +373,7 @@
       "coins": "Münzen",
       "reset": "Abschluss rückgängig",
       "deleteTask": "Aufgabe löschen",
+      "deleteTaskConfirm": "Diese Aufgabe löschen? Dies kann nicht rückgängig gemacht werden.",
       "done": "Erledigt",
       "assignToChildren": "Der Kindergruppe zuweisen",
       "seasonal": "Saisonal",
