@@ -43,6 +43,7 @@ function AppContent() {
   const vacationUpdatePending = useRef(false);
   const dashboardLoadInFlight = useRef<Promise<void> | null>(null);
   const roomsRefreshInFlight = useRef<Promise<void> | null>(null);
+  const [gamificationEnabled, setGamificationEnabled] = useState(true);
   const [confetti, setConfetti] = useState(false);
   const [taskErrorMsg, setTaskErrorMsg] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -94,7 +95,10 @@ function AppContent() {
   }, [leaderboardPeriod]);
 
   useEffect(() => {
-    if (user) loadDashboard();
+    if (user) {
+      loadDashboard();
+      api.getGamificationConfig().then((cfg) => setGamificationEnabled(cfg.gamificationEnabled)).catch(() => {});
+    }
   }, [user, loadDashboard]);
 
   // Selectively refresh data when navigating to pages that need fresh data
@@ -303,19 +307,21 @@ function AppContent() {
         user={user}
         isMobileOpen={isMobileSidebarOpen}
         onClose={() => setIsMobileSidebarOpen(false)}
+        gamificationEnabled={gamificationEnabled}
       />
 
       <main style={{ marginLeft: 240, flex: 1, padding: '28px 36px', maxWidth: 1320, backgroundColor: 'var(--warm-bg)' }} className="main-content">
         <Routes>
           <Route path="/" element={
             <>
-              <PageHeader title={t('nav.home')} subtitle={today} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.home')} subtitle={today} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               {dashboardData && (
                 <Dashboard
                   data={dashboardData}
                   family={family}
                   users={familySettings}
                   language={user.language}
+                  gamificationEnabled={gamificationEnabled}
                   onCompleteTask={handleCompleteTask}
                   onRefresh={loadDashboard}
                   onNavigateToRoom={(id) => navigate(`/rooms/${id}`)}
@@ -331,7 +337,7 @@ function AppContent() {
 
           <Route path="/rooms" element={
             <>
-              <PageHeader title={t('nav.rooms')} subtitle={`${rooms.length} ${t('app.roomsConfigured')}`} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.rooms')} subtitle={`${rooms.length} ${t('app.roomsConfigured')}`} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <RoomsList rooms={rooms} language={user.language} onSelectRoom={(id) => navigate(`/rooms/${id}`)}
                 isAdmin={user.role === 'admin'}
                 users={familySettings}
@@ -352,49 +358,53 @@ function AppContent() {
           } />
 
           <Route path="/rooms/:id" element={
-            <RoomDetailWrapper rooms={rooms} user={user} users={familySettings} coinsByEffort={coinsByEffort} onCompleteTask={handleCompleteTask} onRefresh={refreshRooms} />
+            <RoomDetailWrapper rooms={rooms} user={user} users={familySettings} coinsByEffort={coinsByEffort} gamificationEnabled={gamificationEnabled} onCompleteTask={handleCompleteTask} onRefresh={refreshRooms} />
           } />
 
           <Route path="/calendar" element={
             <>
-              <PageHeader title={t('nav.calendar')} subtitle={t('app.calendarSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.calendar')} subtitle={t('app.calendarSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <Calendar completions={completions} tasks={allTasks} language={user.language} />
             </>
           } />
 
           <Route path="/leaderboard" element={
+            gamificationEnabled ? (
             <>
-              <PageHeader title={t('app.leaderboardTitle')} subtitle={t('app.leaderboardSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('app.leaderboardTitle')} subtitle={t('app.leaderboardSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <Leaderboard users={leaderboard} language={user.language} period={leaderboardPeriod} onPeriodChange={handleLeaderboardPeriodChange} />
             </>
+            ) : <Navigate to="/" replace />
           } />
 
           <Route path="/activity" element={
             <>
-              <PageHeader title={t('nav.activity')} subtitle={t('app.activitySubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.activity')} subtitle={t('app.activitySubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <History language={user.language} isAdmin={user.role === 'admin'} />
             </>
           } />
           <Route path="/history" element={
             <>
-              <PageHeader title={t('nav.activity')} subtitle={t('app.activitySubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.activity')} subtitle={t('app.activitySubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <History language={user.language} isAdmin={user.role === 'admin'} />
             </>
           } />
 
           <Route path="/profile" element={
             <>
-              <PageHeader title={t('nav.profile')} subtitle={t('app.profileSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.profile')} subtitle={t('app.profileSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <Profile user={user} onSave={async () => { await refreshUser(); }} onLogout={() => { logout(); navigate('/login', { replace: true }); }} />
             </>
           } />
 
           <Route path="/settings" element={
             <>
-              <PageHeader title={t('nav.settings')} subtitle={t('app.settingsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.settings')} subtitle={t('app.settingsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <Settings
                 user={user}
                 family={familySettings}
+                gamificationEnabled={gamificationEnabled}
+                onGamificationChange={setGamificationEnabled}
                 vacationConfig={vacationConfig ?? undefined}
                 onUpdateVacation={async (data) => {
                   vacationUpdatePending.current = true;
@@ -451,14 +461,17 @@ function AppContent() {
             </>
           } />
           <Route path="/achievements" element={
+            gamificationEnabled ? (
             <>
-              <PageHeader title={t('nav.achievements')} subtitle={t('app.achievementsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.achievements')} subtitle={t('app.achievementsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <Achievements data={achievementsData} language={user.language} />
             </>
+            ) : <Navigate to="/" replace />
           } />
           <Route path="/rewards" element={
+            gamificationEnabled ? (
             <>
-              <PageHeader title={t('nav.rewards')} subtitle={t('app.rewardsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+              <PageHeader title={t('nav.rewards')} subtitle={t('app.rewardsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
               <Rewards
                 language={user.language}
                 rewards={rewardsData.rewards}
@@ -478,6 +491,7 @@ function AppContent() {
                 }}
               />
             </>
+            ) : <Navigate to="/" replace />
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -486,7 +500,7 @@ function AppContent() {
   );
 }
 
-function RoomDetailWrapper({ rooms, user, users, coinsByEffort, onCompleteTask, onRefresh }: { rooms: any[]; user: any; users?: any[]; coinsByEffort: Record<number, number>; onCompleteTask: (id: number) => void; onRefresh: () => void }) {
+function RoomDetailWrapper({ rooms, user, users, coinsByEffort, gamificationEnabled, onCompleteTask, onRefresh }: { rooms: any[]; user: any; users?: any[]; coinsByEffort: Record<number, number>; gamificationEnabled: boolean; onCompleteTask: (id: number) => void; onRefresh: () => void }) {
   const navigate = useNavigate();
   const { t, roomDisplayName } = useTranslation(user?.language || 'en');
   const { id: idParam } = useParams<{ id: string }>();
@@ -507,7 +521,7 @@ function RoomDetailWrapper({ rooms, user, users, coinsByEffort, onCompleteTask, 
 
   return (
     <>
-      <PageHeader title={roomDisplayName(room.name, room.roomType)} subtitle={`${room.tasks?.length || 0} ${t('rooms.tasksTracked')}`} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} />
+      <PageHeader title={roomDisplayName(room.name, room.roomType)} subtitle={`${room.tasks?.length || 0} ${t('rooms.tasksTracked')}`} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
       <RoomDetail room={room} language={user?.language} isAdmin={user?.role === 'admin'} currentUserId={user?.id} currentUserRole={user?.role} users={users} coinsByEffort={coinsByEffort} onCompleteTask={onCompleteTask} onBack={() => navigate('/rooms')} onRefresh={onRefresh} />
     </>
   );

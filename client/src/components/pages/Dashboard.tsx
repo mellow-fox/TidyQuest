@@ -105,6 +105,7 @@ interface DashboardProps {
   onNavigateToRoom: (roomId: number) => void;
   onNavigateToActivity: () => void;
   onRewardRequestAction: (id: number, status: 'approved' | 'rejected') => void | Promise<void>;
+  gamificationEnabled?: boolean;
 }
 
 /* ── Component ── */
@@ -119,6 +120,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onNavigateToRoom,
   onNavigateToActivity,
   onRewardRequestAction,
+  gamificationEnabled = true,
 }) => {
   const { taskName, roomDisplayName, timeAgo, t } = useTranslation(language);
   const { houseHealth, rooms, todaysQuests, nextTasks, myGoal, childrenGoals = [], pendingRewardRequests = [], currentUser, recentActivity } = data;
@@ -478,7 +480,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       {/* ── Column 3: Widgets ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Streak Card */}
-        <div
+        {gamificationEnabled && <div
           className="tq-card"
           style={{
             padding: 20,
@@ -550,9 +552,9 @@ const Dashboard: React.FC<DashboardProps> = ({
           >
             {streakDoneToday ? t('dashboard.streakDoneToday') : t('dashboard.keepStreak')}
           </div>
-        </div>
+        </div>}
 
-        <div className="tq-card" style={{ padding: 20 }}>
+        {gamificationEnabled && <div className="tq-card" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)' }}>{t('dashboard.coinsStatusTitle')}</div>
             <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: '3px 8px', backgroundColor: 'var(--warm-accent-light)', color: 'var(--warm-accent)', border: '1px solid var(--warm-accent)' }}>
@@ -570,9 +572,9 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
             ))}
           </div>
-        </div>
+        </div>}
 
-        {myGoal && (
+        {gamificationEnabled && myGoal && (
           <div className="tq-card" style={{ padding: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)', marginBottom: 6 }}>{t('dashboard.myGoal')}</div>
             <div style={{ fontSize: 12, color: 'var(--warm-text-muted)', fontWeight: 700, marginBottom: 8 }}>
@@ -587,7 +589,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
 
-        {currentUser.role === 'admin' && childrenGoals.length > 0 && (
+        {gamificationEnabled && currentUser.role === 'admin' && childrenGoals.length > 0 && (
           <div className="tq-card" style={{ padding: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)', marginBottom: 8 }}>{t('dashboard.childrenGoals')}</div>
             <div style={{ display: 'grid', gap: 8 }}>
@@ -609,7 +611,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
 
-        {currentUser.role === 'admin' && (
+        {gamificationEnabled && currentUser.role === 'admin' && (
           <div className="tq-card" style={{ padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--warm-text)' }}>{t('dashboard.rewardRequestsTitle')}</div>
@@ -650,7 +652,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {/* Mini Leaderboard */}
-        <div className="tq-card" style={{ padding: 20 }}>
+        {gamificationEnabled && <div className="tq-card" style={{ padding: 20 }}>
           <h3
             style={{
               fontSize: 14,
@@ -706,7 +708,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
           ))}
-        </div>
+        </div>}
 
         {/* Recent Activity */}
         <div className="tq-card" style={{ padding: 20 }}>
@@ -752,7 +754,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   {roomDisplayName(h.roomName, roomTypeById.get(h.roomId) || '')} &middot; {timeAgo(h.completedAt)}
                 </div>
               </div>
-              <div
+              {gamificationEnabled && <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -763,7 +765,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 }}
               >
                 +{h.coinsEarned} <CoinIcon />
-              </div>
+              </div>}
             </div>
           ))}
         </div>

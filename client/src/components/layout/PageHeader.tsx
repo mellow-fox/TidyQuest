@@ -8,9 +8,10 @@ interface PageHeaderProps {
   rightContent?: React.ReactNode;
   onCoinsClick?: () => void;
   onStreakClick?: () => void;
+  gamificationEnabled?: boolean;
 }
 
-export function PageHeader({ title, subtitle, user, rightContent, onCoinsClick, onStreakClick }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, user, rightContent, onCoinsClick, onStreakClick, gamificationEnabled = true }: PageHeaderProps) {
   return (
     <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
       <div>
@@ -23,6 +24,8 @@ export function PageHeader({ title, subtitle, user, rightContent, onCoinsClick, 
       </div>
       <div className="page-header-actions" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         {rightContent}
+        {gamificationEnabled && (
+        <>
         <div
           onClick={onStreakClick}
           role={onStreakClick ? 'button' : undefined}
@@ -63,6 +66,8 @@ export function PageHeader({ title, subtitle, user, rightContent, onCoinsClick, 
           <CoinIcon />
           <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-streak-text)' }}>{user.coins}</span>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

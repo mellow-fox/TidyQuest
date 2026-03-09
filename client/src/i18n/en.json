@@ -158,6 +158,8 @@
       "strictModeDesc": "Require parent admin approval when a child marks a task as done.",
       "registrationEnabled": "Allow New Registrations",
       "registrationEnabledDesc": "When disabled, no new accounts can be created from the registration page.",
+      "gamificationEnabled": "Gamification",
+      "gamificationEnabledDesc": "Enable leaderboard, streaks, achievements, rewards and coins. Disable for a simpler couple mode.",
       "adminRequired": "Parent admin required to change settings.",
       "data": "Data",
       "dataPrivacy": "Data & Privacy",

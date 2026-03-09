@@ -38,6 +38,7 @@ function applyApprovedCompletion(
   effectiveUserId: number,
   coins: number,
   now: string,
+  gamificationOn: boolean = true,
   options?: { completionId?: number; approvedByUserId?: number; approvedAt?: string }
 ) {
   const approvedByUserId = options?.approvedByUserId ?? effectiveUserId;
@@ -71,37 +72,39 @@ function applyApprovedCompletion(
     db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, taskId);
   }
 
-  db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coins, effectiveUserId);
+  if (gamificationOn) {
+    db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coins, effectiveUserId);
 
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(effectiveUserId) as any;
-  const today = new Date().toISOString().slice(0, 10);
-  const streakVacation = getGlobalVacation();
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(effectiveUserId) as any;
+    const today = new Date().toISOString().slice(0, 10);
+    const streakVacation = getGlobalVacation();
 
-  if (!streakVacation.isVacation && user.lastActiveDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    let keepGapWithoutPenalty = false;
-    if (user.lastActiveDate && user.lastActiveDate < yesterday) {
-      keepGapWithoutPenalty = true;
-      const start = new Date(`${user.lastActiveDate}T00:00:00.000Z`);
-      const end = new Date(`${yesterday}T00:00:00.000Z`);
-      for (let d = new Date(start.getTime() + 86400000); d <= end; d = new Date(d.getTime() + 86400000)) {
-        const day = d.toISOString().slice(0, 10);
-        if (hadDueTaskOnDate(day)) {
-          keepGapWithoutPenalty = false;
-          break;
+    if (!streakVacation.isVacation && user.lastActiveDate !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      let keepGapWithoutPenalty = false;
+      if (user.lastActiveDate && user.lastActiveDate < yesterday) {
+        keepGapWithoutPenalty = true;
+        const start = new Date(`${user.lastActiveDate}T00:00:00.000Z`);
+        const end = new Date(`${yesterday}T00:00:00.000Z`);
+        for (let d = new Date(start.getTime() + 86400000); d <= end; d = new Date(d.getTime() + 86400000)) {
+          const day = d.toISOString().slice(0, 10);
+          if (hadDueTaskOnDate(day)) {
+            keepGapWithoutPenalty = false;
+            break;
+          }
         }
       }
-    }
-    const newStreak = user.lastActiveDate === yesterday
-      ? user.currentStreak + 1
-      : keepGapWithoutPenalty
+      const newStreak = user.lastActiveDate === yesterday
         ? user.currentStreak + 1
-        : 1;
-    db.prepare('UPDATE users SET currentStreak = ?, lastActiveDate = ? WHERE id = ?')
-      .run(newStreak, today, effectiveUserId);
-  }
+        : keepGapWithoutPenalty
+          ? user.currentStreak + 1
+          : 1;
+      db.prepare('UPDATE users SET currentStreak = ?, lastActiveDate = ? WHERE id = ?')
+        .run(newStreak, today, effectiveUserId);
+    }
 
-  void notifyAchievementUnlocksForUser(effectiveUserId);
+    void notifyAchievementUnlocksForUser(effectiveUserId);
+  }
 }
 
 // List tasks for a room
@@ -388,16 +391,23 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
   // Fetch assignees once — needed for coin splitting and lastCompletedAt logic
   const taskAssignees = db.prepare('SELECT userId, coinPercentage FROM task_assignees WHERE taskId = ?').all(task.id) as { userId: number; coinPercentage: number }[];
 
-  // Coin calculation based on assignment mode
-  const totalCoins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
+  // Coin calculation based on assignment mode (skip when gamification disabled)
+  const gamifRow = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  const gamificationOn = gamifRow ? gamifRow.value !== '0' : true;
+
   let coins: number;
-  if (task.assignmentMode === 'shared' && taskAssignees.length > 1) {
-    coins = Math.floor(totalCoins / taskAssignees.length);
-  } else if (task.assignmentMode === 'custom') {
-    const row = taskAssignees.find(a => a.userId === effectiveUserId);
-    coins = Math.floor(totalCoins * (row?.coinPercentage ?? 0) / 100);
+  if (!gamificationOn) {
+    coins = 0;
   } else {
-    coins = totalCoins;
+    const totalCoins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
+    if (task.assignmentMode === 'shared' && taskAssignees.length > 1) {
+      coins = Math.floor(totalCoins / taskAssignees.length);
+    } else if (task.assignmentMode === 'custom') {
+      const row = taskAssignees.find(a => a.userId === effectiveUserId);
+      coins = Math.floor(totalCoins * (row?.coinPercentage ?? 0) / 100);
+    } else {
+      coins = totalCoins;
+    }
   }
 
   const targetUser = db.prepare('SELECT role FROM users WHERE id = ?').get(effectiveUserId) as { role?: string } | undefined;
@@ -410,7 +420,7 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
     return res.json({ coinsEarned: 0, health: task.health, pendingApproval: true });
   }
 
-  applyApprovedCompletion(task, task.id, effectiveUserId, coins, now);
+  applyApprovedCompletion(task, task.id, effectiveUserId, coins, now, gamificationOn);
   res.json({ coinsEarned: coins, health: 100, pendingApproval: false });
 });
 
@@ -453,7 +463,9 @@ router.post('/completions/:completionId/approve', (req: AuthRequest, res: Respon
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(completion.taskId) as any;
   if (!task) return res.status(404).json({ error: 'Task not found' });
 
-  applyApprovedCompletion(task, completion.taskId, completion.userId, completion.coinsEarned, completion.completedAt, {
+  const gamifRowApprove = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  const gamifOnApprove = gamifRowApprove ? gamifRowApprove.value !== '0' : true;
+  applyApprovedCompletion(task, completion.taskId, completion.userId, completion.coinsEarned, completion.completedAt, gamifOnApprove, {
     completionId: completion.id,
     approvedByUserId: req.userId,
     approvedAt: new Date().toISOString(),

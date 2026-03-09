@@ -61,6 +61,8 @@ interface SettingsProps {
   onExport: () => void;
   onImport: () => void;
   onAdjustCoins?: (userId: number, amount: number) => Promise<void>;
+  gamificationEnabled?: boolean;
+  onGamificationChange?: (enabled: boolean) => void;
 }
 
 const COLORS = ['#F97316', '#9B72CF', '#4AABDE', '#5CB85C', '#D4A017', '#E25A5A', '#38BDF8', '#EC4899'];
@@ -83,6 +85,8 @@ export function Settings({
   onExport,
   onImport,
   onAdjustCoins,
+  gamificationEnabled = true,
+  onGamificationChange,
 }: SettingsProps) {
   const { t } = useTranslation(user.language);
   const isAdmin = user.role === 'admin';
@@ -494,6 +498,7 @@ export function Settings({
                     />
                     {t('settings.notificationTypeTaskDue')}
                   </label>
+                  {gamificationEnabled && (
                   <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>
                     <input
                       type="checkbox"
@@ -503,6 +508,8 @@ export function Settings({
                     />
                     {t('settings.notificationTypeRewardRequest')}
                   </label>
+                  )}
+                  {gamificationEnabled && (
                   <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-muted)' }}>
                     <input
                       type="checkbox"
@@ -512,6 +519,7 @@ export function Settings({
                     />
                     {t('settings.notificationTypeAchievementUnlocked')}
                   </label>
+                  )}
                 </div>
               </>
             ) : (
@@ -710,6 +718,26 @@ export function Settings({
             />
           </div>
         )}
+        {isAdmin && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 1l2.5 5.5L18 7.5l-4 4 1 5.5L10 14.5 4.5 17l1-5.5-4-4 5.5-1z" fill="#B0A090" />
+            </svg>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.gamificationEnabled')}</div>
+              <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.gamificationEnabledDesc')}</div>
+            </div>
+            <Toggle
+              checked={gamificationEnabled}
+              onChange={async (val) => {
+                onGamificationChange?.(val);
+                await api.updateGamificationConfig({ gamificationEnabled: val }).catch(() => {
+                  onGamificationChange?.(!val);
+                });
+              }}
+            />
+          </div>
+        )}
         {!isAdmin && (
           <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 700 }}>
             {t('settings.adminRequired')}
@@ -717,7 +745,7 @@ export function Settings({
         )}
       </div>
 
-      {isAdmin && (
+      {isAdmin && gamificationEnabled && (
         <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.pendingValidations')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.pendingValidationsDesc')}</div>
@@ -786,7 +814,7 @@ export function Settings({
         </div>
       )}
 
-      {isAdmin && (
+      {isAdmin && gamificationEnabled && (
         <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.goalsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.goalsSectionDesc')}</div>
@@ -843,7 +871,7 @@ export function Settings({
         </div>
       )}
 
-      {isAdmin && (
+      {isAdmin && gamificationEnabled && (
         <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.rewardsSection')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.rewardsSectionDesc')}</div>
@@ -1049,7 +1077,7 @@ export function Settings({
                   {memberPasswordMsg[u.id] && (
                     <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 700 }}>{memberPasswordMsg[u.id]}</div>
                   )}
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  {gamificationEnabled && <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-text-light)' }}>{t('settings.coinsBalance')}: {u.coins}</span>
                     <input
                       type="number"
@@ -1071,7 +1099,7 @@ export function Settings({
                       setTimeout(() => setCoinAdjustMsg((prev) => ({ ...prev, [u.id]: '' })), 2000);
                     }}>{t('settings.adjustCoins')}</button>
                     {coinAdjustMsg[u.id] && <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm-accent)' }}>{coinAdjustMsg[u.id]}</span>}
-                  </div>
+                  </div>}
                 </div>
               )}
             </div>

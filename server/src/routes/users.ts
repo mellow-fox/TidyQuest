@@ -646,6 +646,29 @@ router.put('/strict-mode-config', (req: AuthRequest, res: Response) => {
   res.json({ strictMode });
 });
 
+router.get('/gamification-config', authMiddleware, (_req: AuthRequest, res: Response) => {
+  const row = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  const gamificationEnabled = row ? row.value !== '0' : true;
+  res.json({ gamificationEnabled });
+});
+
+router.put('/gamification-config', authMiddleware, (req: AuthRequest, res: Response) => {
+  const requestingUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId) as { role: string } | undefined;
+  if (!requestingUser || requestingUser.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const { gamificationEnabled } = req.body;
+  if (typeof gamificationEnabled !== 'boolean') {
+    return res.status(400).json({ error: 'gamificationEnabled must be a boolean' });
+  }
+
+  db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'gamificationEnabled'")
+    .run(gamificationEnabled ? '1' : '0');
+
+  res.json({ gamificationEnabled });
+});
+
 router.get('/registration-config', authMiddleware, (req: AuthRequest, res: Response) => {
   const row = db.prepare("SELECT value FROM app_settings WHERE key = 'registrationEnabled'").get() as { value: string } | undefined;
   const registrationEnabled = row ? row.value !== '0' : true;
