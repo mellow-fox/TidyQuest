@@ -373,6 +373,7 @@
       "coins": "Monedas",
       "reset": "Deshacer compleción",
       "deleteTask": "Eliminar tarea",
+      "deleteTaskConfirm": "¿Eliminar esta tarea? Esta acción no se puede deshacer.",
       "done": "Hecho",
       "assignToChildren": "Asignar al grupo de niños",
       "seasonal": "Estacional",
