@@ -414,6 +414,8 @@ export function initDatabase() {
       db.prepare('UPDATE users SET passwordHash = ? WHERE id = ?').run(hash, admin.id);
       console.log(`[RECOVERY] Password reset for admin "${admin.username}". Remove ADMIN_RESET_PASSWORD from your environment now.`);
     }
+    // Clear from process memory to prevent re-use on hot-reload and reduce exposure
+    delete process.env.ADMIN_RESET_PASSWORD;
   }
 }
 

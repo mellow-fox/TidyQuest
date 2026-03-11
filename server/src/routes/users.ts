@@ -76,7 +76,9 @@ if (!fs.existsSync(avatarsDir)) {
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, avatarsDir),
   filename: (req, _file, cb) => {
-    const ext = path.extname(_file.originalname) || '.jpg';
+    const ALLOWED_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
+    const rawExt = path.extname(_file.originalname).toLowerCase();
+    const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : '.jpg';
     const targetId = parseInt((req as any).params?.id as string, 10);
     const safeId = Number.isFinite(targetId) ? targetId : (req as AuthRequest).userId;
     cb(null, `user-${safeId}-${Date.now()}${ext}`);

@@ -221,8 +221,12 @@ export function RoomDetail({ room, language, isAdmin, currentUserId, currentUser
 
   const handleAdminModalConfirm = async (userIds: number[]) => {
     if (!adminModalTask) return;
-    for (const uid of userIds) {
-      await api.completeTask(adminModalTask.id, uid);
+    try {
+      for (const uid of userIds) {
+        await api.completeTask(adminModalTask.id, uid);
+      }
+    } catch (e) {
+      console.error('Failed to complete task for some users:', e);
     }
     setAdminModalTask(null);
     setAnimatedTask(adminModalTask.id);

@@ -798,7 +798,7 @@ export function Settings({
         )}
       </div>
 
-      {isAdmin && gamificationEnabled && (
+      {isAdmin && strictModeEnabled && (
         <div className="tq-card settings-admin-card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: 'var(--warm-text)', margin: '0 0 12px' }}>{t('settings.pendingValidations')}</h3>
           <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600, marginBottom: 10 }}>{t('settings.pendingValidationsDesc')}</div>

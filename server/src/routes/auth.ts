@@ -31,6 +31,11 @@ setInterval(() => {
 const router = Router();
 
 router.post('/register', (req: AuthRequest, res: Response) => {
+  const ip = (req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({ error: 'Too many registration attempts. Please try again later.' });
+  }
+
   const { username, password, displayName, avatarColor, language } = req.body;
 
   if (!username || !password || !displayName) {

@@ -765,8 +765,12 @@ const Dashboard: React.FC<DashboardProps> = ({
         allUsers={(users || []) as any[]}
         language={language}
         onConfirm={async (userIds) => {
-          for (const uid of userIds) {
-            await api.completeTask(adminModalQuest.id, uid);
+          try {
+            for (const uid of userIds) {
+              await api.completeTask(adminModalQuest.id, uid);
+            }
+          } catch (e) {
+            console.error('Failed to complete task for some users:', e);
           }
           setAdminModalQuest(null);
           onRefresh?.();
