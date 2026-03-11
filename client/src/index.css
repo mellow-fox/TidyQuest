@@ -351,19 +351,17 @@ body {
 .tq-page-medium { max-width: 700px; }
 .tq-page-wide { max-width: 900px; }
 
-/* Dashboard — CSS columns masonry layout */
-/* column-width lets the browser auto-pick column count based on available space */
+/* Dashboard — CSS Grid layout */
+/* auto-fill + minmax gives responsive column count; align-items:start keeps cards natural height */
 .dashboard-grid {
-  columns: 300px;
-  column-gap: var(--space-xl);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-xl);
+  align-items: start;
   animation: fadeIn 0.3s ease;
 }
-.dashboard-grid > * {
-  break-inside: avoid;
-  margin-bottom: var(--space-xl);
-}
 .dashboard-grid > .dashboard-hero {
-  column-span: all;
+  grid-column: 1 / -1;
 }
 
 /* Settings grid — via CSS class, not inline */
