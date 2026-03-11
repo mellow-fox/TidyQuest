@@ -1,0 +1,95 @@
+# TidyQuest v0.4.0-beta Release Notes
+
+> **Branch:** `release/beta` | **Date:** 2026-03-11
+
+This beta release includes 9 new features and a complete UI redesign. It merges work from 8 feature branches into a unified release for testing.
+
+---
+
+## New Features
+
+### Design System Redesign
+- Unified CSS design system with consistent card styles, buttons, and spacing
+- Responsive dashboard layout using CSS columns (masonry-style)
+- Improved mobile and tablet experience
+- New warm color palette with CSS custom properties
+
+### Per-User Vacation Mode
+- Admins can now toggle vacation mode **per member** (not just globally)
+- Each member has their own **return date**
+- All vacation settings consolidated in a single Settings section
+- Vacation freezes streak decay and task health on a per-user basis
+
+### Strict Mode (Task Approval)
+- New admin toggle: tasks require **admin approval** before completion counts
+- Pending completions shown in Settings for admin review (approve/reject)
+- Coins and streaks only awarded after approval
+
+### Couple Mode (Gamification Toggle)
+- Admins can **disable gamification** entirely (coins, streaks, leaderboard)
+- Ideal for couples who want task tracking without competition
+- Dashboard, rewards, and leaderboard sections hidden when disabled
+
+### ntfy Notifications
+- Added **ntfy** as a notification provider alongside Telegram
+- Configure via Settings with server URL and topic
+- Same notification types: daily due tasks, reward requests, achievements
+
+### Admin Password Recovery
+- New `ADMIN_RESET_PASSWORD` environment variable
+- Set it, restart the container, and the first admin's password is reset
+- One-shot mechanism: remove the env var after recovery
+
+### Task Delete Confirmation
+- Confirmation dialog before deleting a task (prevents accidental deletions)
+
+### Admin Edit Predefined Rewards
+- Admins can now customize coin costs of preset rewards
+
+### Docker Security
+- Container now runs as non-root user (`node`) by default
+
+---
+
+## Breaking Changes
+
+None. This release is backward-compatible with v0.3.0 data.
+
+---
+
+## Environment Variables
+
+| Variable | New | Description |
+|----------|-----|-------------|
+| `ADMIN_RESET_PASSWORD` | Yes | One-shot admin password recovery (remove after use) |
+
+---
+
+## Known Limitations
+
+- Beta release: not yet published to Docker Hub
+- The `vacationEndDate` per-user is stored but not yet used for auto-disabling vacation
+- ntfy and Telegram cannot both be active simultaneously
+
+---
+
+## Upgrade from v0.3.0
+
+1. Switch to the `release/beta` branch
+2. Rebuild and restart the container
+3. Database migrations run automatically (new columns added idempotently)
+4. No manual data migration required
+
+---
+
+## Testing Checklist
+
+- [ ] Dashboard renders correctly with gamification enabled/disabled
+- [ ] Per-user vacation toggles work independently
+- [ ] Per-user return dates save correctly
+- [ ] Strict mode approval flow works end-to-end
+- [ ] ntfy notifications deliver correctly
+- [ ] Task delete confirmation appears before deletion
+- [ ] Admin password recovery via env var works
+- [ ] Preset reward coin editing saves correctly
+- [ ] Design is responsive on mobile/tablet/desktop
