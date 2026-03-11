@@ -167,6 +167,7 @@ export function initDatabase() {
     `ALTER TABLE task_completions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'`,
     `ALTER TABLE task_completions ADD COLUMN approvedByUserId INTEGER REFERENCES users(id) ON DELETE SET NULL`,
     `ALTER TABLE task_completions ADD COLUMN approvedAt TEXT`,
+    `ALTER TABLE users ADD COLUMN vacationEndDate TEXT`,
   ];
 
   for (const sql of migrations) {

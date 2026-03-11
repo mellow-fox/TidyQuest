@@ -24,6 +24,7 @@ interface FamilyUser {
   goalEndAt?: string | null;
   isVacationMode?: number;
   vacationStartDate?: string | null;
+  vacationEndDate?: string | null;
 }
 
 interface VacationConfig {
@@ -682,25 +683,50 @@ export function Settings({
           {/* Per-user vacation toggles */}
           <div style={{ marginTop: 14, paddingLeft: 34, display: 'grid', gap: 8 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text-secondary)', marginBottom: 2 }}>{t('settings.perUserVacation')}</div>
-            {family.filter((u) => u.role !== 'admin').map((u) => (
-              <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', borderRadius: 12, backgroundColor: 'var(--warm-bg-subtle)', border: '1px solid var(--warm-border)' }}>
-                <UserAvatar name={u.displayName} color={u.avatarColor} size={28} avatarType={u.avatarType as any} avatarPreset={u.avatarPreset} avatarPhotoUrl={u.avatarPhotoUrl} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text)' }}>{u.displayName}</div>
-                  {!!(memberVacation[u.id] ?? u.isVacationMode) && u.vacationStartDate && (
-                    <div style={{ fontSize: 10, color: 'var(--warm-accent)' }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString(locale)}</div>
+            {family.filter((u) => u.role !== 'admin').map((u) => {
+              const isOn = !!(memberVacation[u.id] ?? u.isVacationMode);
+              return (
+                <div key={u.id} style={{ padding: '8px 10px', borderRadius: 12, backgroundColor: 'var(--warm-bg-subtle)', border: '1px solid var(--warm-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <UserAvatar name={u.displayName} color={u.avatarColor} size={28} avatarType={u.avatarType as any} avatarPreset={u.avatarPreset} avatarPhotoUrl={u.avatarPhotoUrl} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text)' }}>{u.displayName}</div>
+                      {isOn && u.vacationStartDate && (
+                        <div style={{ fontSize: 10, color: 'var(--warm-accent)' }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString(locale)}</div>
+                      )}
+                    </div>
+                    <Toggle checked={isOn} onChange={async (val) => {
+                      setMemberVacation((prev) => ({ ...prev, [u.id]: val }));
+                      try {
+                        await api.updateUserVacation(u.id, { isVacationMode: val });
+                      } catch {
+                        setMemberVacation((prev) => ({ ...prev, [u.id]: !val }));
+                      }
+                    }} />
+                  </div>
+                  {isOn && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, paddingLeft: 38 }}>
+                      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--warm-text-light)', whiteSpace: 'nowrap' }}>
+                        {t('settings.vacationReturnDate')}
+                      </label>
+                      <input
+                        type="date"
+                        className="tq-input-compact"
+                        value={u.vacationEndDate ? u.vacationEndDate.slice(0, 10) : ''}
+                        min={new Date().toISOString().slice(0, 10)}
+                        onChange={async (e) => {
+                          const val = e.target.value || null;
+                          try {
+                            await api.updateUserVacation(u.id, { vacationEndDate: val });
+                          } catch { /* ignore */ }
+                        }}
+                        style={{ fontSize: 11 }}
+                      />
+                    </div>
                   )}
                 </div>
-                <Toggle checked={!!(memberVacation[u.id] ?? u.isVacationMode)} onChange={async (val) => {
-                  setMemberVacation((prev) => ({ ...prev, [u.id]: val }));
-                  try {
-                    await api.updateUserVacation(u.id, val);
-                  } catch {
-                    setMemberVacation((prev) => ({ ...prev, [u.id]: !val }));
-                  }
-                }} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         )}

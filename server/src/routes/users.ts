@@ -12,7 +12,7 @@ import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation, isStrictModeEna
 const router = Router();
 router.use(authMiddleware);
 
-const USER_SELECT = 'id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, isVacationMode, vacationStartDate, language, createdAt';
+const USER_SELECT = 'id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, isVacationMode, vacationStartDate, vacationEndDate, language, createdAt';
 
 function normalizeNotificationTime(value: string | undefined): string | null {
   if (value === undefined) return null;
@@ -355,17 +355,23 @@ router.put('/:id/vacation', (req: AuthRequest, res: Response) => {
   const target = db.prepare('SELECT id, isVacationMode FROM users WHERE id = ?').get(targetId) as any;
   if (!target) return res.status(404).json({ error: 'User not found' });
 
-  const { isVacationMode } = req.body as { isVacationMode?: boolean };
-  if (isVacationMode === undefined) {
-    return res.status(400).json({ error: 'isVacationMode is required' });
+  const { isVacationMode, vacationEndDate } = req.body as { isVacationMode?: boolean; vacationEndDate?: string | null };
+
+  // Handle vacation toggle
+  if (isVacationMode !== undefined) {
+    if (isVacationMode && !target.isVacationMode) {
+      db.prepare('UPDATE users SET isVacationMode = 1, vacationStartDate = ? WHERE id = ?')
+        .run(new Date().toISOString(), targetId);
+    } else if (!isVacationMode && target.isVacationMode) {
+      db.prepare('UPDATE users SET isVacationMode = 0, vacationStartDate = NULL, vacationEndDate = NULL WHERE id = ?')
+        .run(targetId);
+    }
   }
 
-  if (isVacationMode && !target.isVacationMode) {
-    db.prepare('UPDATE users SET isVacationMode = 1, vacationStartDate = ? WHERE id = ?')
-      .run(new Date().toISOString(), targetId);
-  } else if (!isVacationMode && target.isVacationMode) {
-    db.prepare('UPDATE users SET isVacationMode = 0, vacationStartDate = NULL WHERE id = ?')
-      .run(targetId);
+  // Handle vacation end date (independent update)
+  if (vacationEndDate !== undefined) {
+    db.prepare('UPDATE users SET vacationEndDate = ? WHERE id = ?')
+      .run(vacationEndDate || null, targetId);
   }
 
   const updated = db.prepare(`SELECT ${USER_SELECT} FROM users WHERE id = ?`).get(targetId);

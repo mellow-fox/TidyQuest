@@ -215,8 +215,8 @@ export const api = {
   updateVacationConfig: (data: { vacationMode?: boolean; vacationEndDate?: string | null }) =>
     apiFetch<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null }>('/users/vacation-config', { method: 'PUT', body: JSON.stringify(data) }),
 
-  updateUserVacation: (userId: number, isVacationMode: boolean) =>
-    apiFetch<any>(`/users/${userId}/vacation`, { method: 'PUT', body: JSON.stringify({ isVacationMode }) }),
+  updateUserVacation: (userId: number, data: { isVacationMode?: boolean; vacationEndDate?: string | null }) =>
+    apiFetch<any>(`/users/${userId}/vacation`, { method: 'PUT', body: JSON.stringify(data) }),
 
   getStrictModeConfig: () =>
     apiFetch<{ strictMode: boolean }>('/users/strict-mode-config'),
