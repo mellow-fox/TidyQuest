@@ -466,7 +466,8 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* ── Column 3: Widgets ── */}
+      {/* ── Widgets (masonry) ── */}
+      <div className="dashboard-widgets">
         {/* Streak Card */}
         {gamificationEnabled && <div
           className="tq-card tq-card-padded"
@@ -756,6 +757,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           ))}
         </div>
+      </div>
     </div>
     {adminModalQuest && (
       <AdminCompleteModal

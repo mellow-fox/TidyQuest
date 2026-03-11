@@ -351,8 +351,8 @@ body {
 .tq-page-medium { max-width: 700px; }
 .tq-page-wide { max-width: 900px; }
 
-/* Dashboard — CSS Grid layout */
-/* auto-fill + minmax gives responsive column count; align-items:start keeps cards natural height */
+/* Dashboard — hybrid layout */
+/* Grid for top row (hero + 3 main cards), masonry for widgets below */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -362,6 +362,15 @@ body {
 }
 .dashboard-grid > .dashboard-hero {
   grid-column: 1 / -1;
+}
+.dashboard-widgets {
+  grid-column: 1 / -1;
+  columns: 300px;
+  column-gap: var(--space-xl);
+}
+.dashboard-widgets > * {
+  break-inside: avoid;
+  margin-bottom: var(--space-xl);
 }
 
 /* Settings grid — via CSS class, not inline */
