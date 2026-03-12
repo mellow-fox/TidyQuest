@@ -9,6 +9,7 @@ interface SidebarProps {
   user: User;
   isMobileOpen?: boolean;
   onClose?: () => void;
+  gamificationEnabled?: boolean;
 }
 
 const navItems = [
@@ -22,7 +23,9 @@ const navItems = [
   { to: '/settings', label: 'Settings', Icon: SettingsIcon },
 ];
 
-export function Sidebar({ user, isMobileOpen = false, onClose }: SidebarProps) {
+const GAMIFICATION_ROUTES = new Set(['/leaderboard', '/rewards', '/achievements']);
+
+export function Sidebar({ user, isMobileOpen = false, onClose, gamificationEnabled = true }: SidebarProps) {
   const navigate = useNavigate();
   const { t } = useTranslation(user.language);
 
@@ -109,7 +112,7 @@ export function Sidebar({ user, isMobileOpen = false, onClose }: SidebarProps) {
 
       {/* Nav */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, padding: '0 12px' }}>
-        {navItems.map((item) => (
+        {navItems.filter((item) => gamificationEnabled || !GAMIFICATION_ROUTES.has(item.to)).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -156,6 +159,7 @@ export function Sidebar({ user, isMobileOpen = false, onClose }: SidebarProps) {
           />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--warm-text)' }}>{user.displayName}</div>
+            {gamificationEnabled && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>
                 <CoinIcon /> {user.coins}
@@ -164,6 +168,7 @@ export function Sidebar({ user, isMobileOpen = false, onClose }: SidebarProps) {
                 <FireIcon /> {user.currentStreak}d
               </span>
             </div>
+            )}
           </div>
         </div>
       </div>

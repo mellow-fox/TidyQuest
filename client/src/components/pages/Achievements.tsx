@@ -95,7 +95,7 @@ export function Achievements({ data, language }: Props) {
     const locked = u.achievements.filter(a => !a.unlocked);
 
     return (
-      <div key={u.id} className="tq-card" style={{ padding: 20 }}>
+      <div key={u.id} className="tq-card tq-card-padded">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <h3 style={{ fontSize: 15, fontWeight: 900, color: 'var(--warm-text)', margin: 0 }}>{u.displayName}</h3>
           <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--warm-accent)', backgroundColor: 'var(--warm-accent-light)', padding: '4px 12px', borderRadius: 99 }}>

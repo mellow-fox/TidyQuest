@@ -4,7 +4,7 @@ import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth, getCoinsForEffort } from '../utils/health';
 import { suggestTaskIcon } from '../utils/taskIcons';
 import { notifyAchievementUnlocksForUser } from '../utils/achievementNotifications';
-import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation } from '../utils/adminHelpers';
+import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation, getUserVacation, resolveVacation, isStrictModeEnabled } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -32,6 +32,83 @@ function hadDueTaskOnDate(dateIsoDay: string): boolean {
   return false;
 }
 
+function applyApprovedCompletion(
+  task: any,
+  taskId: number,
+  effectiveUserId: number,
+  coins: number,
+  now: string,
+  gamificationOn: boolean = true,
+  options?: { completionId?: number; approvedByUserId?: number; approvedAt?: string }
+) {
+  const approvedByUserId = options?.approvedByUserId ?? effectiveUserId;
+  const approvedAt = options?.approvedAt ?? now;
+  if (options?.completionId) {
+    db.prepare(
+      "UPDATE task_completions SET status = 'approved', approvedByUserId = ?, approvedAt = ? WHERE id = ?"
+    ).run(approvedByUserId, approvedAt, options.completionId);
+  } else {
+    db.prepare(
+      'INSERT INTO task_completions (taskId, userId, completedAt, coinsEarned, status, approvedByUserId, approvedAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(taskId, effectiveUserId, now, coins, 'approved', approvedByUserId, approvedAt);
+  }
+
+  const taskAssignees = db.prepare('SELECT userId FROM task_assignees WHERE taskId = ?').all(taskId) as { userId: number }[];
+
+  if (task.assignmentMode === 'shared' || task.assignmentMode === 'custom') {
+    if (taskAssignees.length > 0) {
+      const doneCount = db.prepare(
+        `SELECT COUNT(*) as cnt
+         FROM task_completions
+         WHERE taskId = ? AND status = 'approved' AND date(completedAt) = date(?)`
+      ).get(taskId, now) as { cnt: number };
+      if (doneCount.cnt >= taskAssignees.length) {
+        db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, taskId);
+      }
+    } else {
+      db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, taskId);
+    }
+  } else {
+    db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, taskId);
+  }
+
+  if (gamificationOn) {
+    db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coins, effectiveUserId);
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(effectiveUserId) as any;
+    const today = new Date().toISOString().slice(0, 10);
+    const globalVac = getGlobalVacation();
+    const userVac = getUserVacation(effectiveUserId);
+    const streakVacation = resolveVacation(globalVac, userVac);
+
+    if (!streakVacation.isVacation && user.lastActiveDate !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      let keepGapWithoutPenalty = false;
+      if (user.lastActiveDate && user.lastActiveDate < yesterday) {
+        keepGapWithoutPenalty = true;
+        const start = new Date(`${user.lastActiveDate}T00:00:00.000Z`);
+        const end = new Date(`${yesterday}T00:00:00.000Z`);
+        for (let d = new Date(start.getTime() + 86400000); d <= end; d = new Date(d.getTime() + 86400000)) {
+          const day = d.toISOString().slice(0, 10);
+          if (hadDueTaskOnDate(day)) {
+            keepGapWithoutPenalty = false;
+            break;
+          }
+        }
+      }
+      const newStreak = user.lastActiveDate === yesterday
+        ? user.currentStreak + 1
+        : keepGapWithoutPenalty
+          ? user.currentStreak + 1
+          : 1;
+      db.prepare('UPDATE users SET currentStreak = ?, lastActiveDate = ? WHERE id = ?')
+        .run(newStreak, today, effectiveUserId);
+    }
+
+    void notifyAchievementUnlocksForUser(effectiveUserId);
+  }
+}
+
 // List tasks for a room
 router.get('/rooms/:roomId/tasks', (req: AuthRequest, res: Response) => {
   const vacation = getGlobalVacation();
@@ -50,7 +127,7 @@ router.get('/rooms/:roomId/tasks', (req: AuthRequest, res: Response) => {
         `SELECT tc.id as completionId, tc.taskId, tc.userId, u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
          FROM task_completions tc
          JOIN users u ON tc.userId = u.id
-         WHERE tc.taskId IN (${taskIds.map(() => '?').join(',')}) AND date(tc.completedAt) = date(?)`
+         WHERE tc.taskId IN (${taskIds.map(() => '?').join(',')}) AND tc.status = 'approved' AND date(tc.completedAt) = date(?)`
       ).all(...taskIds, now) as any[]
     : [];
 
@@ -102,7 +179,12 @@ router.get('/rooms/:roomId/tasks', (req: AuthRequest, res: Response) => {
       completedTodayBy: completedTodayByTask.get(t.id) || null,
       assignmentMode: mode,
       sharedCompletions: (mode === 'shared' || mode === 'custom') ? (sharedCompletionsByTask.get(t.id) || []) : undefined,
-      health: calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate),
+      health: (() => {
+        const taskVac = effectiveAssignedUserIds.length === 1
+          ? resolveVacation(vacation, getUserVacation(effectiveAssignedUserIds[0]))
+          : vacation;
+        return calculateHealth(t.lastCompletedAt, t.frequencyDays, taskVac.isVacation, taskVac.startDate);
+      })(),
     };
   });
 
@@ -297,7 +379,7 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
 
   // Block if effective user already completed this task today
   const alreadyDoneBySelf = db.prepare(
-    "SELECT id FROM task_completions WHERE taskId = ? AND userId = ? AND date(completedAt) = date(?)"
+    "SELECT id FROM task_completions WHERE taskId = ? AND userId = ? AND status IN ('approved', 'pending') AND date(completedAt) = date(?)"
   ).get(task.id, effectiveUserId, now);
   if (alreadyDoneBySelf) {
     return res.status(409).json({ error: 'already_done_today' });
@@ -306,7 +388,7 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
   if (task.assignmentMode !== 'shared' && task.assignmentMode !== 'custom') {
     // In 'first' mode: block if someone else already completed today
     const alreadyDoneByOther = db.prepare(
-      "SELECT id FROM task_completions WHERE taskId = ? AND userId != ? AND date(completedAt) = date(?)"
+      "SELECT id FROM task_completions WHERE taskId = ? AND userId != ? AND status IN ('approved', 'pending') AND date(completedAt) = date(?)"
     ).get(task.id, effectiveUserId, now);
     if (alreadyDoneByOther) {
       return res.status(409).json({ error: 'already_done_by_other' });
@@ -316,77 +398,102 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
   // Fetch assignees once — needed for coin splitting and lastCompletedAt logic
   const taskAssignees = db.prepare('SELECT userId, coinPercentage FROM task_assignees WHERE taskId = ?').all(task.id) as { userId: number; coinPercentage: number }[];
 
-  // Coin calculation based on assignment mode
-  const totalCoins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
+  // Coin calculation based on assignment mode (skip when gamification disabled)
+  const gamifRow = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  const gamificationOn = gamifRow ? gamifRow.value !== '0' : true;
+
   let coins: number;
-  if (task.assignmentMode === 'shared' && taskAssignees.length > 1) {
-    coins = Math.floor(totalCoins / taskAssignees.length);
-  } else if (task.assignmentMode === 'custom') {
-    const row = taskAssignees.find(a => a.userId === effectiveUserId);
-    coins = Math.floor(totalCoins * (row?.coinPercentage ?? 0) / 100);
+  if (!gamificationOn) {
+    coins = 0;
   } else {
-    coins = totalCoins;
-  }
-
-  // Record completion for the effective user
-  db.prepare(
-    'INSERT INTO task_completions (taskId, userId, completedAt, coinsEarned) VALUES (?, ?, ?, ?)'
-  ).run(task.id, effectiveUserId, now, coins);
-
-  // Update task lastCompletedAt based on assignment mode
-  if (task.assignmentMode === 'shared' || task.assignmentMode === 'custom') {
-    // In shared/custom mode: update lastCompletedAt only when ALL assignees have completed today
-    if (taskAssignees.length > 0) {
-      const doneCount = db.prepare(
-        `SELECT COUNT(*) as cnt FROM task_completions WHERE taskId = ? AND date(completedAt) = date(?)`
-      ).get(task.id, now) as { cnt: number };
-      if (doneCount.cnt >= taskAssignees.length) {
-        db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, req.params.id);
-      }
-      // Else: don't update lastCompletedAt yet
+    const totalCoins = getCoinsForEffort(task.effort, getCoinsByEffortConfig());
+    if (task.assignmentMode === 'shared' && taskAssignees.length > 1) {
+      coins = Math.floor(totalCoins / taskAssignees.length);
+    } else if (task.assignmentMode === 'custom') {
+      const row = taskAssignees.find(a => a.userId === effectiveUserId);
+      coins = Math.floor(totalCoins * (row?.coinPercentage ?? 0) / 100);
     } else {
-      db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, req.params.id);
+      coins = totalCoins;
     }
-  } else {
-    db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?').run(now, req.params.id);
   }
 
-  // Update effective user's coins
-  db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(coins, effectiveUserId);
+  const targetUser = db.prepare('SELECT role FROM users WHERE id = ?').get(effectiveUserId) as { role?: string } | undefined;
+  const strictNeedsApproval = isStrictModeEnabled() && targetUser?.role === 'child' && !isAdminOrMember;
 
-  // Update streak for effective user
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(effectiveUserId) as any;
-  const today = new Date().toISOString().slice(0, 10);
-  const streakVacation = getGlobalVacation();
-
-  if (!streakVacation.isVacation && user.lastActiveDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    let keepGapWithoutPenalty = false;
-    if (user.lastActiveDate && user.lastActiveDate < yesterday) {
-      keepGapWithoutPenalty = true;
-      const start = new Date(`${user.lastActiveDate}T00:00:00.000Z`);
-      const end = new Date(`${yesterday}T00:00:00.000Z`);
-      for (let d = new Date(start.getTime() + 86400000); d <= end; d = new Date(d.getTime() + 86400000)) {
-        const day = d.toISOString().slice(0, 10);
-        if (hadDueTaskOnDate(day)) {
-          keepGapWithoutPenalty = false;
-          break;
-        }
-      }
-    }
-    const newStreak = user.lastActiveDate === yesterday
-      ? user.currentStreak + 1
-      : keepGapWithoutPenalty
-        ? user.currentStreak + 1
-        : 1;
-    db.prepare('UPDATE users SET currentStreak = ?, lastActiveDate = ? WHERE id = ?')
-      .run(newStreak, today, effectiveUserId);
+  if (strictNeedsApproval) {
+    db.prepare(
+      "INSERT INTO task_completions (taskId, userId, completedAt, coinsEarned, status) VALUES (?, ?, ?, ?, 'pending')"
+    ).run(task.id, effectiveUserId, now, coins);
+    return res.json({ coinsEarned: 0, health: task.health, pendingApproval: true });
   }
 
-  // Fire-and-forget achievement unlock notifications.
-  void notifyAchievementUnlocksForUser(effectiveUserId);
+  applyApprovedCompletion(task, task.id, effectiveUserId, coins, now, gamificationOn);
+  res.json({ coinsEarned: coins, health: 100, pendingApproval: false });
+});
 
-  res.json({ coinsEarned: coins, health: 100 });
+router.get('/completions/pending', (req: AuthRequest, res: Response) => {
+  if (!ensureAdmin(req.userId)) {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const pending = db.prepare(`
+    SELECT tc.id, tc.taskId, tc.userId, tc.completedAt, tc.coinsEarned,
+           t.name AS taskName, t.translationKey, t.roomId, t.assignmentMode, t.effort,
+           r.name AS roomName, r.roomType,
+           u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
+    FROM task_completions tc
+    JOIN tasks t ON tc.taskId = t.id
+    JOIN rooms r ON t.roomId = r.id
+    JOIN users u ON tc.userId = u.id
+    WHERE tc.status = 'pending'
+    ORDER BY tc.completedAt DESC
+  `).all();
+
+  res.json({ pending });
+});
+
+router.post('/completions/:completionId/approve', (req: AuthRequest, res: Response) => {
+  if (!ensureAdmin(req.userId)) {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const completion = db.prepare(
+    `SELECT tc.id, tc.taskId, tc.userId, tc.completedAt, tc.coinsEarned, tc.status, t.assignmentMode
+     FROM task_completions tc
+     JOIN tasks t ON t.id = tc.taskId
+     WHERE tc.id = ?`
+  ).get(req.params.completionId) as any;
+
+  if (!completion) return res.status(404).json({ error: 'Completion not found' });
+  if (completion.status !== 'pending') return res.status(409).json({ error: 'completion_not_pending' });
+
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(completion.taskId) as any;
+  if (!task) return res.status(404).json({ error: 'Task not found' });
+
+  const gamifRowApprove = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  const gamifOnApprove = gamifRowApprove ? gamifRowApprove.value !== '0' : true;
+  applyApprovedCompletion(task, completion.taskId, completion.userId, completion.coinsEarned, completion.completedAt, gamifOnApprove, {
+    completionId: completion.id,
+    approvedByUserId: req.userId,
+    approvedAt: new Date().toISOString(),
+  });
+
+  res.json({ success: true });
+});
+
+router.delete('/completions/:completionId/reject', (req: AuthRequest, res: Response) => {
+  if (!ensureAdmin(req.userId)) {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const completion = db.prepare(
+    'SELECT id, status FROM task_completions WHERE id = ?'
+  ).get(req.params.completionId) as { id: number; status: string } | undefined;
+  if (!completion) return res.status(404).json({ error: 'Completion not found' });
+  if (completion.status !== 'pending') return res.status(409).json({ error: 'completion_not_pending' });
+
+  db.prepare('DELETE FROM task_completions WHERE id = ?').run(completion.id);
+  res.json({ success: true });
 });
 
 // Cancel (undo) a task completion — admin only
@@ -396,20 +503,21 @@ router.delete('/completions/:completionId', (req: AuthRequest, res: Response) =>
   }
 
   const completion = db.prepare(
-    'SELECT id, taskId, userId, coinsEarned FROM task_completions WHERE id = ?'
+    'SELECT id, taskId, userId, coinsEarned, status FROM task_completions WHERE id = ?'
   ).get(req.params.completionId) as any;
   if (!completion) return res.status(404).json({ error: 'Completion not found' });
 
-  // Deduct coins from user (min 0)
-  db.prepare('UPDATE users SET coins = MAX(0, coins - ?) WHERE id = ?')
-    .run(completion.coinsEarned, completion.userId);
+  if (completion.status === 'approved') {
+    db.prepare('UPDATE users SET coins = MAX(0, coins - ?) WHERE id = ?')
+      .run(completion.coinsEarned, completion.userId);
+  }
 
   // Delete the completion record
   db.prepare('DELETE FROM task_completions WHERE id = ?').run(completion.id);
 
   // Update task.lastCompletedAt to the previous completion's completedAt (or NULL if none)
   const prev = db.prepare(
-    'SELECT completedAt FROM task_completions WHERE taskId = ? ORDER BY completedAt DESC LIMIT 1'
+    "SELECT completedAt FROM task_completions WHERE taskId = ? AND status = 'approved' ORDER BY completedAt DESC LIMIT 1"
   ).get(completion.taskId) as any;
   db.prepare('UPDATE tasks SET lastCompletedAt = ? WHERE id = ?')
     .run(prev?.completedAt || null, completion.taskId);

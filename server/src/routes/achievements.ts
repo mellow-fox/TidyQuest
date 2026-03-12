@@ -3,7 +3,7 @@ import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { buildAchievements } from '../utils/achievements';
 import { calculateHealth } from '../utils/health';
-import { getGlobalVacation } from '../utils/adminHelpers';
+import { getGlobalVacation, getUserVacation, resolveVacation } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -11,9 +11,10 @@ router.use(authMiddleware);
 function getUserStats(userId: number) {
   const user = db.prepare('SELECT id, displayName, role, coins, currentStreak, avatarColor, avatarType, avatarPreset, avatarPhotoUrl FROM users WHERE id = ?').get(userId) as any;
   if (!user) return null;
-  const vacation = getGlobalVacation();
+  const globalVac = getGlobalVacation();
+  const vacation = resolveVacation(globalVac, getUserVacation(userId));
 
-  const completionsRow = db.prepare('SELECT COUNT(*) as count FROM task_completions WHERE userId = ?').get(userId) as { count: number };
+  const completionsRow = db.prepare("SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved'").get(userId) as { count: number };
 
   // Rooms with health >= 70 (considered "clean") — fetch all tasks in one query
   const rooms = db.prepare('SELECT * FROM rooms').all() as any[];
@@ -43,7 +44,7 @@ function getUserStats(userId: number) {
   monday.setUTCDate(now.getUTCDate() - dayOfWeek + 1);
   monday.setUTCHours(0, 0, 0, 0);
   const weeklyRow = db.prepare(
-    'SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND completedAt >= ?'
+    "SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved' AND completedAt >= ?"
   ).get(userId, monday.toISOString()) as { count: number };
 
   // Tasks completed on the most recent weekend (Sat+Sun)
@@ -57,13 +58,13 @@ function getUserStats(userId: number) {
   lastSun.setUTCDate(lastSat.getUTCDate() + 1);
   lastSun.setUTCHours(23, 59, 59, 999);
   const weekendRow = db.prepare(
-    `SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND completedAt >= ? AND completedAt <= ?`
+    `SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved' AND completedAt >= ? AND completedAt <= ?`
   ).get(userId, lastSat.toISOString(), lastSun.toISOString()) as { count: number };
 
   // Perfect weeks: weeks where user completed at least 1 task every day (Mon-Sun)
   // We count how many full weeks had all 7 days with at least one completion
   const allCompletions = db.prepare(
-    "SELECT date(completedAt) as day FROM task_completions WHERE userId = ? GROUP BY date(completedAt) ORDER BY day"
+    "SELECT date(completedAt) as day FROM task_completions WHERE userId = ? AND status = 'approved' GROUP BY date(completedAt) ORDER BY day"
   ).all(userId) as Array<{ day: string }>;
 
   const parseDayUTC = (day: string): Date => new Date(`${day}T00:00:00.000Z`);

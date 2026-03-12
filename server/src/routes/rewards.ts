@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
-import { isNotificationTypeEnabled, sendTelegramMessage } from '../utils/notifications';
+import { isNotificationTypeEnabled, sendNotification } from '../utils/notifications';
 import { ensureAdmin } from '../utils/adminHelpers';
 
 const router = Router();
@@ -134,6 +134,11 @@ router.delete('/:id', (req: AuthRequest, res: Response) => {
 });
 
 router.post('/:id/redeem', (req: AuthRequest, res: Response) => {
+  const gamifRow = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  if (gamifRow && gamifRow.value === '0') {
+    return res.status(403).json({ error: 'Gamification is disabled' });
+  }
+
   const id = parseInt(req.params.id as string, 10);
   const reward = db.prepare('SELECT id, title, costCoins, isActive FROM rewards WHERE id = ?').get(id) as any;
   if (!reward || !reward.isActive) return res.status(404).json({ error: 'Reward not available' });
@@ -155,7 +160,7 @@ router.post('/:id/redeem', (req: AuthRequest, res: Response) => {
   ).get(redemptionId);
 
   if (isNotificationTypeEnabled('rewardRequest')) {
-    void sendTelegramMessage(
+    void sendNotification(
       `🎁 Reward request: ${me.displayName} requested "${reward.title}" (${reward.costCoins} coins).`
     );
   }

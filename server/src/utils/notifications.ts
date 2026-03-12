@@ -123,14 +123,108 @@ export async function sendTelegramMessage(message: string, options: SendTelegram
   return result.ok;
 }
 
+/* ── ntfy ── */
+
+interface NtfySettings {
+  enabled: boolean;
+  serverUrl: string;
+  topic: string;
+  token: string;
+}
+
+interface SendNtfyMessageOptions {
+  ignoreEnabled?: boolean;
+  serverUrl?: string;
+  topic?: string;
+  token?: string;
+}
+
+interface NtfySendResult {
+  ok: boolean;
+  error?: string;
+}
+
+export function getNtfySettings(): NtfySettings {
+  return {
+    enabled: getSetting('ntfyEnabled') === '1',
+    serverUrl: getSetting('ntfyServerUrl') || 'https://ntfy.sh',
+    topic: getSetting('ntfyTopic'),
+    token: getSetting('ntfyToken'),
+  };
+}
+
+export async function sendNtfyMessageDetailed(message: string, options: SendNtfyMessageOptions = {}): Promise<NtfySendResult> {
+  const cfg = getNtfySettings();
+  const serverUrl = (options.serverUrl?.trim() || cfg.serverUrl).replace(/\/+$/, '');
+  const topic = options.topic?.trim() || cfg.topic;
+  const token = options.token?.trim() || cfg.token;
+  if (!topic) return { ok: false, error: 'ntfy topic is missing.' };
+  if (!cfg.enabled && !options.ignoreEnabled) return { ok: false, error: 'ntfy notifications are disabled.' };
+
+  // Validate URL to prevent SSRF
+  try {
+    const parsed = new URL(`${serverUrl}/${topic}`);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return { ok: false, error: 'ntfy server URL must use http or https.' };
+    }
+  } catch {
+    return { ok: false, error: 'Invalid ntfy server URL.' };
+  }
+
+  try {
+    const headers: Record<string, string> = { Title: 'TidyQuest' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${serverUrl}/${topic}`, {
+      method: 'POST',
+      headers,
+      body: message,
+    });
+    if (response.ok) return { ok: true };
+    const text = await response.text().catch(() => '');
+    return { ok: false, error: `ntfy returned ${response.status}.${text ? ` ${text}` : ''}`.trim() };
+  } catch {
+    return { ok: false, error: 'Could not reach ntfy server (network/connectivity issue).' };
+  }
+}
+
+export async function sendNtfyMessage(message: string, options: SendNtfyMessageOptions = {}): Promise<boolean> {
+  const result = await sendNtfyMessageDetailed(message, options);
+  return result.ok;
+}
+
+/* ── Unified sender ── */
+
+export async function sendNotification(message: string): Promise<{ telegram?: boolean; ntfy?: boolean }> {
+  const results: { telegram?: boolean; ntfy?: boolean } = {};
+  const telegramCfg = getTelegramSettings();
+  const ntfyCfg = getNtfySettings();
+
+  if (telegramCfg.enabled && telegramCfg.botToken && telegramCfg.chatId) {
+    results.telegram = await sendTelegramMessage(message);
+  }
+  if (ntfyCfg.enabled && ntfyCfg.topic) {
+    results.ntfy = await sendNtfyMessage(message);
+  }
+  return results;
+}
+
 let lastCheckedMinute: string | null = null;
+
+function isAnyProviderEnabled(): boolean {
+  const tg = getTelegramSettings();
+  const ntfy = getNtfySettings();
+  return (tg.enabled && !!tg.botToken && !!tg.chatId) || (ntfy.enabled && !!ntfy.topic);
+}
 
 export async function sendDueTaskNotificationsIfNeeded(
   now: Date = new Date(),
-  sendFn: (message: string) => Promise<boolean> = (message) => sendTelegramMessage(message),
+  sendFn: (message: string) => Promise<boolean> = async (message) => {
+    const r = await sendNotification(message);
+    return (r.telegram ?? false) || (r.ntfy ?? false);
+  },
 ): Promise<void> {
-  const cfg = getTelegramSettings();
-  if (!cfg.enabled || !cfg.botToken || !cfg.chatId) return;
+  if (!isAnyProviderEnabled()) return;
   if (!isNotificationTypeEnabled('taskDue')) return;
 
   const currentMinute = `${toLocalIsoDay(now)} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -138,7 +232,8 @@ export async function sendDueTaskNotificationsIfNeeded(
   lastCheckedMinute = currentMinute;
 
   const nowHm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  if (nowHm !== cfg.notificationTime) return;
+  const notificationTime = normalizeNotificationTime(getSetting('telegramNotificationTime'));
+  if (nowHm !== notificationTime) return;
 
   const today = toLocalIsoDay(now);
   const tasks = db.prepare(

@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { ensureAdmin } from '../utils/adminHelpers';
@@ -12,7 +13,7 @@ router.get('/export', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Admin only' });
   }
 
-  const users = db.prepare('SELECT id, username, displayName, passwordHash, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, isVacationMode, language, createdAt FROM users').all();
+  const users = db.prepare('SELECT id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, isVacationMode, vacationStartDate, vacationEndDate, language, createdAt FROM users').all();
   const rooms = db.prepare('SELECT * FROM rooms').all();
   const tasks = db.prepare('SELECT * FROM tasks').all();
   const taskAssignees = db.prepare('SELECT * FROM task_assignees').all();
@@ -23,7 +24,7 @@ router.get('/export', (req: AuthRequest, res: Response) => {
   const rewardRedemptions = db.prepare('SELECT * FROM reward_redemptions').all();
 
   res.setHeader('Content-Disposition', 'attachment; filename=tidyquest-backup.json');
-  res.json({ version: 5, exportedAt: new Date().toISOString(), users, rooms, tasks, taskAssignees, completions, settings, goals, rewards, rewardRedemptions });
+  res.json({ version: 6, exportedAt: new Date().toISOString(), users, rooms, tasks, taskAssignees, completions, settings, goals, rewards, rewardRedemptions });
 });
 
 // Import data from JSON
@@ -38,6 +39,9 @@ router.post('/import', (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Invalid backup format. Expected arrays: users, rooms, tasks, completions' });
   }
 
+  // Preserve the current admin's credentials so they can't be locked out
+  const currentAdmin = db.prepare('SELECT id, username, passwordHash FROM users WHERE id = ?').get(req.userId) as { id: number; username: string; passwordHash: string } | undefined;
+
   const importData = db.transaction(() => {
     // Clear existing data
     db.prepare('DELETE FROM task_completions').run();
@@ -49,15 +53,18 @@ router.post('/import', (req: AuthRequest, res: Response) => {
     db.prepare('DELETE FROM rooms').run();
     db.prepare('DELETE FROM users').run();
 
-    // Re-insert
+    // Re-insert users — passwordHash is NEVER accepted from import data
+    // Current admin keeps their password; all others get a random hash (must use password recovery)
     for (const u of users) {
+      const isCurrentAdmin = currentAdmin && (u.id === currentAdmin.id || u.username === currentAdmin.username);
+      const hash = isCurrentAdmin ? currentAdmin.passwordHash : bcrypt.hashSync(require('crypto').randomBytes(32).toString('hex'), 10);
       db.prepare(
-        'INSERT INTO users (id, username, displayName, passwordHash, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, isVacationMode, language, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO users (id, username, displayName, passwordHash, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, lastActiveDate, isVacationMode, vacationStartDate, vacationEndDate, language, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       ).run(
         u.id,
         u.username,
         u.displayName,
-        u.passwordHash || '',
+        hash,
         u.role || 'child',
         u.avatarColor,
         u.avatarType || 'letter',
@@ -70,6 +77,8 @@ router.post('/import', (req: AuthRequest, res: Response) => {
         u.goalEndAt || null,
         u.lastActiveDate,
         u.isVacationMode ? 1 : 0,
+        u.vacationStartDate || null,
+        u.vacationEndDate || null,
         u.language,
         u.createdAt
       );
@@ -120,8 +129,17 @@ router.post('/import', (req: AuthRequest, res: Response) => {
 
     for (const c of completions) {
       db.prepare(
-        'INSERT INTO task_completions (id, taskId, userId, completedAt, coinsEarned) VALUES (?, ?, ?, ?, ?)'
-      ).run(c.id, c.taskId, c.userId, c.completedAt, c.coinsEarned);
+        'INSERT INTO task_completions (id, taskId, userId, completedAt, coinsEarned, status, approvedByUserId, approvedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(
+        c.id,
+        c.taskId,
+        c.userId,
+        c.completedAt,
+        c.coinsEarned,
+        c.status || 'approved',
+        c.approvedByUserId ?? null,
+        c.approvedAt ?? null,
+      );
     }
 
     if (Array.isArray(settings)) {

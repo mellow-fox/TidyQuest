@@ -30,8 +30,8 @@ export function History({ language, isAdmin }: { language?: string; isAdmin?: bo
   };
 
   return (
-    <div className="page-enter" style={{ maxWidth: 750 }}>
-      <div className="tq-card" style={{ padding: 22 }}>
+    <div className="page-enter">
+      <div className="tq-card tq-card-padded">
         <div className="history-table-scroll">
           <div className="history-header" style={{
             display: 'grid', gridTemplateColumns: isAdmin ? '44px 1fr 120px 100px 80px 60px' : '44px 1fr 120px 100px 80px',
@@ -95,7 +95,7 @@ export function History({ language, isAdmin }: { language?: string; isAdmin?: bo
           })}
 
           {history.length === 0 && (
-            <div style={{ padding: 40, textAlign: 'center', color: '#B0A090', fontWeight: 600, fontSize: 14 }}>
+            <div className="tq-empty-state">
               {t('history.noActivity')}
             </div>
           )}
@@ -103,17 +103,17 @@ export function History({ language, isAdmin }: { language?: string; isAdmin?: bo
 
         {total > limit && (
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10, padding: '18px 0 4px' }}>
-            <button className="tq-btn tq-btn-secondary" disabled={offset === 0}
+            <button className="tq-btn tq-btn-secondary tq-btn-sm" disabled={offset === 0}
               onClick={() => setOffset(Math.max(0, offset - limit))}
-              style={{ padding: '8px 18px', fontSize: 12, opacity: offset === 0 ? 0.4 : 1 }}>
+              style={{ opacity: offset === 0 ? 0.4 : 1 }}>
               {t('history.previous')}
             </button>
             <span style={{ fontSize: 12, color: '#B0A090', fontWeight: 600, padding: '8px 0' }}>
               {offset + 1}-{Math.min(offset + limit, total)} {t('history.of')} {total}
             </span>
-            <button className="tq-btn tq-btn-secondary" disabled={offset + limit >= total}
+            <button className="tq-btn tq-btn-secondary tq-btn-sm" disabled={offset + limit >= total}
               onClick={() => setOffset(offset + limit)}
-              style={{ padding: '8px 18px', fontSize: 12, opacity: offset + limit >= total ? 0.4 : 1 }}>
+              style={{ opacity: offset + limit >= total ? 0.4 : 1 }}>
               {t('history.next')}
             </button>
           </div>

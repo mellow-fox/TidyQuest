@@ -9,7 +9,11 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   process.exit(1);
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tidyquest-secret-change-in-production';
+const JWT_SECRET: string = process.env.JWT_SECRET || (() => {
+  const secret = require('crypto').randomBytes(32).toString('hex');
+  console.warn('[WARN] JWT_SECRET not set — using random secret. Tokens will invalidate on restart. Set JWT_SECRET in your environment.');
+  return secret;
+})();
 
 export interface AuthRequest extends Request {
   userId?: number;

@@ -6,13 +6,13 @@ import bcrypt from 'bcryptjs';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { DEFAULT_COINS_BY_EFFORT, normalizeCoinsByEffortConfig } from '../utils/health';
-import { NotificationTypeSettings, sendTelegramMessageDetailed } from '../utils/notifications';
-import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation } from '../utils/adminHelpers';
+import { NotificationTypeSettings, sendTelegramMessageDetailed, sendNtfyMessageDetailed } from '../utils/notifications';
+import { ensureAdmin, getCoinsByEffortConfig, getGlobalVacation, isStrictModeEnabled } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
 
-const USER_SELECT = 'id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, isVacationMode, language, createdAt';
+const USER_SELECT = 'id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, isVacationMode, vacationStartDate, vacationEndDate, language, createdAt';
 
 function normalizeNotificationTime(value: string | undefined): string | null {
   if (value === undefined) return null;
@@ -76,7 +76,9 @@ if (!fs.existsSync(avatarsDir)) {
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, avatarsDir),
   filename: (req, _file, cb) => {
-    const ext = path.extname(_file.originalname) || '.jpg';
+    const ALLOWED_EXTS = ['.jpg', '.jpeg', '.png', '.webp'];
+    const rawExt = path.extname(_file.originalname).toLowerCase();
+    const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : '.jpg';
     const targetId = parseInt((req as any).params?.id as string, 10);
     const safeId = Number.isFinite(targetId) ? targetId : (req as AuthRequest).userId;
     cb(null, `user-${safeId}-${Date.now()}${ext}`);
@@ -345,6 +347,39 @@ router.put('/:id/goal', (req: AuthRequest, res: Response) => {
   res.json(updated);
 });
 
+router.put('/:id/vacation', (req: AuthRequest, res: Response) => {
+  const requester = db.prepare('SELECT id, role FROM users WHERE id = ?').get(req.userId) as any;
+  if (!requester || requester.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const targetId = parseInt(req.params.id as string);
+  const target = db.prepare('SELECT id, isVacationMode FROM users WHERE id = ?').get(targetId) as any;
+  if (!target) return res.status(404).json({ error: 'User not found' });
+
+  const { isVacationMode, vacationEndDate } = req.body as { isVacationMode?: boolean; vacationEndDate?: string | null };
+
+  // Handle vacation toggle
+  if (isVacationMode !== undefined) {
+    if (isVacationMode && !target.isVacationMode) {
+      db.prepare('UPDATE users SET isVacationMode = 1, vacationStartDate = ? WHERE id = ?')
+        .run(new Date().toISOString(), targetId);
+    } else if (!isVacationMode && target.isVacationMode) {
+      db.prepare('UPDATE users SET isVacationMode = 0, vacationStartDate = NULL, vacationEndDate = NULL WHERE id = ?')
+        .run(targetId);
+    }
+  }
+
+  // Handle vacation end date (independent update)
+  if (vacationEndDate !== undefined) {
+    db.prepare('UPDATE users SET vacationEndDate = ? WHERE id = ?')
+      .run(vacationEndDate || null, targetId);
+  }
+
+  const updated = db.prepare(`SELECT ${USER_SELECT} FROM users WHERE id = ?`).get(targetId);
+  res.json(updated);
+});
+
 router.get('/:id/goals', (req: AuthRequest, res: Response) => {
   const targetId = parseInt(req.params.id as string);
   const requester = db.prepare('SELECT id, role FROM users WHERE id = ?').get(req.userId) as any;
@@ -442,7 +477,11 @@ router.get('/notifications-config', (req: AuthRequest, res: Response) => {
   const chatId = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramChatId'").get() as any)?.value || '';
   const notificationTime = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramNotificationTime'").get() as any)?.value || '09:00';
   const notificationTypes = readNotificationTypesSetting();
-  res.json({ enabled, chatId, hasToken: !!botToken, notificationTime, notificationTypes });
+  const ntfyEnabled = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyEnabled'").get() as any)?.value === '1';
+  const ntfyServerUrl = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyServerUrl'").get() as any)?.value || 'https://ntfy.sh';
+  const ntfyTopic = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyTopic'").get() as any)?.value || '';
+  const ntfyToken = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyToken'").get() as any)?.value || '';
+  res.json({ enabled, chatId, hasToken: !!botToken, notificationTime, notificationTypes, ntfyEnabled, ntfyServerUrl, ntfyTopic, hasNtfyToken: !!ntfyToken });
 });
 
 router.put('/notifications-config', (req: AuthRequest, res: Response) => {
@@ -451,12 +490,16 @@ router.put('/notifications-config', (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'Admin only' });
   }
 
-  const { enabled, botToken, chatId, notificationTime, notificationTypes } = req.body as {
+  const { enabled, botToken, chatId, notificationTime, notificationTypes, ntfyEnabled, ntfyServerUrl, ntfyTopic, ntfyToken } = req.body as {
     enabled?: boolean;
     botToken?: string;
     chatId?: string;
     notificationTime?: string;
     notificationTypes?: NotificationTypeSettings;
+    ntfyEnabled?: boolean;
+    ntfyServerUrl?: string;
+    ntfyTopic?: string;
+    ntfyToken?: string;
   };
   const normalizedTime = normalizeNotificationTime(notificationTime);
   if (notificationTime !== undefined && !normalizedTime) {
@@ -486,6 +529,29 @@ router.put('/notifications-config', (req: AuthRequest, res: Response) => {
     db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'telegramNotificationTypes'")
       .run(JSON.stringify(normalizedTypes));
   }
+  if (ntfyEnabled !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyEnabled'")
+      .run(ntfyEnabled ? '1' : '0');
+  }
+  if (ntfyServerUrl !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyServerUrl'")
+      .run(ntfyServerUrl.trim() || 'https://ntfy.sh');
+  }
+  if (ntfyTopic !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyTopic'")
+      .run(ntfyTopic.trim());
+  }
+  if (ntfyToken !== undefined) {
+    db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'ntfyToken'")
+      .run(ntfyToken.trim());
+  }
+
+  // Validate ntfy: if enabled, topic is required
+  const ntfyEnabledNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyEnabled'").get() as any)?.value === '1';
+  const ntfyTopicNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyTopic'").get() as any)?.value || '';
+  if (ntfyEnabledNow && !ntfyTopicNow) {
+    return res.status(400).json({ error: 'To enable ntfy notifications, a topic is required.' });
+  }
 
   const enabledNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramEnabled'").get() as any)?.value === '1';
   const tokenNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramBotToken'").get() as any)?.value || '';
@@ -495,7 +561,9 @@ router.put('/notifications-config', (req: AuthRequest, res: Response) => {
   }
   const notificationTimeNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'telegramNotificationTime'").get() as any)?.value || '09:00';
   const notificationTypesNow = readNotificationTypesSetting();
-  res.json({ enabled: enabledNow, chatId: chatNow, hasToken: !!tokenNow, notificationTime: notificationTimeNow, notificationTypes: notificationTypesNow });
+  const ntfyServerUrlNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyServerUrl'").get() as any)?.value || 'https://ntfy.sh';
+  const ntfyTokenNow = (db.prepare("SELECT value FROM app_settings WHERE key = 'ntfyToken'").get() as any)?.value || '';
+  res.json({ enabled: enabledNow, chatId: chatNow, hasToken: !!tokenNow, notificationTime: notificationTimeNow, notificationTypes: notificationTypesNow, ntfyEnabled: ntfyEnabledNow, ntfyServerUrl: ntfyServerUrlNow, ntfyTopic: ntfyTopicNow, hasNtfyToken: !!ntfyTokenNow });
 });
 
 router.post('/notifications-test', async (req: AuthRequest, res: Response) => {
@@ -503,14 +571,21 @@ router.post('/notifications-test', async (req: AuthRequest, res: Response) => {
   if (!requester || requester.role !== 'admin') {
     return res.status(403).json({ error: 'Admin only' });
   }
-  const { botToken, chatId } = req.body as { botToken?: string; chatId?: string };
-  const result = await sendTelegramMessageDetailed(
-    `TidyQuest test notification from ${requester.displayName} (${new Date().toISOString()})`,
-    { ignoreEnabled: true, botToken, chatId }
-  );
-  if (!result.ok) {
-    return res.status(400).json({ error: result.error || 'Telegram notification failed.' });
+  const { botToken, chatId, provider, ntfyServerUrl, ntfyTopic, ntfyToken } = req.body as {
+    botToken?: string; chatId?: string; provider?: 'telegram' | 'ntfy';
+    ntfyServerUrl?: string; ntfyTopic?: string; ntfyToken?: string;
+  };
+  const testMessage = `TidyQuest test notification from ${requester.displayName} (${new Date().toISOString()})`;
+
+  if (provider === 'ntfy') {
+    const result = await sendNtfyMessageDetailed(testMessage, { ignoreEnabled: true, serverUrl: ntfyServerUrl, topic: ntfyTopic, token: ntfyToken });
+    if (!result.ok) return res.status(400).json({ error: result.error || 'ntfy notification failed.' });
+    return res.json({ success: true });
   }
+
+  // Default: Telegram
+  const result = await sendTelegramMessageDetailed(testMessage, { ignoreEnabled: true, botToken, chatId });
+  if (!result.ok) return res.status(400).json({ error: result.error || 'Telegram notification failed.' });
   res.json({ success: true });
 });
 
@@ -588,6 +663,45 @@ router.put('/vacation-config', (req: AuthRequest, res: Response) => {
 
   const v = getGlobalVacation();
   res.json({ vacationMode: v.isVacation, vacationStartDate: v.startDate, vacationEndDate: v.endDate });
+});
+
+router.get('/strict-mode-config', (req: AuthRequest, res: Response) => {
+  if (!ensureAdmin(req.userId)) return res.status(403).json({ error: 'Admin only' });
+  res.json({ strictMode: isStrictModeEnabled() });
+});
+
+router.put('/strict-mode-config', (req: AuthRequest, res: Response) => {
+  if (!ensureAdmin(req.userId)) return res.status(403).json({ error: 'Admin only' });
+  const { strictMode } = req.body as { strictMode?: boolean };
+  if (typeof strictMode !== 'boolean') {
+    return res.status(400).json({ error: 'strictMode must be a boolean' });
+  }
+  db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'strictMode'")
+    .run(strictMode ? '1' : '0');
+  res.json({ strictMode });
+});
+
+router.get('/gamification-config', authMiddleware, (_req: AuthRequest, res: Response) => {
+  const row = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  const gamificationEnabled = row ? row.value !== '0' : true;
+  res.json({ gamificationEnabled });
+});
+
+router.put('/gamification-config', authMiddleware, (req: AuthRequest, res: Response) => {
+  const requestingUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId) as { role: string } | undefined;
+  if (!requestingUser || requestingUser.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+
+  const { gamificationEnabled } = req.body;
+  if (typeof gamificationEnabled !== 'boolean') {
+    return res.status(400).json({ error: 'gamificationEnabled must be a boolean' });
+  }
+
+  db.prepare("UPDATE app_settings SET value = ?, updatedAt = datetime('now') WHERE key = 'gamificationEnabled'")
+    .run(gamificationEnabled ? '1' : '0');
+
+  res.json({ gamificationEnabled });
 });
 
 router.get('/registration-config', authMiddleware, (req: AuthRequest, res: Response) => {

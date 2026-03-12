@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import db from '../database';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { calculateHealth } from '../utils/health';
-import { getGlobalVacation } from '../utils/adminHelpers';
+import { getGlobalVacation, getUserVacation, resolveVacation } from '../utils/adminHelpers';
 
 const router = Router();
 router.use(authMiddleware);
@@ -30,7 +30,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     `SELECT tc.taskId, tc.userId, u.displayName, u.avatarColor, u.avatarType, u.avatarPreset, u.avatarPhotoUrl
      FROM task_completions tc
      JOIN users u ON tc.userId = u.id
-     WHERE date(tc.completedAt) = date(?)`
+     WHERE tc.status = 'approved' AND date(tc.completedAt) = date(?)`
   ).all(nowIso) as any[];
   const completedTodayByTask = new Map(todayCompletions.map((c: any) => [c.taskId, {
     userId: c.userId, displayName: c.displayName, avatarColor: c.avatarColor,
@@ -59,13 +59,19 @@ router.get('/', (req: AuthRequest, res: Response) => {
   const roomsWithHealth = rooms.map((room) => {
     const tasks = tasksByRoom.get(room.id) || [];
     const tasksWithHealth = tasks.map((t) => {
-      const health = calculateHealth(t.lastCompletedAt, t.frequencyDays, vacation.isVacation, vacation.startDate);
+      const taskAssigneesForTask = assigneesByTask.get(t.id) || [];
+      const effectiveIds = room.assignedUserId
+        ? [room.assignedUserId]
+        : taskAssigneesForTask.map((a: any) => a.userId);
+      const taskVac = effectiveIds.length === 1
+        ? resolveVacation(vacation, getUserVacation(effectiveIds[0]))
+        : vacation;
+      const health = calculateHealth(t.lastCompletedAt, t.frequencyDays, taskVac.isVacation, taskVac.startDate);
       const safeFreq = Math.max(1 / 24, Number(t.frequencyDays) || 7);
       const dueDateTs = t.lastCompletedAt
         ? new Date(t.lastCompletedAt).getTime() + safeFreq * 86400000
         : nowTs;
       const dueInDays = Math.ceil((dueDateTs - nowTs) / 86400000);
-      const taskAssigneesForTask = assigneesByTask.get(t.id) || [];
       const taskWithHealth = {
         ...t,
         isSeasonal: !!t.isSeasonal,
@@ -129,6 +135,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     JOIN tasks t ON tc.taskId = t.id
     JOIN rooms r ON t.roomId = r.id
     JOIN users u ON tc.userId = u.id
+    WHERE tc.status = 'approved'
     ORDER BY tc.completedAt DESC
     LIMIT 5
   `).all();
@@ -138,7 +145,7 @@ router.get('/', (req: AuthRequest, res: Response) => {
     const from = targetUser.goalStartAt || '1970-01-01T00:00:00.000Z';
     const to = targetUser.goalEndAt || '9999-12-31T23:59:59.999Z';
     const row = db.prepare(
-      'SELECT COALESCE(SUM(coinsEarned), 0) as total FROM task_completions WHERE userId = ? AND completedAt >= ? AND completedAt <= ?'
+      "SELECT COALESCE(SUM(coinsEarned), 0) as total FROM task_completions WHERE userId = ? AND status = 'approved' AND completedAt >= ? AND completedAt <= ?"
     ).get(targetUser.id, from, to) as { total: number };
     return row?.total || 0;
   }

@@ -1,17 +1,18 @@
 import db from '../database';
 import { buildAchievements } from './achievements';
-import { isNotificationTypeEnabled, sendTelegramMessage } from './notifications';
+import { isNotificationTypeEnabled, sendNotification } from './notifications';
 import { calculateHealth } from './health';
-import { getGlobalVacation } from './adminHelpers';
+import { getGlobalVacation, getUserVacation, resolveVacation } from './adminHelpers';
 
 function getUserAchievementStats(userId: number) {
   const user = db.prepare(
     'SELECT id, displayName, coins, currentStreak FROM users WHERE id = ?'
   ).get(userId) as any;
   if (!user) return null;
-  const vacation = getGlobalVacation();
+  const globalVac = getGlobalVacation();
+  const vacation = resolveVacation(globalVac, getUserVacation(userId));
 
-  const completionsRow = db.prepare('SELECT COUNT(*) as count FROM task_completions WHERE userId = ?').get(userId) as { count: number };
+  const completionsRow = db.prepare("SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved'").get(userId) as { count: number };
 
   const rooms = db.prepare('SELECT id FROM rooms').all() as Array<{ id: number }>;
   let roomsClean = 0;
@@ -38,7 +39,7 @@ function getUserAchievementStats(userId: number) {
   monday.setUTCDate(now.getUTCDate() - dayOfWeek + 1);
   monday.setUTCHours(0, 0, 0, 0);
   const weeklyRow = db.prepare(
-    'SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND completedAt >= ?'
+    "SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved' AND completedAt >= ?"
   ).get(userId, monday.toISOString()) as { count: number };
 
   // Tasks completed on the most recent weekend (Sat+Sun)
@@ -51,11 +52,11 @@ function getUserAchievementStats(userId: number) {
   lastSun.setUTCDate(lastSat.getUTCDate() + 1);
   lastSun.setUTCHours(23, 59, 59, 999);
   const weekendRow = db.prepare(
-    'SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND completedAt >= ? AND completedAt <= ?'
+    "SELECT COUNT(*) as count FROM task_completions WHERE userId = ? AND status = 'approved' AND completedAt >= ? AND completedAt <= ?"
   ).get(userId, lastSat.toISOString(), lastSun.toISOString()) as { count: number };
 
   const allCompletions = db.prepare(
-    "SELECT date(completedAt) as day FROM task_completions WHERE userId = ? GROUP BY date(completedAt) ORDER BY day"
+    "SELECT date(completedAt) as day FROM task_completions WHERE userId = ? AND status = 'approved' GROUP BY date(completedAt) ORDER BY day"
   ).all(userId) as Array<{ day: string }>;
 
   const parseDayUTC = (day: string): Date => new Date(`${day}T00:00:00.000Z`);
@@ -106,6 +107,8 @@ function getUserAchievementStats(userId: number) {
 }
 
 export async function notifyAchievementUnlocksForUser(userId: number): Promise<void> {
+  const gamifRow = db.prepare("SELECT value FROM app_settings WHERE key = 'gamificationEnabled'").get() as { value: string } | undefined;
+  if (gamifRow && gamifRow.value === '0') return;
   if (!isNotificationTypeEnabled('achievementUnlocked')) return;
   const stats = getUserAchievementStats(userId);
   if (!stats) return;
@@ -117,7 +120,7 @@ export async function notifyAchievementUnlocksForUser(userId: number): Promise<v
     ).run(userId, ach.id);
     if (inserted.changes < 1) continue;
 
-    await sendTelegramMessage(
+    await sendNotification(
       `🏆 ${stats.userDisplayName} unlocked an achievement: ${ach.id}`
     );
   }

@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import { suggestTaskIcon } from './utils/taskIcons';
 
 const DB_PATH = path.join(__dirname, '..', '..', 'data', 'tidyquest.db');
@@ -58,8 +59,12 @@ export function initDatabase() {
       userId INTEGER NOT NULL,
       completedAt TEXT NOT NULL DEFAULT (datetime('now')),
       coinsEarned INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'approved',
+      approvedByUserId INTEGER,
+      approvedAt TEXT,
       FOREIGN KEY (taskId) REFERENCES tasks(id) ON DELETE CASCADE,
-      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (approvedByUserId) REFERENCES users(id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS task_due_notifications (
@@ -159,6 +164,10 @@ export function initDatabase() {
     `ALTER TABLE tasks ADD COLUMN assignedUserId INTEGER REFERENCES users(id) ON DELETE SET NULL`,
     `ALTER TABLE tasks ADD COLUMN assignmentMode TEXT NOT NULL DEFAULT 'first'`,
     `ALTER TABLE task_assignees ADD COLUMN coinPercentage INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE task_completions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'`,
+    `ALTER TABLE task_completions ADD COLUMN approvedByUserId INTEGER REFERENCES users(id) ON DELETE SET NULL`,
+    `ALTER TABLE task_completions ADD COLUMN approvedAt TEXT`,
+    `ALTER TABLE users ADD COLUMN vacationEndDate TEXT`,
   ];
 
   for (const sql of migrations) {
@@ -171,6 +180,8 @@ export function initDatabase() {
       }
     }
   }
+
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_task_completions_status ON task_completions(status);`);
 
   // One-time migration: populate task_assignees from legacy tasks.assignedUserId
   const migratedAssignees = db.prepare("SELECT value FROM app_settings WHERE key = 'taskAssigneesMigrated_v1'").get() as any;
@@ -344,11 +355,25 @@ export function initDatabase() {
     "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('telegramNotificationTypes', ?)"
   ).run(JSON.stringify({ taskDue: true, rewardRequest: true, achievementUnlocked: true }));
   db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyEnabled', '0')"
+  ).run();
+  db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyServerUrl', 'https://ntfy.sh')"
+  ).run();
+  db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyTopic', '')"
+  ).run();
+  db.prepare(
+    "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('ntfyToken', '')"
+  ).run();
+  db.prepare(
     "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('registrationEnabled', '1')"
   ).run();
+  db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('gamificationEnabled', '1')").run();
   db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('vacationMode', '0')").run();
   db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('vacationStartDate', '')").run();
   db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('vacationEndDate', '')").run();
+  db.prepare("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('strictMode', '0')").run();
 
   const rewardCount = (db.prepare('SELECT COUNT(*) as count FROM rewards').get() as { count: number }).count;
   if (rewardCount === 0) {
@@ -378,6 +403,19 @@ export function initDatabase() {
     if (firstUser) {
       db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(firstUser.id);
     }
+  }
+
+  // Emergency admin password recovery via environment variable
+  const resetPassword = process.env.ADMIN_RESET_PASSWORD;
+  if (resetPassword) {
+    const admin = db.prepare("SELECT id, username FROM users WHERE role = 'admin' ORDER BY id ASC LIMIT 1").get() as { id: number; username: string } | undefined;
+    if (admin) {
+      const hash = bcrypt.hashSync(resetPassword, 10);
+      db.prepare('UPDATE users SET passwordHash = ? WHERE id = ?').run(hash, admin.id);
+      console.log(`[RECOVERY] Password reset for admin "${admin.username}". Remove ADMIN_RESET_PASSWORD from your environment now.`);
+    }
+    // Clear from process memory to prevent re-use on hot-reload and reduce exposure
+    delete process.env.ADMIN_RESET_PASSWORD;
   }
 }
 

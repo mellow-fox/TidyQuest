@@ -18,6 +18,8 @@ COPY server/package*.json ./server/
 RUN cd server && npm ci --omit=dev
 COPY --from=server-build /app/server/dist ./server/dist
 COPY --from=frontend-build /app/client/dist ./client/dist
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chown -R node:node /app
+
+USER node
 EXPOSE 3000
 CMD ["node", "server/dist/index.js"]
