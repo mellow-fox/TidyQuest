@@ -72,6 +72,8 @@ This beta release includes 9 new features, a complete UI redesign, security hard
 - **#28**: Task assignment label correctly says "Assign task" instead of "Assign room"
 - **#34**: Dates use browser locale for formatting (DD/MM/YYYY or MM/DD/YYYY based on user's OS)
 - **#36**: Deleting a task now refreshes dashboard data (no more stale values)
+- **#23**: Task completion now enforces frequency cooldown — tasks can no longer be completed again before they are due (server-side 409 + client-side button disabled with next-due date)
+- **#31**: All 44+ hardcoded hex colors across 13 component files replaced with CSS custom properties — night theme now has proper contrast throughout (status badges, health badges, icons, forms, history, rewards)
 - **#37**: Old avatar files are deleted from disk when uploading a new one
 - **Docker**: Fixed `SQLITE_CANTOPEN` / `SQLITE_READONLY` crash on first run with volume mounts
 
@@ -126,3 +128,6 @@ None. This release is backward-compatible with v0.3.0 data.
 - [ ] Rate limiting blocks after 5 failed login attempts
 - [ ] Avatar upload shows error on oversized files
 - [ ] Date format matches browser/OS locale
+- [ ] Tasks with health > 0 show next-due date instead of Done button
+- [ ] Completing a not-yet-due task via API returns 409
+- [ ] Night theme has readable contrast on all pages (login, history, rewards, rooms, settings)

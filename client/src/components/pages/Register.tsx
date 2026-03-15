@@ -43,20 +43,20 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backgroundColor: '#FFF9F2',
+      backgroundColor: 'var(--warm-bg)',
     }}>
       <div className="tq-card auth-card" style={{ padding: 40, width: 400, maxWidth: 'calc(100vw - 24px)' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
             width: 56, height: 56, borderRadius: 18, margin: '0 auto 14px',
-            background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)',
-            border: '1.5px solid #FDBA74',
+            background: 'var(--warm-streak-bg)',
+            border: '1.5px solid var(--warm-streak-border)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <SparkleIcon />
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#3D2F1E', margin: 0 }}>{t('auth.welcome')}</h1>
-          <p style={{ fontSize: 12, color: '#B0A090', fontWeight: 600, marginTop: 4 }}>{t('auth.createYourAccount')}</p>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--warm-text)', margin: 0 }}>{t('auth.welcome')}</h1>
+          <p style={{ fontSize: 12, color: 'var(--warm-text-light)', fontWeight: 600, marginTop: 4 }}>{t('auth.createYourAccount')}</p>
           <select
             value={authLanguage}
             onChange={(e) => {
@@ -65,8 +65,8 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
               localStorage.setItem('tidyquest_auth_lang', v);
             }}
             style={{
-              marginTop: 10, padding: '6px 10px', borderRadius: 10, border: '1.5px solid #F0E6D9',
-              fontSize: 12, fontFamily: 'Nunito', fontWeight: 700, color: '#6B5B4A', backgroundColor: '#FFFBF5',
+              marginTop: 10, padding: '6px 10px', borderRadius: 10, border: '1.5px solid var(--warm-border)',
+              fontSize: 12, fontFamily: 'Nunito', fontWeight: 700, color: 'var(--warm-text-secondary)', backgroundColor: 'var(--warm-bg-subtle)',
             }}
           >
             <option value="en">English</option>
@@ -80,18 +80,18 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 14 }}>
             <label className="tq-label" style={{ textTransform: 'none' }}>{t('auth.displayName')}</label>
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="tq-input" style={{ backgroundColor: '#FFFBF5' }} placeholder={t('auth.displayNamePlaceholder')} />
+            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="tq-input" style={{ backgroundColor: 'var(--warm-bg-subtle)' }} placeholder={t('auth.displayNamePlaceholder')} />
           </div>
           <div style={{ marginBottom: 14 }}>
             <label className="tq-label" style={{ textTransform: 'none' }}>{t('auth.username')}</label>
-            <input value={username} onChange={(e) => setUsername(e.target.value)} className="tq-input" style={{ backgroundColor: '#FFFBF5' }} placeholder={t('auth.usernamePlaceholder')} />
+            <input value={username} onChange={(e) => setUsername(e.target.value)} className="tq-input" style={{ backgroundColor: 'var(--warm-bg-subtle)' }} placeholder={t('auth.usernamePlaceholder')} />
           </div>
           <div style={{ marginBottom: 14 }}>
             <label className="tq-label" style={{ textTransform: 'none' }}>{t('auth.password')}</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="tq-input" style={{ backgroundColor: '#FFFBF5' }} placeholder={t('auth.passwordMinChars')} />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="tq-input" style={{ backgroundColor: 'var(--warm-bg-subtle)' }} placeholder={t('auth.passwordMinChars')} />
           </div>
 
-          {error && <div style={{ fontSize: 12, color: '#E25A5A', fontWeight: 700, marginBottom: 14, textAlign: 'center' }}>{error}</div>}
+          {error && <div style={{ fontSize: 12, color: 'var(--warm-badge-text)', fontWeight: 700, marginBottom: 14, textAlign: 'center' }}>{error}</div>}
 
           <button type="submit" className="tq-btn tq-btn-primary tq-btn-lg"
             disabled={loading}
@@ -103,7 +103,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
         <div style={{ textAlign: 'center', marginTop: 18 }}>
           <button onClick={onSwitchToLogin}
             style={{
-              background: 'none', border: 'none', color: '#F97316', fontSize: 13,
+              background: 'none', border: 'none', color: 'var(--warm-accent)', fontSize: 13,
               fontWeight: 700, cursor: 'pointer', fontFamily: 'Nunito',
             }}>
             {t('auth.alreadyHaveAccount')}

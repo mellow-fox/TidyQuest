@@ -1,9 +1,9 @@
 export function getHealthColor(h: number): string {
-  return h >= 70 ? '#5CB85C' : h >= 40 ? '#E8A838' : '#E25A5A';
+  return h >= 70 ? 'var(--health-green)' : h >= 40 ? 'var(--health-yellow)' : 'var(--health-red)';
 }
 
 export function getHealthBg(h: number): string {
-  return h >= 70 ? '#EDF7ED' : h >= 40 ? '#FFF8EC' : '#FDECEC';
+  return h >= 70 ? 'var(--health-green-bg)' : h >= 40 ? 'var(--health-yellow-bg)' : 'var(--health-red-bg)';
 }
 
 export function getHealthLabel(h: number): string {

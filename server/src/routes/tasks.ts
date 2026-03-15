@@ -395,6 +395,19 @@ router.post('/tasks/:id/complete', (req: AuthRequest, res: Response) => {
     }
   }
 
+  // Block if frequency cooldown hasn't elapsed (task not yet due)
+  if (task.lastCompletedAt) {
+    const globalVac = getGlobalVacation();
+    const taskAssigneesForVac = db.prepare('SELECT userId FROM task_assignees WHERE taskId = ?').all(task.id) as { userId: number }[];
+    const taskVac = taskAssigneesForVac.length === 1
+      ? resolveVacation(globalVac, getUserVacation(taskAssigneesForVac[0].userId))
+      : globalVac;
+    const currentHealth = calculateHealth(task.lastCompletedAt, task.frequencyDays, taskVac.isVacation, taskVac.startDate);
+    if (currentHealth > 0) {
+      return res.status(409).json({ error: 'not_yet_due', health: currentHealth });
+    }
+  }
+
   // Fetch assignees once — needed for coin splitting and lastCompletedAt logic
   const taskAssignees = db.prepare('SELECT userId, coinPercentage FROM task_assignees WHERE taskId = ?').all(task.id) as { userId: number; coinPercentage: number }[];
 

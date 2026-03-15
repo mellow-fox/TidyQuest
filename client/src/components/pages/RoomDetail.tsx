@@ -38,9 +38,9 @@ function formatFreq(days: number, t: (key: string) => string): string {
 }
 
 function healthColor(value: number): string {
-  if (value >= 70) return '#22C55E';
-  if (value >= 40) return '#F59E0B';
-  return '#EF4444';
+  if (value >= 70) return 'var(--health-green)';
+  if (value >= 40) return 'var(--health-yellow)';
+  return 'var(--health-red)';
 }
 
 function getNextDueDate(lastCompletedAt: string | null, frequencyDays: number): Date {
@@ -55,13 +55,13 @@ function formatNextDue(lastCompletedAt: string | null, frequencyDays: number, t:
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dueStart = new Date(nextDue.getFullYear(), nextDue.getMonth(), nextDue.getDate());
   const diffDays = Math.round((dueStart.getTime() - todayStart.getTime()) / (24 * 60 * 60 * 1000));
-  if (diffDays < 0) return { text: t('roomDetail.overdue'), color: '#EF4444' };
-  if (diffDays === 0) return { text: t('roomDetail.today'), color: '#F59E0B' };
-  if (diffDays === 1) return { text: t('roomDetail.tomorrow'), color: '#F59E0B' };
+  if (diffDays < 0) return { text: t('roomDetail.overdue'), color: 'var(--health-red)' };
+  if (diffDays === 0) return { text: t('roomDetail.today'), color: 'var(--health-yellow)' };
+  if (diffDays === 1) return { text: t('roomDetail.tomorrow'), color: 'var(--health-yellow)' };
   const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
   const locale = localeMap[language || 'en'] || 'en-US';
   const text = nextDue.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
-  return { text, color: diffDays <= 7 ? '#F59E0B' : '#22C55E' };
+  return { text, color: diffDays <= 7 ? 'var(--health-yellow)' : 'var(--health-green)' };
 }
 
 type SortKey = 'name' | 'health' | 'effort' | 'frequency' | 'coins' | 'assigned' | 'dueDate';
@@ -268,6 +268,12 @@ export function RoomDetail({ room, language, isAdmin, currentUserId, currentUser
           return { disabled: true, label: t('app.notAssigned') };
         }
       }
+    }
+
+    // Block if task frequency cooldown hasn't elapsed (health > 0 means not yet due)
+    if (task.health > 0 && task.lastCompletedAt) {
+      const { text } = formatNextDue(task.lastCompletedAt, task.frequencyDays, t, language);
+      return { disabled: true, label: text };
     }
 
     if (task.assignmentMode === 'shared' || task.assignmentMode === 'custom') {

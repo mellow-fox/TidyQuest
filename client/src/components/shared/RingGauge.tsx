@@ -25,7 +25,7 @@ const RingGauge: React.FC<RingGaugeProps> = ({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="#F5EDE3"
+          stroke="var(--warm-border-subtle)"
           strokeWidth={strokeWidth}
         />
         <circle
@@ -67,7 +67,7 @@ const RingGauge: React.FC<RingGaugeProps> = ({
         <div
           style={{
             fontSize: 11,
-            color: '#B0A090',
+            color: 'var(--warm-text-light)',
             fontWeight: 600,
             marginTop: 2,
           }}
