@@ -32,6 +32,7 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState('');
+  const [uploadMsg, setUploadMsg] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
@@ -55,8 +56,9 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadMsg('');
     if (file.size > 2 * 1024 * 1024) {
-      setPasswordMsg(t('profile.fileTooLarge') || 'File too large (max 2 MB)');
+      setUploadMsg(t('profile.fileTooLarge'));
       return;
     }
     setSaving(true);
@@ -64,9 +66,10 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
       const result = await api.uploadAvatar(user.id, file);
       setAvatarType('photo');
       setAvatarPhotoUrl(result.avatarPhotoUrl);
+      setUploadMsg('');
       onSave();
     } catch (err: any) {
-      setPasswordMsg(err?.message || t('profile.uploadFailed') || 'Upload failed');
+      setUploadMsg(err?.message || t('profile.uploadFailed'));
     } finally {
       setSaving(false);
     }
@@ -209,9 +212,18 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
               >
                 {t('profile.uploadPhoto')}
               </button>
-              {avatarPhotoUrl && (
-                <div style={{ marginTop: 8, fontSize: 11, color: '#B0A090', fontWeight: 600 }}>
-                  Photo uploaded
+              {avatarPhotoUrl && !uploadMsg && (
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warm-text-muted)', fontWeight: 600 }}>
+                  {t('profile.photoUploaded')}
+                </div>
+              )}
+              {uploadMsg && (
+                <div style={{
+                  marginTop: 10, padding: '8px 14px', borderRadius: 10,
+                  backgroundColor: 'var(--warm-badge-bg)', color: 'var(--warm-badge-text)',
+                  fontSize: 12, fontWeight: 700, textAlign: 'center',
+                }}>
+                  {uploadMsg}
                 </div>
               )}
             </div>
