@@ -1,8 +1,8 @@
 # TidyQuest v0.4.0-beta Release Notes
 
-> **Branch:** `release/beta` | **Date:** 2026-03-12
+> **Branch:** `release/beta` | **Date:** 2026-03-15
 
-This beta release includes 9 new features, a complete UI redesign, and security hardening. It merges work from 8 feature branches into a unified release for testing.
+This beta release includes 9 new features, a complete UI redesign, security hardening, and community bug fixes. It merges work from 8 feature branches into a unified release for testing.
 
 ---
 
@@ -48,11 +48,13 @@ This beta release includes 9 new features, a complete UI redesign, and security 
 
 ### Docker Security
 - Container now runs as non-root user (`node`) by default
+- Entrypoint script auto-fixes volume permissions on first run
 
 ---
 
 ## Security Fixes
 
+- **Multer** upgraded to 2.1.1 (fixes 3 high-severity DoS vulnerabilities)
 - **Data export** no longer includes password hashes
 - **Data import** never accepts password hashes from imported data; current admin credentials are always preserved
 - **Rate limiting** on `/login` and `/register` endpoints (5 attempts / 15 min)
@@ -61,6 +63,17 @@ This beta release includes 9 new features, a complete UI redesign, and security 
 - **Avatar uploads** restricted to `.jpg`, `.jpeg`, `.png`, `.webp` extensions only
 - **Strict mode** pending validations guard now correctly checks `strictModeEnabled` (was `gamificationEnabled`)
 - **Admin complete-task** loop wrapped in try/catch to prevent partial failures
+
+---
+
+## Bug Fixes
+
+- **#25**: Avatar upload now shows error feedback with proper i18n messages
+- **#28**: Task assignment label correctly says "Assign task" instead of "Assign room"
+- **#34**: Dates use browser locale for formatting (DD/MM/YYYY or MM/DD/YYYY based on user's OS)
+- **#36**: Deleting a task now refreshes dashboard data (no more stale values)
+- **#37**: Old avatar files are deleted from disk when uploading a new one
+- **Docker**: Fixed `SQLITE_CANTOPEN` / `SQLITE_READONLY` crash on first run with volume mounts
 
 ---
 
@@ -111,3 +124,5 @@ None. This release is backward-compatible with v0.3.0 data.
 - [ ] Design is responsive on mobile/tablet/desktop
 - [ ] Data export does not contain password hashes
 - [ ] Rate limiting blocks after 5 failed login attempts
+- [ ] Avatar upload shows error on oversized files
+- [ ] Date format matches browser/OS locale
