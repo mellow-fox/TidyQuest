@@ -461,6 +461,7 @@
       "deleteRoomConfirm": "Eliminare \"{room}\" e tutte le sue attività? Questa azione è irreversibile.",
       "assignedTo": "Assegnato a {name}",
       "assignRoom": "Assegna stanza",
+      "assignTask": "Assegna compito",
       "noAssignment": "Nessuna assegnazione (tutti)",
       "specificUsers": "Utenti specifici",
       "noRoomsYet": "Nessuna stanza",

@@ -461,6 +461,7 @@
       "deleteRoomConfirm": "Supprimer \"{room}\" et toutes ses tâches ? Cette action est définitive.",
       "assignedTo": "Attribuée à {name}",
       "assignRoom": "Attribuer la pièce",
+      "assignTask": "Attribuer la tâche",
       "noAssignment": "Pas d'attribution (tout le monde)",
       "specificUsers": "Utilisateurs spécifiques",
       "noRoomsYet": "Aucune pièce pour le moment",

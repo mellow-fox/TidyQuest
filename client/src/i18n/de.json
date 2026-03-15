@@ -461,6 +461,7 @@
       "deleteRoomConfirm": "\"{room}\" und alle Aufgaben löschen? Dies kann nicht rückgängig gemacht werden.",
       "assignedTo": "Zugewiesen an {name}",
       "assignRoom": "Raum zuweisen",
+      "assignTask": "Aufgabe zuweisen",
       "noAssignment": "Keine Zuweisung (alle)",
       "specificUsers": "Bestimmte Benutzer",
       "noRoomsYet": "Noch keine Räume",

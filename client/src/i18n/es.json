@@ -461,6 +461,7 @@
       "deleteRoomConfirm": "¿Eliminar \"{room}\" y todas sus tareas? Esta acción no se puede deshacer.",
       "assignedTo": "Asignado a {name}",
       "assignRoom": "Asignar habitación",
+      "assignTask": "Asignar tarea",
       "noAssignment": "Sin asignación (todos)",
       "specificUsers": "Usuarios específicos",
       "noRoomsYet": "Aún no hay habitaciones",

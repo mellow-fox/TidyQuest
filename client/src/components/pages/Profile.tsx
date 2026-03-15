@@ -55,12 +55,18 @@ export function Profile({ user, onSave, onLogout }: ProfileProps) {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setPasswordMsg(t('profile.fileTooLarge') || 'File too large (max 2 MB)');
+      return;
+    }
     setSaving(true);
     try {
       const result = await api.uploadAvatar(user.id, file);
       setAvatarType('photo');
       setAvatarPhotoUrl(result.avatarPhotoUrl);
       onSave();
+    } catch (err: any) {
+      setPasswordMsg(err?.message || t('profile.uploadFailed') || 'Upload failed');
     } finally {
       setSaving(false);
     }

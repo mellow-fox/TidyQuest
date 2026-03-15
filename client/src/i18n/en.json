@@ -461,6 +461,7 @@
       "deleteRoomConfirm": "Delete \"{room}\" and all its tasks? This cannot be undone.",
       "assignedTo": "Assigned to {name}",
       "assignRoom": "Assign room",
+      "assignTask": "Assign task",
       "noAssignment": "No assignment (everyone)",
       "specificUsers": "Specific users",
       "noRoomsYet": "No rooms yet",
