@@ -145,7 +145,7 @@ export function Settings({
     if (!isoDate) return '-';
     const d = new Date(isoDate);
     if (Number.isNaN(d.getTime())) return '-';
-    return d.toLocaleDateString(locale);
+    return d.toLocaleDateString();
   };
 
   const rewardStatusLabel = (status: string): string => {
@@ -645,7 +645,7 @@ export function Settings({
               <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.vacationDesc')}</div>
               {vacationEnabled && vacationConfig?.vacationStartDate && (
                 <div style={{ fontSize: 11, color: 'var(--warm-accent)', marginTop: 2 }}>
-                  {t('settings.vacationSince')} {new Date(vacationConfig.vacationStartDate).toLocaleDateString(locale)}
+                  {t('settings.vacationSince')} {new Date(vacationConfig.vacationStartDate).toLocaleDateString()}
                 </div>
               )}
             </div>
@@ -692,7 +692,7 @@ export function Settings({
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text)' }}>{u.displayName}</div>
                       {isOn && u.vacationStartDate && (
-                        <div style={{ fontSize: 10, color: 'var(--warm-accent)' }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString(locale)}</div>
+                        <div style={{ fontSize: 10, color: 'var(--warm-accent)' }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString()}</div>
                       )}
                     </div>
                     <Toggle checked={isOn} onChange={async (val) => {
