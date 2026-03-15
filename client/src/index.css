@@ -46,6 +46,28 @@
   --warm-shadow: rgba(180, 150, 100, 0.1);
   --warm-primary-shadow: rgba(249, 115, 22, 0.25);
 
+  /* Status badge colors */
+  --status-approved-text: #15803D;
+  --status-approved-bg: #DCFCE7;
+  --status-approved-border: #86EFAC;
+  --status-rejected-text: #B91C1C;
+  --status-rejected-bg: #FEE2E2;
+  --status-rejected-border: #FCA5A5;
+  --status-cancelled-text: #374151;
+  --status-cancelled-bg: #E5E7EB;
+  --status-cancelled-border: #D1D5DB;
+
+  /* Task health badge colors */
+  --task-healthy-text: #166534;
+  --task-healthy-bg: #E8F6EC;
+  --task-healthy-border: #86EFAC;
+  --task-warning-text: #92400E;
+  --task-warning-bg: #FFF7E6;
+  --task-warning-border: #FCD34D;
+  --task-critical-text: #991B1B;
+  --task-critical-bg: #FDECEC;
+  --task-critical-border: #FCA5A5;
+
   /* Design System — Spacing scale */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -161,6 +183,28 @@ html[data-theme='night'] {
   --health-red-bg: #2E1A1A;
   --warm-shadow: rgba(0, 0, 0, 0.3);
   --warm-primary-shadow: rgba(96, 165, 250, 0.25);
+
+  /* Status badge colors — dark theme */
+  --status-approved-text: #4ADE80;
+  --status-approved-bg: #1A2E1A;
+  --status-approved-border: #166534;
+  --status-rejected-text: #FCA5A5;
+  --status-rejected-bg: #2A1F1F;
+  --status-rejected-border: #7F1D1D;
+  --status-cancelled-text: #94A3B8;
+  --status-cancelled-bg: #1E293B;
+  --status-cancelled-border: #475569;
+
+  /* Task health badge colors — dark theme */
+  --task-healthy-text: #4ADE80;
+  --task-healthy-bg: #1A2E1A;
+  --task-healthy-border: #166534;
+  --task-warning-text: #FBBF24;
+  --task-warning-bg: #2E2A1A;
+  --task-warning-border: #92400E;
+  --task-critical-text: #FCA5A5;
+  --task-critical-bg: #2E1A1A;
+  --task-critical-border: #7F1D1D;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

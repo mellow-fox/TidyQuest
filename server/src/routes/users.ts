@@ -203,6 +203,14 @@ router.post('/:id/avatar-upload', upload.single('avatar'), (req: AuthRequest, re
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
+  // Delete previous avatar file if it exists
+  const prev = db.prepare('SELECT avatarPhotoUrl FROM users WHERE id = ?').get(userId) as any;
+  if (prev?.avatarPhotoUrl) {
+    const oldFilename = path.basename(prev.avatarPhotoUrl);
+    const oldPath = path.join(avatarsDir, oldFilename);
+    try { fs.unlinkSync(oldPath); } catch { /* file may already be gone */ }
+  }
+
   const photoUrl = `/api/avatars/${req.file.filename}`;
   db.prepare('UPDATE users SET avatarType = ?, avatarPhotoUrl = ? WHERE id = ?')
     .run('photo', photoUrl, userId);

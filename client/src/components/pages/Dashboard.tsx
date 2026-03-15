@@ -125,9 +125,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   const { taskName, roomDisplayName, timeAgo, t } = useTranslation(language);
   const { houseHealth, rooms, todaysQuests, nextTasks, myGoal, childrenGoals = [], pendingRewardRequests = [], currentUser, recentActivity } = data;
   const [adminModalQuest, setAdminModalQuest] = useState<Quest | null>(null);
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
-  const locale = localeMap[language || 'en'] || 'en-US';
-
   const sortedRooms = [...rooms].sort((a, b) => a.health - b.health);
   const roomTypeById = new Map(rooms.map((r) => [r.id, r.roomType]));
   const totalTasks = rooms.reduce((s, r) => s + r.taskCount, 0);
@@ -569,7 +566,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
             {(myGoal.goalStartAt || myGoal.goalEndAt) && (
               <div style={{ fontSize: 10, color: 'var(--warm-text-light)', fontWeight: 700, marginBottom: 8 }}>
-                {(myGoal.goalStartAt ? new Date(myGoal.goalStartAt).toLocaleDateString(locale) : '...')} - {(myGoal.goalEndAt ? new Date(myGoal.goalEndAt).toLocaleDateString(locale) : '...')}
+                {(myGoal.goalStartAt ? new Date(myGoal.goalStartAt).toLocaleDateString() : '...')} - {(myGoal.goalEndAt ? new Date(myGoal.goalEndAt).toLocaleDateString() : '...')}
               </div>
             )}
             <HealthBar value={myGoal.progress} height={8} showLabel={false} />
@@ -588,7 +585,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                   {(cg.goalStartAt || cg.goalEndAt) && (
                     <div style={{ fontSize: 10, color: 'var(--warm-text-light)', fontWeight: 700, marginTop: 2 }}>
-                      {(cg.goalStartAt ? new Date(cg.goalStartAt).toLocaleDateString(locale) : '...')} - {(cg.goalEndAt ? new Date(cg.goalEndAt).toLocaleDateString(locale) : '...')}
+                      {(cg.goalStartAt ? new Date(cg.goalStartAt).toLocaleDateString() : '...')} - {(cg.goalEndAt ? new Date(cg.goalEndAt).toLocaleDateString() : '...')}
                     </div>
                   )}
                   {cg.goalCoins && <HealthBar value={cg.progress || 0} height={6} showLabel={false} />}

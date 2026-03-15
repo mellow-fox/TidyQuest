@@ -106,9 +106,9 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
   };
 
   const statusStyle = (status: string): CSSProperties => {
-    if (status === 'approved') return { color: '#15803D', backgroundColor: '#DCFCE7', border: '1px solid #86EFAC' };
-    if (status === 'rejected') return { color: '#B91C1C', backgroundColor: '#FEE2E2', border: '1px solid #FCA5A5' };
-    if (status === 'cancelled') return { color: '#374151', backgroundColor: '#E5E7EB', border: '1px solid #D1D5DB' };
+    if (status === 'approved') return { color: 'var(--status-approved-text)', backgroundColor: 'var(--status-approved-bg)', border: '1px solid var(--status-approved-border)' };
+    if (status === 'rejected') return { color: 'var(--status-rejected-text)', backgroundColor: 'var(--status-rejected-bg)', border: '1px solid var(--status-rejected-border)' };
+    if (status === 'cancelled') return { color: 'var(--status-cancelled-text)', backgroundColor: 'var(--status-cancelled-bg)', border: '1px solid var(--status-cancelled-border)' };
     return { color: 'var(--warm-accent)', backgroundColor: 'var(--warm-accent-light)', border: '1px solid var(--warm-accent)' };
   };
 
@@ -210,7 +210,7 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
         </div>
       )}
       {refundFx && (
-        <div key={refundFx.key} style={{ position: 'fixed', top: 126, right: 80, zIndex: 121, animation: 'coinRefundFloat 1.7s ease forwards', backgroundColor: '#DCFCE7', border: '1.5px solid #16A34A', borderRadius: 14, padding: '6px 10px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 900, color: '#166534' }}>
+        <div key={refundFx.key} style={{ position: 'fixed', top: 126, right: 80, zIndex: 121, animation: 'coinRefundFloat 1.7s ease forwards', backgroundColor: 'var(--status-approved-bg)', border: '1.5px solid var(--status-approved-border)', borderRadius: 14, padding: '6px 10px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 900, color: 'var(--status-approved-text)' }}>
           +{refundFx.amount} <CoinIcon />
         </div>
       )}

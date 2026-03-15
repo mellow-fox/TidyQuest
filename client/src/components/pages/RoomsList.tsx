@@ -236,12 +236,12 @@ export function RoomsList({ rooms, language, isAdmin, users, onSelectRoom, onCre
 
   const taskBadgeStyle = (health: number): { bg: string; text: string; border: string } => {
     if (health >= 70) {
-      return { bg: '#E8F6EC', text: '#166534', border: '#86EFAC' };
+      return { bg: 'var(--task-healthy-bg)', text: 'var(--task-healthy-text)', border: 'var(--task-healthy-border)' };
     }
     if (health >= 40) {
-      return { bg: '#FFF7E6', text: '#92400E', border: '#FCD34D' };
+      return { bg: 'var(--task-warning-bg)', text: 'var(--task-warning-text)', border: 'var(--task-warning-border)' };
     }
-    return { bg: '#FDECEC', text: '#991B1B', border: '#FCA5A5' };
+    return { bg: 'var(--task-critical-bg)', text: 'var(--task-critical-text)', border: 'var(--task-critical-border)' };
   };
 
   return (
@@ -401,8 +401,8 @@ export function RoomsList({ rooms, language, isAdmin, users, onSelectRoom, onCre
             {assignError && (
               <div style={{
                 marginBottom: 16, padding: '10px 14px', borderRadius: 10,
-                backgroundColor: '#FDECEC', border: '1.5px solid #FCA5A5',
-                fontSize: 12, fontWeight: 600, color: '#991B1B', lineHeight: 1.5,
+                backgroundColor: 'var(--task-critical-bg)', border: '1.5px solid var(--task-critical-border)',
+                fontSize: 12, fontWeight: 600, color: 'var(--task-critical-text)', lineHeight: 1.5,
               }}>
                 {assignError}
               </div>
@@ -410,8 +410,8 @@ export function RoomsList({ rooms, language, isAdmin, users, onSelectRoom, onCre
             {assignConflict && (
               <div style={{
                 marginBottom: 16, padding: '12px 14px', borderRadius: 10,
-                backgroundColor: '#FFF7E6', border: '1.5px solid #FCD34D',
-                fontSize: 12, fontWeight: 600, color: '#92400E', lineHeight: 1.6,
+                backgroundColor: 'var(--task-warning-bg)', border: '1.5px solid var(--task-warning-border)',
+                fontSize: 12, fontWeight: 600, color: 'var(--task-warning-text)', lineHeight: 1.6,
               }}>
                 {t('rooms.assignConflictError').replace('{tasks}', assignConflict.taskNames.join(', '))}
               </div>
@@ -535,7 +535,7 @@ export function RoomsList({ rooms, language, isAdmin, users, onSelectRoom, onCre
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: task.selected ? 12 : 0 }}>
                             <input type="checkbox" checked={task.selected}
                               onChange={(e) => updateTask(idx, { selected: e.target.checked })}
-                              style={{ width: 18, height: 18, accentColor: '#F97316', cursor: 'pointer' }} />
+                              style={{ width: 18, height: 18, accentColor: 'var(--warm-accent)', cursor: 'pointer' }} />
                             <div style={{ flex: 1, fontSize: 14, fontWeight: 800, color: 'var(--warm-text)', display: 'flex', alignItems: 'center', gap: 9 }}>
                               <span style={{
                                 width: 32, height: 32, borderRadius: 10,
@@ -591,8 +591,8 @@ export function RoomsList({ rooms, language, isAdmin, users, onSelectRoom, onCre
                                       }}>
                                       <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
                                         <path d="M7 1L8.5 5H12.5L9.5 7.5L10.5 11.5L7 9L3.5 11.5L4.5 7.5L1.5 5H5.5L7 1Z"
-                                          fill={e <= task.effort ? '#F59E0B' : 'none'}
-                                          stroke={e <= task.effort ? '#F59E0B' : '#E2D5C5'}
+                                          fill={e <= task.effort ? 'var(--warm-coin)' : 'none'}
+                                          stroke={e <= task.effort ? 'var(--warm-coin)' : 'var(--warm-border)'}
                                           strokeWidth={e <= task.effort ? '0.5' : '1'} />
                                       </svg>
                                     </button>

@@ -145,7 +145,7 @@ export function Settings({
     if (!isoDate) return '-';
     const d = new Date(isoDate);
     if (Number.isNaN(d.getTime())) return '-';
-    return d.toLocaleDateString(locale);
+    return d.toLocaleDateString();
   };
 
   const rewardStatusLabel = (status: string): string => {
@@ -637,15 +637,15 @@ export function Settings({
         <div style={{ padding: '14px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="8" r="4" stroke="#B0A090" strokeWidth="1.5" fill="none" />
-              <path d="M5 17L6.5 13H13.5L15 17" stroke="#B0A090" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="10" cy="8" r="4" stroke="var(--warm-text-light)" strokeWidth="1.5" fill="none" />
+              <path d="M5 17L6.5 13H13.5L15 17" stroke="var(--warm-text-light)" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.vacationMode')}</div>
               <div style={{ fontSize: 11, color: 'var(--warm-text-light)', fontWeight: 600 }}>{t('settings.vacationDesc')}</div>
               {vacationEnabled && vacationConfig?.vacationStartDate && (
                 <div style={{ fontSize: 11, color: 'var(--warm-accent)', marginTop: 2 }}>
-                  {t('settings.vacationSince')} {new Date(vacationConfig.vacationStartDate).toLocaleDateString(locale)}
+                  {t('settings.vacationSince')} {new Date(vacationConfig.vacationStartDate).toLocaleDateString()}
                 </div>
               )}
             </div>
@@ -692,7 +692,7 @@ export function Settings({
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--warm-text)' }}>{u.displayName}</div>
                       {isOn && u.vacationStartDate && (
-                        <div style={{ fontSize: 10, color: 'var(--warm-accent)' }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString(locale)}</div>
+                        <div style={{ fontSize: 10, color: 'var(--warm-accent)' }}>{t('settings.vacationSince')} {new Date(u.vacationStartDate).toLocaleDateString()}</div>
                       )}
                     </div>
                     <Toggle checked={isOn} onChange={async (val) => {
@@ -733,7 +733,7 @@ export function Settings({
         {isAdmin && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4zm0 1.5A2.5 2.5 0 0 0 7.5 6v1h5V6A2.5 2.5 0 0 0 10 3.5z" fill="#B0A090" />
+              <path d="M10 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4zm0 1.5A2.5 2.5 0 0 0 7.5 6v1h5V6A2.5 2.5 0 0 0 10 3.5z" fill="var(--warm-text-light)" />
             </svg>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.registrationEnabled')}</div>
@@ -753,8 +753,8 @@ export function Settings({
         {isAdmin && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 6h12M4 10h12M4 14h12" stroke="#B0A090" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M14 4l2 2-2 2" stroke="#B0A090" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 6h12M4 10h12M4 14h12" stroke="var(--warm-text-light)" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M14 4l2 2-2 2" stroke="var(--warm-text-light)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.strictMode')}</div>
@@ -774,7 +774,7 @@ export function Settings({
         {isAdmin && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderTop: '1px solid var(--warm-border)' }}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 1l2.5 5.5L18 7.5l-4 4 1 5.5L10 14.5 4.5 17l1-5.5-4-4 5.5-1z" fill="#B0A090" />
+              <path d="M10 1l2.5 5.5L18 7.5l-4 4 1 5.5L10 14.5 4.5 17l1-5.5-4-4 5.5-1z" fill="var(--warm-text-light)" />
             </svg>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--warm-text)' }}>{t('settings.gamificationEnabled')}</div>

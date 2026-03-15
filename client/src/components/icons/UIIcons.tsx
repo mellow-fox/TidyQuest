@@ -17,7 +17,7 @@ export function PlusIcon() {
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path
         d="M10 4V16M4 10H16"
-        stroke="#F97316"
+        stroke="var(--warm-accent)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -31,7 +31,7 @@ export function BackIcon() {
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path
         d="M12 4L6 10L12 16"
-        stroke="#B0A090"
+        stroke="var(--warm-text-light)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -60,7 +60,7 @@ export function FireIcon() {
 export function CoinIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="11" r="9" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.5" />
+      <circle cx="11" cy="11" r="9" fill="#FBBF24" stroke="var(--warm-coin)" strokeWidth="1.5" />
       <text x="11" y="15" textAnchor="middle" fontSize="11" fontWeight="800" fill="#92400E">
         $
       </text>
@@ -85,8 +85,8 @@ export function StarIcon() {
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
       <path
         d="M7 1L8.5 5H12.5L9.5 7.5L10.5 11.5L7 9L3.5 11.5L4.5 7.5L1.5 5H5.5L7 1Z"
-        fill="#F59E0B"
-        stroke="#F59E0B"
+        fill="var(--warm-coin)"
+        stroke="var(--warm-coin)"
         strokeWidth="0.5"
       />
     </svg>
@@ -99,7 +99,7 @@ export function StarEmptyIcon() {
       <path
         d="M7 1L8.5 5H12.5L9.5 7.5L10.5 11.5L7 9L3.5 11.5L4.5 7.5L1.5 5H5.5L7 1Z"
         fill="none"
-        stroke="#E2D5C5"
+        stroke="var(--warm-border)"
         strokeWidth="1"
       />
     </svg>
@@ -111,14 +111,14 @@ export function DownloadIcon() {
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path
         d="M10 3V13M10 13L6 9M10 13L14 9"
-        stroke="#F97316"
+        stroke="var(--warm-accent)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M3 15V16C3 16.55 3.45 17 4 17H16C16.55 17 17 16.55 17 16V15"
-        stroke="#F97316"
+        stroke="var(--warm-accent)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -132,14 +132,14 @@ export function UploadIcon() {
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path
         d="M10 13V3M10 3L6 7M10 3L14 7"
-        stroke="#F97316"
+        stroke="var(--warm-accent)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M3 15V16C3 16.55 3.45 17 4 17H16C16.55 17 17 16.55 17 16V15"
-        stroke="#F97316"
+        stroke="var(--warm-accent)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -154,18 +154,18 @@ export function LockIcon() {
       <rect
         x="4" y="9" width="12" height="9" rx="2"
         fill="none"
-        stroke="#B0A090"
+        stroke="var(--warm-text-light)"
         strokeWidth="2"
         strokeLinejoin="round"
       />
       <path
         d="M7 9V6C7 4.34 8.34 3 10 3C11.66 3 13 4.34 13 6V9"
-        stroke="#B0A090"
+        stroke="var(--warm-text-light)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx="10" cy="13.5" r="1.5" fill="#B0A090" />
+      <circle cx="10" cy="13.5" r="1.5" fill="var(--warm-text-light)" />
     </svg>
   );
 }
@@ -173,10 +173,10 @@ export function LockIcon() {
 export function GlobeIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <circle cx="10" cy="10" r="8" stroke="#B0A090" strokeWidth="1.5" />
-      <ellipse cx="10" cy="10" rx="4" ry="8" stroke="#B0A090" strokeWidth="1.5" />
-      <path d="M2 10H18" stroke="#B0A090" strokeWidth="1.5" />
-      <path d="M10 2V18" stroke="#B0A090" strokeWidth="1.5" />
+      <circle cx="10" cy="10" r="8" stroke="var(--warm-text-light)" strokeWidth="1.5" />
+      <ellipse cx="10" cy="10" rx="4" ry="8" stroke="var(--warm-text-light)" strokeWidth="1.5" />
+      <path d="M2 10H18" stroke="var(--warm-text-light)" strokeWidth="1.5" />
+      <path d="M10 2V18" stroke="var(--warm-text-light)" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -186,14 +186,14 @@ export function BellIcon() {
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path
         d="M10 2C7.24 2 5 4.24 5 7V11L3 14H17L15 11V7C15 4.24 12.76 2 10 2Z"
-        stroke="#B0A090"
+        stroke="var(--warm-text-light)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M8 14V15C8 16.1 8.9 17 10 17C11.1 17 12 16.1 12 15V14"
-        stroke="#B0A090"
+        stroke="var(--warm-text-light)"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -204,17 +204,17 @@ export function BellIcon() {
 export function UsersIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <circle cx="8" cy="7" r="3" stroke="#B0A090" strokeWidth="1.5" />
+      <circle cx="8" cy="7" r="3" stroke="var(--warm-text-light)" strokeWidth="1.5" />
       <path
         d="M2 18C2 15.24 4.24 13 7 13H9C11.76 13 14 15.24 14 18"
-        stroke="#B0A090"
+        stroke="var(--warm-text-light)"
         strokeWidth="1.5"
         strokeLinecap="round"
       />
-      <circle cx="16" cy="8" r="2.5" stroke="#B0A090" strokeWidth="1.5" />
+      <circle cx="16" cy="8" r="2.5" stroke="var(--warm-text-light)" strokeWidth="1.5" />
       <path
         d="M16 13C18.21 13 20 14.79 20 17"
-        stroke="#B0A090"
+        stroke="var(--warm-text-light)"
         strokeWidth="1.5"
         strokeLinecap="round"
       />
