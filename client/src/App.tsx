@@ -35,6 +35,8 @@ function AppContent() {
   const [coinsByEffort, setCoinsByEffort] = useState<Record<number, number>>({ 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
   const [achievementsData, setAchievementsData] = useState<any>(null);
   const [rewardsData, setRewardsData] = useState<{ rewards: any[]; mine: any[] }>({ rewards: [], mine: [] });
+  const [adminRewardsData, setAdminRewardsData] = useState<any[]>([]);
+
   const [theme, setTheme] = useState<'orange' | 'blue' | 'rose' | 'night'>(() => {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('tidyquest_theme') : null;
     return (saved === 'blue' || saved === 'rose' || saved === 'night') ? saved : 'orange';
@@ -112,7 +114,10 @@ function AppContent() {
     }
     if (path === '/rewards') {
       loadRewards();
-    }
+      if (user?.role === 'admin') {
+        api.getRewardsAdmin().then((adminData) => setAdminRewardsData(adminData.redemptions)).catch(() => {});
+      }
+    }   
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Poll every 15s to reflect other users' actions without requiring F5
@@ -133,15 +138,18 @@ function AppContent() {
     };
   }, [user, location.pathname, loadDashboard, refreshRooms]);
 
-  const loadRewards = useCallback(async () => {
-    try {
-      const data = await api.getRewards();
-      setRewardsData(data);
-    } catch {
-      setRewardsData({ rewards: [], mine: [] });
+const loadRewards = useCallback(async () => {
+  try {
+    const data = await api.getRewards();
+    setRewardsData(data);
+    if (user?.role === 'admin') {
+      const adminData = await api.getRewardsAdmin();
+      setAdminRewardsData(adminData.redemptions);
     }
-  }, []);
-
+  } catch {
+    setRewardsData({ rewards: [], mine: [] });
+  }
+}, [user]);
   useEffect(() => {
     if (user) loadRewards();
   }, [user, loadRewards]);
@@ -472,7 +480,7 @@ function AppContent() {
             gamificationEnabled ? (
             <>
               <PageHeader title={t('nav.rewards')} subtitle={t('app.rewardsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
-              <Rewards
+	      <Rewards
                 language={user.language}
                 rewards={rewardsData.rewards}
                 mine={rewardsData.mine}
@@ -489,6 +497,15 @@ function AppContent() {
                   await loadDashboard();
                   await loadRewards();
                 }}
+                onUpdateRedemption={async (id, status) => {
+                  await api.updateRedemptionStatus(id, status);
+                  await loadRewards();
+                }}
+                isAdmin={user.role === 'admin'}
+                adminRedemptions={adminRewardsData}
+
+
+
               />
             </>
             ) : <Navigate to="/" replace />

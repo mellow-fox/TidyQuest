@@ -18,16 +18,27 @@ interface Redemption {
   status: string;
 }
 
+interface AdminRedemption {
+  id: number;
+  title: string;
+  costCoins: number;
+  redeemedAt: string;
+  status: string;
+  displayName: string;
+}
+
 interface RewardsProps {
   language?: string;
   rewards: Reward[];
   mine: Redemption[];
   userCoins: number;
+  isAdmin?: boolean;
+  adminRedemptions?: AdminRedemption[];
   onRedeem: (rewardId: number) => Promise<void>;
   onCancel: (redemptionId: number) => Promise<void>;
+  onUpdateRedemption?: (id: number, status: 'approved' | 'rejected') => Promise<void>;
 }
-
-export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel }: RewardsProps) {
+export function Rewards({ language, rewards, mine, userCoins, isAdmin, adminRedemptions, onRedeem, onCancel, onUpdateRedemption }: RewardsProps) {
   const { t } = useTranslation(language);
   const [pendingRewardId, setPendingRewardId] = useState<number | null>(null);
   const [spendFx, setSpendFx] = useState<{ amount: number; key: number } | null>(null);
@@ -204,6 +215,32 @@ export function Rewards({ language, rewards, mine, userCoins, onRedeem, onCancel
           </div>
         </div>
       )}
+
+      {isAdmin && adminRedemptions && (
+        <div className="tq-card tq-card-padded">
+          <h3 className="tq-card-title">🎁 Reward Requests</h3>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {adminRedemptions.filter(r => r.status === 'requested').length === 0 ? (
+              <div className="tq-empty-state" style={{ padding: '16px 0' }}>No pending requests</div>
+            ) : (
+              adminRedemptions.filter(r => r.status === 'requested').map((r) => (
+                <div key={r.id} style={{ border: '1.5px solid var(--warm-border)', borderRadius: 12, padding: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--warm-text)' }}>{r.displayName} — {rewardTitleByName(r.title)}</div>
+                    <div style={{ fontSize: 10, color: 'var(--warm-text-light)', fontWeight: 700 }}>{new Date(r.redeemedAt).toLocaleString()} · {r.costCoins} coins</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={() => onUpdateRedemption?.(r.id, 'approved')}>✓ Approve</button>
+                    <button className="tq-btn tq-btn-secondary tq-btn-sm" onClick={() => onUpdateRedemption?.(r.id, 'rejected')}>✗ Reject</button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+
       {spendFx && (
         <div key={spendFx.key} style={{ position: 'fixed', top: 88, right: 80, zIndex: 121, animation: 'coinSpendFloat 1.4s ease forwards', backgroundColor: 'var(--warm-accent-light)', border: '1.5px solid var(--warm-accent)', borderRadius: 14, padding: '6px 10px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 900, color: 'var(--warm-accent)' }}>
           -{spendFx.amount} <CoinIcon />
