@@ -114,10 +114,7 @@ function AppContent() {
     }
     if (path === '/rewards') {
       loadRewards();
-      if (user?.role === 'admin') {
-        api.getRewardsAdmin().then((adminData) => setAdminRewardsData(adminData.redemptions)).catch(() => {});
-      }
-    }   
+    }
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Poll every 15s to reflect other users' actions without requiring F5
@@ -138,18 +135,18 @@ function AppContent() {
     };
   }, [user, location.pathname, loadDashboard, refreshRooms]);
 
-const loadRewards = useCallback(async () => {
-  try {
-    const data = await api.getRewards();
-    setRewardsData(data);
-    if (user?.role === 'admin') {
-      const adminData = await api.getRewardsAdmin();
-      setAdminRewardsData(adminData.redemptions);
+  const loadRewards = useCallback(async () => {
+    try {
+      const data = await api.getRewards();
+      setRewardsData(data);
+      if (user?.role === 'admin') {
+        const adminData = await api.getRewardsAdmin();
+        setAdminRewardsData(adminData.redemptions);
+      }
+    } catch {
+      setRewardsData({ rewards: [], mine: [] });
     }
-  } catch {
-    setRewardsData({ rewards: [], mine: [] });
-  }
-}, [user]);
+  }, [user?.role]);
   useEffect(() => {
     if (user) loadRewards();
   }, [user, loadRewards]);
@@ -480,7 +477,7 @@ const loadRewards = useCallback(async () => {
             gamificationEnabled ? (
             <>
               <PageHeader title={t('nav.rewards')} subtitle={t('app.rewardsSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} gamificationEnabled={gamificationEnabled} />
-	      <Rewards
+              <Rewards
                 language={user.language}
                 rewards={rewardsData.rewards}
                 mine={rewardsData.mine}
@@ -503,9 +500,6 @@ const loadRewards = useCallback(async () => {
                 }}
                 isAdmin={user.role === 'admin'}
                 adminRedemptions={adminRewardsData}
-
-
-
               />
             </>
             ) : <Navigate to="/" replace />
