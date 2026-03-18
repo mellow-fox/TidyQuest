@@ -86,7 +86,7 @@ export function History({ language, isAdmin }: { language?: string; isAdmin?: bo
                       <button onClick={() => setConfirmCancel(null)} style={{ background: 'none', border: '1px solid var(--warm-text-light)', borderRadius: 8, padding: '3px 7px', fontSize: 10, fontWeight: 700, color: 'var(--warm-text-light)', cursor: 'pointer', fontFamily: 'Nunito' }}>✗</button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmCancel(h.id)} title={t('history.cancel')} style={{ background: 'none', border: '1px solid var(--warm-border)', borderRadius: 8, padding: '3px 8px', fontSize: 13, cursor: 'pointer', opacity: 0.6 }}>🗑</button>
+                    <button onClick={() => setConfirmCancel(h.id)} title={t('history.cancel')} style={{ background: 'none', border: '1px solid var(--warm-border)', borderRadius: 8, padding: '3px 8px', fontSize: 13, cursor: 'pointer', color: 'var(--warm-text-muted)' }}>🗑</button>
                   )}
                 </div>
               )}
