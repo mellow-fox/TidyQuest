@@ -397,16 +397,19 @@ body {
 
 /* Dashboard — masonry layout */
 .dashboard-grid {
-  columns: 300px;
-  column-gap: var(--space-xl);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: auto;
+  gap: var(--space-xl);
   animation: fadeIn 0.3s ease;
+  align-items: start;
 }
 .dashboard-grid > * {
-  break-inside: avoid;
-  margin-bottom: var(--space-xl);
+  margin-bottom: 0;
 }
+
 .dashboard-grid > .dashboard-hero {
-  column-span: all;
+  grid-column: 1 / -1;
 }
 
 /* Settings grid — via CSS class, not inline */
