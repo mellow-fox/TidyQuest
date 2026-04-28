@@ -5,6 +5,8 @@ data/*.db-*
 .env
 *.log
 .DS_Store
+__pycache__/
+*.pyc
 projet/
 PROGRESS.md
 .claude/skills/test-beta/.env
