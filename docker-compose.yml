@@ -1,14 +1,13 @@
 services:
   tidyquest:
-    build: .
+    image: .
+    container_name: tidyquest
     ports:
       - "3020:3000"
-    volumes:
-      - ./data:/app/data
-    env_file:
-      - .env
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - JWT_SECRET=${JWT_SECRET}
-      - PORT=${PORT:-3000}
+      - NODE_ENV=production
+      - JWT_SECRET=Gdo4vlhhZNOz6RIfZnvZVSluTQgQokPDF50UmJy7xww=
+      - TZ=Europe/Sofia
+    volumes:
+      - /TidyQuest/data:/app/data
     restart: unless-stopped
