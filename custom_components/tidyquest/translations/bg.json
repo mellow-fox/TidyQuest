@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Свързване на TidyQuest",
+        "description": "Използвайте администраторски или членски акаунт на TidyQuest, така че Home Assistant да може да завършва задачи от името на потребителите в домакинството.",
+        "data": {
+          "base_url": "URL на TidyQuest",
+          "username": "Потребителско име",
+          "password": "Парола"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Не е възможно да се свържете с TidyQuest",
+      "invalid_auth": "Невалидно потребителско име или парола на TidyQuest",
+      "unknown": "Неочаквана грешка"
+    },
+    "abort": {
+      "already_configured": "Този сървър на TidyQuest и потребител вече са конфигурирани"
+    }
+  }
+}
