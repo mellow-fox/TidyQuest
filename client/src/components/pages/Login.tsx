@@ -101,6 +101,7 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
             <option value="de">Deutsch</option>
             <option value="es">Español</option>
             <option value="it">Italiano</option>
+            <option value="bg">Български</option>
           </select>
         </div>
 

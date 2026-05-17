@@ -1119,6 +1119,7 @@ export function Settings({
                     <option value="de">Deutsch</option>
                     <option value="es">Español</option>
                     <option value="it">Italiano</option>
+                    <option value="bg">Български</option>
                   </select>
                   <select className="tq-input" value={memberProfile[u.id]?.avatarType || 'letter'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarType: e.target.value as 'letter' | 'preset' } }))} style={{ cursor: 'pointer' }}>
                     <option value="letter">{t('profile.letterMode')}</option>

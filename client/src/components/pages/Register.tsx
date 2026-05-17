@@ -74,6 +74,7 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
             <option value="de">Deutsch</option>
             <option value="es">Español</option>
             <option value="it">Italiano</option>
+            <option value="bg">Български</option>
           </select>
         </div>
 
