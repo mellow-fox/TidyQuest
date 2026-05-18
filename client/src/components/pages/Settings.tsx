@@ -3,7 +3,7 @@ import { UserAvatar } from '../shared/UserAvatar';
 import { EffortDots } from '../shared/EffortDots';
 import { Toggle } from '../shared/Toggle';
 import { BellIcon, DownloadIcon, UploadIcon, LockIcon, CoinIcon } from '../icons/UIIcons';
-import { AVATAR_PRESETS } from '../icons/AvatarPresets';
+import { AVATAR_PRESETS } from '../icons/avatars';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { User } from '../../hooks/useAuth';
 import { api } from '../../hooks/useApi';
@@ -60,16 +60,14 @@ interface SettingsProps {
   coinsByEffort: Record<number, number>;
   onSaveCoinsByEffort: (values: Record<number, number>) => Promise<void>;
   onResetCoinsByEffort: () => Promise<void>;
-  theme: 'orange' | 'blue' | 'rose' | 'night';
-  onChangeTheme: (theme: 'orange' | 'blue' | 'rose' | 'night') => void;
+  theme: 'orange' | 'blue' | 'rose' | 'darkRose' | 'darkOrange' | 'lightPurple' | 'darkPurple' | 'darkBlue';
+  onChangeTheme: (theme: 'orange' | 'blue' | 'rose' | 'darkRose' | 'darkOrange' | 'lightPurple' | 'darkPurple' | 'darkBlue') => void;
   onExport: () => void;
   onImport: () => void;
   onAdjustCoins?: (userId: number, amount: number) => Promise<void>;
   gamificationEnabled?: boolean;
   onGamificationChange?: (enabled: boolean) => void;
 }
-
-const COLORS = ['#F97316', '#9B72CF', '#4AABDE', '#5CB85C', '#D4A017', '#E25A5A', '#38BDF8', '#EC4899'];
 
 export function Settings({
   user,
@@ -113,7 +111,7 @@ export function Settings({
   const [editingRewardCost, setEditingRewardCost] = useState('');
   const [memberProfile, setMemberProfile] = useState<Record<number, {
     language: string;
-    avatarType: 'letter' | 'preset';
+    avatarType: 'preset';
     avatarColor: string;
     avatarPreset: string;
   }>>({});
@@ -267,9 +265,9 @@ export function Settings({
       ...prev,
       [u.id]: prev[u.id] || {
         language: u.language || 'en',
-        avatarType: u.avatarType === 'preset' ? 'preset' : 'letter',
+        avatarType: 'preset',
         avatarColor: u.avatarColor || '#F97316',
-        avatarPreset: u.avatarPreset || 'cat',
+        avatarPreset: u.avatarPreset || 'cyberKnight',
       },
     }));
   };
@@ -290,9 +288,9 @@ export function Settings({
     if (!p) return;
     await onUpdateMemberProfile(u.id, {
       language: p.language,
-      avatarType: p.avatarType,
+      avatarType: 'preset',
       avatarColor: p.avatarColor,
-      avatarPreset: p.avatarType === 'preset' ? p.avatarPreset : null,
+      avatarPreset: p.avatarPreset,
     });
     setMemberProfileMsg((prev) => ({ ...prev, [u.id]: t('common.saved') }));
     window.setTimeout(() => {
@@ -592,13 +590,17 @@ export function Settings({
           <select
             className="tq-input"
             value={theme}
-            onChange={(e) => onChangeTheme(e.target.value as 'orange' | 'blue' | 'rose' | 'night')}
+            onChange={(e) => onChangeTheme(e.target.value as 'orange' | 'blue' | 'rose' | 'darkRose' | 'darkOrange' | 'lightPurple' | 'darkPurple' | 'darkBlue')}
             style={{ width: 'auto', cursor: 'pointer' }}
           >
             <option value="orange">{t('settings.themeOrange')}</option>
             <option value="blue">{t('settings.themeBlue')}</option>
             <option value="rose">{t('settings.themeRose')}</option>
-            <option value="night">{t('settings.themeNight')}</option>
+            <option value="darkRose">{t('settings.themeDarkRose')}</option>
+            <option value="darkOrange">{t('settings.themeDarkOrange')}</option>
+            <option value="lightPurple">{t('settings.themeLightPurple')}</option>
+            <option value="darkPurple">{t('settings.themeDarkPurple')}</option>
+            <option value="darkBlue">{t('settings.themeDarkBlue')}</option>
           </select>
         </div>
         {isAdmin && (
@@ -1115,29 +1117,13 @@ export function Settings({
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--warm-border)', display: 'grid', gap: 8 }}>
                   <select className="tq-input" value={memberProfile[u.id]?.language || 'en'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], language: e.target.value } }))} style={{ cursor: 'pointer' }}>
                     <option value="en">English</option>
-                    <option value="fr">Français</option>
-                    <option value="de">Deutsch</option>
-                    <option value="es">Español</option>
-                    <option value="it">Italiano</option>
                     <option value="bg">Български</option>
                   </select>
-                  <select className="tq-input" value={memberProfile[u.id]?.avatarType || 'letter'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarType: e.target.value as 'letter' | 'preset' } }))} style={{ cursor: 'pointer' }}>
-                    <option value="letter">{t('profile.letterMode')}</option>
-                    <option value="preset">{t('profile.characterMode')}</option>
+                  <select className="tq-input" value={memberProfile[u.id]?.avatarPreset || 'cyberKnight'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarPreset: e.target.value } }))} style={{ cursor: 'pointer' }}>
+                    {Object.keys(AVATAR_PRESETS).map((id) => (
+                      <option key={id} value={id}>{t(`avatars.${id}`)}</option>
+                    ))}
                   </select>
-                  {(memberProfile[u.id]?.avatarType || 'letter') === 'letter' ? (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {COLORS.map((c) => (
-                        <button key={c} onClick={() => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarColor: c } }))} style={{ width: 20, height: 20, borderRadius: 8, border: (memberProfile[u.id]?.avatarColor || '#F97316') === c ? '2px solid #3D2F1E' : '1px solid transparent', backgroundColor: c }} />
-                      ))}
-                    </div>
-                  ) : (
-                    <select className="tq-input" value={memberProfile[u.id]?.avatarPreset || 'cat'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarPreset: e.target.value } }))} style={{ cursor: 'pointer' }}>
-                      {Object.keys(AVATAR_PRESETS).map((id) => (
-                        <option key={id} value={id}>{t(`avatars.${id}`)}</option>
-                      ))}
-                    </select>
-                  )}
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <button className="tq-btn tq-btn-primary tq-btn-sm" onClick={() => handleSaveChildProfile(u)}>{t('common.save')}</button>
                     {memberProfileMsg[u.id] && (

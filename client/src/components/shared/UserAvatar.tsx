@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AvatarPresetIcon } from '../icons/AvatarPresets';
+import { AvatarPresetIcon } from '../icons/avatars';
 
 interface UserAvatarProps {
   name: string;

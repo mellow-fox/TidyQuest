@@ -17,6 +17,7 @@ import { Login } from './components/pages/Login';
 import { Register } from './components/pages/Register';
 import { Achievements } from './components/pages/Achievements';
 import { Rewards } from './components/pages/Rewards';
+import { ShoppingList } from './components/pages/ShoppingList';
 import { useTranslation } from './hooks/useTranslation';
 
 function AppContent() {
@@ -37,9 +38,10 @@ function AppContent() {
   const [coinsByEffort, setCoinsByEffort] = useState<Record<number, number>>({ 1: 5, 2: 10, 3: 15, 4: 20, 5: 25 });
   const [achievementsData, setAchievementsData] = useState<any>(null);
   const [rewardsData, setRewardsData] = useState<{ rewards: any[]; mine: any[] }>({ rewards: [], mine: [] });
-  const [theme, setTheme] = useState<'orange' | 'blue' | 'rose' | 'night'>(() => {
+  const [theme, setTheme] = useState<'orange' | 'blue' | 'rose' | 'darkRose' | 'darkOrange' | 'lightPurple' | 'darkPurple' | 'darkBlue'>(() => {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('tidyquest_theme') : null;
-    return (saved === 'blue' || saved === 'rose' || saved === 'night') ? saved : 'orange';
+    const normalized = saved === 'night' ? 'darkBlue' : saved;
+    return (normalized === 'blue' || normalized === 'rose' || normalized === 'darkRose' || normalized === 'darkOrange' || normalized === 'lightPurple' || normalized === 'darkPurple' || normalized === 'darkBlue') ? normalized : 'orange';
   });
   const [vacationConfig, setVacationConfig] = useState<{ vacationMode: boolean; vacationStartDate: string | null; vacationEndDate: string | null } | null>(null);
   const vacationUpdatePending = useRef(false);
@@ -395,6 +397,12 @@ function AppContent() {
             <>
               <PageHeader title={t('nav.calendar')} subtitle={t('app.calendarSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} onPointsClick={handlePointsClick} userPoints={myPoints} pointsPeriodLabel={pointsPeriodLabel} gamificationEnabled={gamificationEnabled} />
               <Calendar completions={completions} tasks={allTasks} language={user.language} />
+            </>
+          } />
+          <Route path="/shopping-list" element={
+            <>
+              <PageHeader title={t('nav.shopping-list')} subtitle={t('app.shoppingListSubtitle')} user={user} onCoinsClick={() => navigate('/rewards')} onStreakClick={() => navigate('/achievements')} onPointsClick={handlePointsClick} userPoints={myPoints} pointsPeriodLabel={pointsPeriodLabel} gamificationEnabled={gamificationEnabled} />
+              <ShoppingList language={user.language} />
             </>
           } />
 

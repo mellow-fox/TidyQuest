@@ -1,6 +1,6 @@
 services:
   tidyquest:
-    image: .
+    build: .
     container_name: tidyquest
     ports:
       - "3020:3000"

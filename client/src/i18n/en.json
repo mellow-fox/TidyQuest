@@ -129,7 +129,7 @@
     "profile": {
       "title": "Profile",
       "displayName": "Display Name",
-      "avatarMode": "Avatar Mode",
+      "avatarMode": "Choose your hero",
       "letterMode": "Letter",
       "characterMode": "Character",
       "photoMode": "Photo",
@@ -149,10 +149,14 @@
       "notificationsDesc": "Daily cleaning reminders",
       "theme": "Theme",
       "themeDesc": "Switch the app color mood",
-      "themeOrange": "Warm Orange",
+      "themeOrange": "Light Orange",
       "themeBlue": "Light Blue",
       "themeRose": "Light Rose",
-      "themeNight": "Night",
+      "themeDarkRose": "Dark Rose",
+      "themeDarkOrange": "Dark Orange",
+      "themeLightPurple": "Light Purple",
+      "themeDarkPurple": "Dark Purple",
+      "themeDarkBlue": "Dark Blue",
       "vacationMode": "Vacation Mode",
       "vacationDesc": "Pause all task reminders while you're away",
       "userVacationDesc": "Protect streak and freeze task health while away",
@@ -270,6 +274,7 @@
     "nav": {
       "home": "Home",
       "rooms": "Rooms",
+      "shopping-list": "Shopping",
       "board": "Board",
       "calendar": "Calendar",
       "activity": "Activity",
@@ -280,6 +285,7 @@
       "achievements": "Achievements"
     },
     "app": {
+      "shoppingListSubtitle": "Keep groceries and shopping tasks organized",
       "roomsConfigured": "rooms configured",
       "calendarSubtitle": "Track your cleaning history",
       "leaderboardTitle": "Leaderboard",
@@ -297,6 +303,20 @@
       "pendingApproval": "Completion submitted. Waiting for admin approval.",
       "doneBy": "Done by {name}",
       "childrenGroup": "Children"
+    },
+    "shoppingList": {
+      "title": "Shopping List",
+      "description": "Keep groceries, power-ups, and home items ready for your next quest.",
+      "placeholder": "Add a new item to buy",
+      "add": "Add",
+      "clearPurchased": "Clear purchased",
+      "empty": "No items yet. Start by adding one.",
+      "itemBought": "Bought",
+      "remaining": "remaining",
+      "total": "total",
+      "sample1": "Hero energy drink",
+      "sample2": "Sparkle stickers",
+      "sample3": "Potion snack"
     },
     "admin": {
       "whoDidThisTask": "Who completed this task?",
@@ -431,18 +451,17 @@
       "inHoursMinutes": "in {h}h {m}m"
     },
     "avatars": {
-      "cat": "Cat",
-      "dog": "Dog",
-      "bunny": "Bunny",
-      "bear": "Bear",
-      "fox": "Fox",
-      "owl": "Owl",
-      "panda": "Panda",
-      "penguin": "Penguin",
-      "unicorn": "Unicorn",
-      "frog": "Frog",
-      "koala": "Koala",
-      "hedgehog": "Hedgehog"
+      "cyberKnight": "Cyber Knight",
+      "neonRogue": "Neon Rogue",
+      "arcadePilot": "Arcade Pilot",
+      "starGamer": "Star Gamer",
+      "pinkMage": "Pink Mage",
+      "glitterPrincess": "Glitter Princess",
+      "pastelSiren": "Pastel Siren",
+      "yellowCockatiel": "Yellow Cockatiel",
+      "pixelKnight": "Pixel Knight",
+      "pixelMage": "Pixel Mage",
+      "pixelGamer": "Pixel Gamer"
     },
     "dashboard": {
       "houseHealth": "House Health",

@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { HomeIcon, RoomsIcon, TrophyIcon, CalendarIcon, ActivityIcon, AchievementsIcon, SettingsIcon, RewardsIcon } from '../icons/NavIcons';
+import { HomeIcon, RoomsIcon, TrophyIcon, CalendarIcon, ActivityIcon, AchievementsIcon, SettingsIcon, RewardsIcon, ShoppingListIcon } from '../icons/NavIcons';
 import { FireIcon, CoinIcon, SparkleIcon } from '../icons/UIIcons';
 import { UserAvatar } from '../shared/UserAvatar';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -17,6 +17,7 @@ interface SidebarProps {
 const navItems = [
   { to: '/', label: 'Home', Icon: HomeIcon },
   { to: '/rooms', label: 'Rooms', Icon: RoomsIcon },
+  { to: '/shopping-list', label: 'shopping-list', Icon: ShoppingListIcon },
   { to: '/leaderboard', label: 'Board', Icon: TrophyIcon },
   { to: '/calendar', label: 'Calendar', Icon: CalendarIcon },
   { to: '/activity', label: 'Activity', Icon: ActivityIcon },

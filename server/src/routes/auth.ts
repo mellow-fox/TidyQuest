@@ -61,8 +61,8 @@ router.post('/register', (req: AuthRequest, res: Response) => {
 
   const passwordHash = bcrypt.hashSync(password, 10);
   const result = db.prepare(
-    'INSERT INTO users (username, displayName, passwordHash, role, avatarColor, language) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(username, displayName, passwordHash, role, avatarColor || '#F97316', language || 'en');
+    'INSERT INTO users (username, displayName, passwordHash, role, avatarColor, avatarType, avatarPreset, language) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).run(username, displayName, passwordHash, role, avatarColor || '#F97316', 'preset', 'cyberKnight', language || 'en');
 
   const token = generateToken(result.lastInsertRowid as number);
   const user = db.prepare('SELECT id, username, displayName, role, avatarColor, avatarType, avatarPreset, avatarPhotoUrl, coins, currentStreak, goalCoins, goalStartAt, goalEndAt, language FROM users WHERE id = ?')

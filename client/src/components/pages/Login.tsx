@@ -21,9 +21,9 @@ interface LoginProps {
 export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
   const initialLang = (() => {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('tidyquest_auth_lang') : null;
-    if (saved && ['en', 'fr', 'de', 'es', 'it'].includes(saved)) return saved;
+    if (saved && ['en', 'bg'].includes(saved)) return saved;
     const browser = typeof navigator !== 'undefined' ? navigator.language.slice(0, 2) : 'en';
-    return ['en', 'fr', 'de', 'es', 'it'].includes(browser) ? browser : 'en';
+    return ['en', 'bg'].includes(browser) ? browser : 'en';
   })();
   const [authLanguage, setAuthLanguage] = useState(initialLang);
   const { t } = useTranslation(authLanguage);
@@ -97,10 +97,6 @@ export function Login({ onLogin, onSwitchToRegister }: LoginProps) {
             }}
           >
             <option value="en">English</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="es">Español</option>
-            <option value="it">Italiano</option>
             <option value="bg">Български</option>
           </select>
         </div>

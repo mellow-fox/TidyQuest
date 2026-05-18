@@ -161,13 +161,15 @@ router.post('/', (req: AuthRequest, res: Response) => {
   const safeRole = role === 'admin' ? 'admin' : role === 'child' ? 'child' : 'member';
   const passwordHash = bcrypt.hashSync(password, 10);
   const result = db.prepare(
-    'INSERT INTO users (username, displayName, passwordHash, role, avatarColor, language) VALUES (?, ?, ?, ?, ?, ?)'
+    'INSERT INTO users (username, displayName, passwordHash, role, avatarColor, avatarType, avatarPreset, language) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     username,
     displayName,
     passwordHash,
     safeRole,
     avatarColor || '#F97316',
+    'preset',
+    'cyberKnight',
     language || 'en',
   );
 

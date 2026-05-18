@@ -124,6 +124,23 @@ export function CalendarIcon({ active }: NavIconProps) {
   );
 }
 
+export function ShoppingListIcon({ active }: NavIconProps) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <rect
+        x="5" y="4" width="16" height="18" rx="4"
+        fill={active ? "var(--warm-accent)" : "none"}
+        stroke={active ? "var(--warm-accent)" : "var(--warm-text-light)"}
+        strokeWidth="2"
+      />
+      <path d="M8 9H18" stroke={active ? "#fff" : "var(--warm-text-light)"} strokeWidth="2" strokeLinecap="round" />
+      <path d="M8 13H18" stroke={active ? "#fff" : "var(--warm-text-light)"} strokeWidth="2" strokeLinecap="round" />
+      <path d="M8 17H14" stroke={active ? "#fff" : "var(--warm-text-light)"} strokeWidth="2" strokeLinecap="round" />
+      <path d="M7 4L9 2H17L19 4" stroke={active ? "#fff" : "var(--warm-text-light)"} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function ActivityIcon({ active }: NavIconProps) {
   return (
     <svg width="26" height="26" viewBox="0 0 26 26" fill="none">

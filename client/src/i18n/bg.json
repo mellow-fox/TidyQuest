@@ -129,7 +129,7 @@
     "profile": {
       "title": "Профил",
       "displayName": "Показвано име",
-      "avatarMode": "Режим на аватара",
+      "avatarMode": "Избери своя герой",
       "letterMode": "Буква",
       "characterMode": "Герой",
       "photoMode": "Снимка",
@@ -149,10 +149,14 @@
       "notificationsDesc": "Дневни напомняния за чистене",
       "theme": "Тема",
       "themeDesc": "Смени цветния стил на приложението",
-      "themeOrange": "Топло оранжево",
+      "themeOrange": "Светло оранжево",
       "themeBlue": "Светло синьо",
       "themeRose": "Светло розово",
-      "themeNight": "Нощ",
+      "themeDarkRose": "Тъмно розово",
+      "themeDarkOrange": "Тъмно оранжево",
+      "themeLightPurple": "Светло лилаво",
+      "themeDarkPurple": "Тъмно лилаво",
+      "themeDarkBlue": "Тъмно синьо",
       "vacationMode": "Режим на отпуска",
       "vacationDesc": "Паузирай всички напомняния за задачи докато си в отпуска",
       "userVacationDesc": "Защити серията и замразяй здравето на задачата докато си далеч",
@@ -270,6 +274,7 @@
     "nav": {
       "home": "Начало",
       "rooms": "Стаи",
+      "shopping-list": "Пазаруване",
       "board": "Табло",
       "calendar": "Календар",
       "activity": "Активност",
@@ -280,6 +285,7 @@
       "achievements": "Постижения"
     },
     "app": {
+      "shoppingListSubtitle": "Поддържай списъка за пазаруване подреден",
       "roomsConfigured": "стаи конфигурирани",
       "calendarSubtitle": "Проследи историята на чистенето",
       "leaderboardTitle": "Класация",
@@ -297,6 +303,20 @@
       "pendingApproval": "Завършването е подадено. Чакам одобрение от администратор.",
       "doneBy": "Завършено от {name}",
       "childrenGroup": "Деца"
+    },
+    "shoppingList": {
+      "title": "Списък за пазаруване",
+      "description": "Поддържай хранителните стоки, аксесоарите и хубавите неща готови за следващото приключение.",
+      "placeholder": "Добави нов артикул за купуване",
+      "add": "Добави",
+      "clearPurchased": "Изчисти купените",
+      "empty": "Все още няма артикули. Добави първия.",
+      "itemBought": "Купено",
+      "remaining": "оставащи",
+      "total": "общо",
+      "sample1": "Енергийна напитка",
+      "sample2": "Бляскави стикери",
+      "sample3": "Снакс за магия"
     },
     "admin": {
       "whoDidThisTask": "Кой завърши тази задача?",
@@ -431,18 +451,17 @@
       "inHoursMinutes": "за {h}ч {m}м"
     },
     "avatars": {
-      "cat": "Котка",
-      "dog": "Кученце",
-      "bunny": "Зайче",
-      "bear": "Мечка",
-      "fox": "Лисица",
-      "owl": "Кукумявка",
-      "panda": "Панда",
-      "penguin": "Пингвин",
-      "unicorn": "Еденрог",
-      "frog": "Жаба",
-      "koala": "Коала",
-      "hedgehog": "Таралеж"
+      "cyberKnight": "Кибер рицар",
+      "neonRogue": "Неонов разбойник",
+      "arcadePilot": "Аркаден пилот",
+      "starGamer": "Звезден геймър",
+      "pinkMage": "Розов маг",
+      "glitterPrincess": "Принцеса блясък",
+      "pastelSiren": "Пастелна сирена",
+      "yellowCockatiel": "Жълта корела",
+      "pixelKnight": "Пикселен рицар",
+      "pixelMage": "Пикселен маг",
+      "pixelGamer": "Пикселен геймър"
     },
     "dashboard": {
       "houseHealth": "Здраве на дома",

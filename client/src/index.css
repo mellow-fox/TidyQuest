@@ -147,7 +147,193 @@ html[data-theme='rose'] {
   --warm-primary-shadow: rgba(236, 72, 153, 0.25);
 }
 
-html[data-theme='night'] {
+html[data-theme='darkRose'] {
+  --warm-bg: #1F1725;
+  --warm-card: #242035;
+  --warm-border: #3E324B;
+  --warm-border-subtle: #2D2238;
+  --warm-text: #F4E3F7;
+  --warm-text-secondary: #D8B7D8;
+  --warm-text-muted: #B9A1B8;
+  --warm-text-light: #9A87A0;
+  --warm-accent: #F472B6;
+  --warm-accent-light: #F7D1E6;
+  --warm-accent-hover: #EC4899;
+  --warm-bg-subtle: #2A1E35;
+  --warm-bg-warm: #322543;
+  --warm-bg-input: #24162F;
+  --warm-sidebar: #18121F;
+  --warm-sidebar-active: #2E1B3B;
+  --warm-sidebar-border: #3A2644;
+  --warm-sidebar-user-bg: #2A1B36;
+  --warm-sidebar-user-border: #933D84;
+  --warm-streak-bg: linear-gradient(135deg, #2D1D3D, #4D2B5F);
+  --warm-streak-border: #933D84;
+  --warm-streak-text: #F9B8D9;
+  --warm-streak-subtext: #F472B6;
+  --warm-danger: #F87171;
+  --warm-danger-bg: #3A1F27;
+  --warm-danger-border: #7F1D1D;
+  --warm-badge-bg: #3B1F2D;
+  --warm-badge-text: #F9A8D1;
+  --warm-coin: #FBBF24;
+  --health-bar-track: #3A2743;
+  --health-green: #4ADE80;
+  --health-yellow: #FBBF24;
+  --health-red: #FCA5A5;
+  --health-green-bg: #17331A;
+  --health-yellow-bg: #3C2C18;
+  --health-red-bg: #3F1D22;
+  --warm-shadow: rgba(0, 0, 0, 0.35);
+  --warm-primary-shadow: rgba(244, 114, 182, 0.25);
+}
+
+html[data-theme='darkOrange'] {
+  --warm-bg: #24170F;
+  --warm-card: #322318;
+  --warm-border: #5B4122;
+  --warm-border-subtle: #483617;
+  --warm-text: #F4E3D2;
+  --warm-text-secondary: #D3B7A4;
+  --warm-text-muted: #B79C8E;
+  --warm-text-light: #A58F81;
+  --warm-accent: #F97316;
+  --warm-accent-light: #FFF2E0;
+  --warm-accent-hover: #EA580C;
+  --warm-bg-subtle: #3A2613;
+  --warm-bg-warm: #4A331D;
+  --warm-bg-input: #2E2319;
+  --warm-sidebar: #1F130C;
+  --warm-sidebar-active: #4B321C;
+  --warm-sidebar-border: #4F381F;
+  --warm-sidebar-user-bg: #462E17;
+  --warm-sidebar-user-border: #FDE68A;
+  --warm-streak-bg: linear-gradient(135deg, #3D260F, #6C4B1C);
+  --warm-streak-border: #FDE68A;
+  --warm-streak-text: #FFB566;
+  --warm-streak-subtext: #F97316;
+  --warm-danger: #EF4444;
+  --warm-danger-bg: #3D1614;
+  --warm-danger-border: #7F1D1D;
+  --warm-badge-bg: #502D1A;
+  --warm-badge-text: #FBBF24;
+  --warm-coin: #F59E0B;
+  --health-bar-track: #3D2918;
+  --health-green: #4ADE80;
+  --health-yellow: #FBBF24;
+  --health-red: #FCA5A5;
+  --health-green-bg: #193322;
+  --health-yellow-bg: #3D311B;
+  --health-red-bg: #411716;
+  --warm-shadow: rgba(0, 0, 0, 0.28);
+  --warm-primary-shadow: rgba(249, 115, 22, 0.18);
+  --status-approved-text: #4ADE80;
+  --status-approved-bg: #162916;
+  --status-approved-border: #166534;
+  --status-rejected-text: #FCA5A5;
+  --status-rejected-bg: #391615;
+  --status-rejected-border: #7F1D1D;
+  --status-cancelled-text: #94A3B8;
+  --status-cancelled-bg: #1E1A2B;
+  --status-cancelled-border: #475569;
+  --task-healthy-text: #4ADE80;
+  --task-healthy-bg: #162916;
+  --task-healthy-border: #166534;
+  --task-warning-text: #FBBF24;
+  --task-warning-bg: #3A2912;
+  --task-warning-border: #92400E;
+  --task-critical-text: #FCA5A5;
+  --task-critical-bg: #3E1616;
+  --task-critical-border: #7F1D1D;
+}
+
+html[data-theme='lightPurple'] {
+  --warm-bg: #F4F0FF;
+  --warm-card: #FFFFFF;
+  --warm-border: #E6DFF7;
+  --warm-border-subtle: #EFE7FB;
+  --warm-text: #3D2F4A;
+  --warm-text-secondary: #6B5B80;
+  --warm-text-muted: #8B7A9B;
+  --warm-text-light: #A899B5;
+  --warm-accent: #A78BFA;
+  --warm-accent-light: #F3E8FF;
+  --warm-accent-hover: #7C3AED;
+  --warm-bg-subtle: #F8F5FF;
+  --warm-bg-warm: #EEE7FF;
+  --warm-bg-input: #FFFFFF;
+  --warm-sidebar: #FFFFFF;
+  --warm-sidebar-active: #F3E8FF;
+  --warm-sidebar-border: #E6DFF7;
+  --warm-sidebar-user-bg: #F3E8FF;
+  --warm-sidebar-user-border: #C4B5FD;
+  --warm-streak-bg: linear-gradient(135deg, #ECE8FF, #DDD6FE);
+  --warm-streak-border: #C4B5FD;
+  --warm-streak-text: #5B21B6;
+  --warm-streak-subtext: #8B5CF6;
+  --warm-primary-shadow: rgba(167, 139, 250, 0.25);
+}
+
+html[data-theme='darkPurple'] {
+  --warm-bg: #160F24;
+  --warm-card: #24173B;
+  --warm-border: #3C2F5B;
+  --warm-border-subtle: #2D234C;
+  --warm-text: #EAD9FD;
+  --warm-text-secondary: #C9B7E3;
+  --warm-text-muted: #A892C0;
+  --warm-text-light: #8E7BB5;
+  --warm-accent: #A78BFA;
+  --warm-accent-light: #3F2B74;
+  --warm-accent-hover: #7C3AED;
+  --warm-bg-subtle: #2B1F43;
+  --warm-bg-warm: #321E51;
+  --warm-bg-input: #241734;
+  --warm-sidebar: #130B1E;
+  --warm-sidebar-active: #2D1A47;
+  --warm-sidebar-border: #3B2F55;
+  --warm-sidebar-user-bg: #2F1F45;
+  --warm-sidebar-user-border: #C4B5FD;
+  --warm-streak-bg: linear-gradient(135deg, #24173B, #3C2F5B);
+  --warm-streak-border: #C4B5FD;
+  --warm-streak-text: #EDE9FF;
+  --warm-streak-subtext: #C4B5FD;
+  --warm-danger: #F87171;
+  --warm-danger-bg: #3A1F24;
+  --warm-danger-border: #7F1D1D;
+  --warm-badge-bg: #3C1F3F;
+  --warm-badge-text: #E9D5FF;
+  --warm-coin: #FBBF24;
+  --health-bar-track: #33284A;
+  --health-green: #4ADE80;
+  --health-yellow: #FBBF24;
+  --health-red: #FCA5A5;
+  --health-green-bg: #163221;
+  --health-yellow-bg: #3A2E18;
+  --health-red-bg: #3E1622;
+  --warm-shadow: rgba(0, 0, 0, 0.35);
+  --warm-primary-shadow: rgba(167, 139, 250, 0.25);
+  --status-approved-text: #4ADE80;
+  --status-approved-bg: #162916;
+  --status-approved-border: #166534;
+  --status-rejected-text: #FCA5A5;
+  --status-rejected-bg: #391615;
+  --status-rejected-border: #7F1D1D;
+  --status-cancelled-text: #94A3B8;
+  --status-cancelled-bg: #1E1A2B;
+  --status-cancelled-border: #475569;
+  --task-healthy-text: #4ADE80;
+  --task-healthy-bg: #162916;
+  --task-healthy-border: #166534;
+  --task-warning-text: #FBBF24;
+  --task-warning-bg: #3A2912;
+  --task-warning-border: #92400E;
+  --task-critical-text: #FCA5A5;
+  --task-critical-bg: #3E1616;
+  --task-critical-border: #7F1D1D;
+}
+
+html[data-theme='darkBlue'] {
   --warm-bg: #0B0F19;
   --warm-card: #1C2436;
   --warm-border: #334155;
@@ -205,6 +391,24 @@ html[data-theme='night'] {
   --task-critical-text: #FCA5A5;
   --task-critical-bg: #2E1A1A;
   --task-critical-border: #7F1D1D;
+}
+
+html[data-theme='darkBlue'] .page-header-actions,
+html[data-theme='darkOrange'] .page-header-actions,
+html[data-theme='darkPurple'] .page-header-actions,
+html[data-theme='darkRose'] .page-header-actions {
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 12px;
+}
+
+html[data-theme='darkBlue'] .page-header-actions > div,
+html[data-theme='darkOrange'] .page-header-actions > div,
+html[data-theme='darkPurple'] .page-header-actions > div,
+html[data-theme='darkRose'] .page-header-actions > div {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -414,19 +618,37 @@ body {
   gap: var(--space-xl);
 }
 
-/* Night theme: ensure inputs and selects are readable */
-html[data-theme='night'] input,
-html[data-theme='night'] textarea,
-html[data-theme='night'] select {
+/* Dark theme inputs and selects: ensure readability */
+html[data-theme='darkBlue'] input,
+html[data-theme='darkBlue'] textarea,
+html[data-theme='darkBlue'] select,
+html[data-theme='darkRose'] input,
+html[data-theme='darkRose'] textarea,
+html[data-theme='darkRose'] select,
+html[data-theme='darkOrange'] input,
+html[data-theme='darkOrange'] textarea,
+html[data-theme='darkOrange'] select,
+html[data-theme='darkPurple'] input,
+html[data-theme='darkPurple'] textarea,
+html[data-theme='darkPurple'] select {
   background-color: var(--warm-bg-input) !important;
   color: var(--warm-text) !important;
   border-color: var(--warm-border) !important;
 }
-html[data-theme='night'] input::placeholder,
-html[data-theme='night'] textarea::placeholder {
+html[data-theme='darkBlue'] input::placeholder,
+html[data-theme='darkBlue'] textarea::placeholder,
+html[data-theme='darkRose'] input::placeholder,
+html[data-theme='darkRose'] textarea::placeholder,
+html[data-theme='darkOrange'] input::placeholder,
+html[data-theme='darkOrange'] textarea::placeholder,
+html[data-theme='darkPurple'] input::placeholder,
+html[data-theme='darkPurple'] textarea::placeholder {
   color: var(--warm-text-light) !important;
 }
-html[data-theme='night'] option {
+html[data-theme='darkBlue'] option,
+html[data-theme='darkRose'] option,
+html[data-theme='darkOrange'] option,
+html[data-theme='darkPurple'] option {
   background-color: var(--warm-card);
   color: var(--warm-text);
 }
