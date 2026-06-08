@@ -142,7 +142,7 @@ export function Settings({
   const [ntfyToken, setNtfyToken] = useState('');
   const [ntfyHasToken, setNtfyHasToken] = useState(false);
 
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
+  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', nl: 'nl-NL' };
   const locale = localeMap[user.language || 'en'] || 'en-US';
 
   const formatDate = (isoDate?: string | null): string => {
@@ -1130,6 +1130,7 @@ export function Settings({
                     <option value="de">Deutsch</option>
                     <option value="es">Español</option>
                     <option value="it">Italiano</option>
+                    <option value="nl">Nederlands</option>
                   </select>
                   <select className="tq-input" value={memberProfile[u.id]?.avatarType || 'letter'} onChange={(e) => setMemberProfile((prev) => ({ ...prev, [u.id]: { ...prev[u.id], avatarType: e.target.value as 'letter' | 'preset' } }))} style={{ cursor: 'pointer' }}>
                     <option value="letter">{t('profile.letterMode')}</option>

@@ -181,7 +181,7 @@ On first launch, the database is empty. Create an admin account via the **Regist
 - **60+ Predefined Tasks**: Common household chores with realistic frequencies
 - **10 Preset Rewards**: Movie night, ice cream, stay up late, game time, etc.
 - **12 Achievements**: Unlocked automatically based on activity
-- **5 Languages**: English, French, German, Spanish, Italian
+- **6 Languages**: English, French, German, Spanish, Italian and Dutch
 
 ---
 
