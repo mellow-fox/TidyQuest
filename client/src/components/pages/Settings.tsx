@@ -142,7 +142,7 @@ export function Settings({
   const [ntfyToken, setNtfyToken] = useState('');
   const [ntfyHasToken, setNtfyHasToken] = useState(false);
 
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', nl: 'nl-NL' };
+  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', nl: 'nl-NL', ru: 'ru-RU' };
   const locale = localeMap[user.language || 'en'] || 'en-US';
 
   const formatDate = (isoDate?: string | null): string => {

@@ -78,7 +78,7 @@ function formatNextDue(lastCompletedAt: string | null, frequencyDays: number, t:
   const dueStart = new Date(nextDue.getFullYear(), nextDue.getMonth(), nextDue.getDate());
   const diffDays = Math.round((dueStart.getTime() - todayStart.getTime()) / (24 * 60 * 60 * 1000));
   if (diffDays <= 1) return { text: t('roomDetail.tomorrow'), color: 'var(--health-yellow)' };
-  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
+  const localeMap: Record<string, string> = { en: 'en-US', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT', ru: 'ru-RU' };
   const locale = localeMap[language || 'en'] || 'en-US';
   const text = nextDue.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
   return { text, color: diffDays <= 7 ? 'var(--health-yellow)' : 'var(--health-green)' };
